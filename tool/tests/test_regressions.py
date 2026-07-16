@@ -323,3 +323,132 @@ def test_packaged_skill_matches_repo_copy():
         a = (skill / rel).read_text(encoding="utf-8")
         b = (pkg / rel).read_text(encoding="utf-8")
         assert a == b, f"skill_data/{rel} is out of sync with skill/{rel}"
+
+
+# --- event streaming ---------------------------------------------------------
+
+def test_event_bus_stage_ordering_and_silence():
+    from solidsight.events import EventBus
+    bus = EventBus()
+    seen: list[dict] = []
+    # no sinks: emitting must be a silent no-op
+    bus.emit("x", "start")
+    bus.add_sink(seen.append)
+    with bus.stage("render", total=2) as st:
+        st.tick("view iso")
+        st.tick("view top")
+    statuses = [(e["stage"], e["status"]) for e in seen]
+    assert statuses == [("render", "start"), ("render", "progress"),
+                        ("render", "progress"), ("render", "done")]
+    assert seen[1]["pct"] == 50.0 and seen[2]["pct"] == 100.0
+    assert seen[3]["duration_s"] >= 0
+    # a crashing sink must never break the build
+    bus.add_sink(lambda ev: 1 / 0)
+    bus.emit("x", "info")
+
+
+def test_build_emits_events_and_stays_deterministic(tmp_path):
+    from solidsight.events import BUS, ndjson_sink
+    from solidsight.report import build_model
+    model = tmp_path / "m.py"
+    model.write_text("from solidsight import *\n"
+                     "emit(box(10, 10, 10), name='cube')\n",
+                     encoding="utf-8")
+    sink = ndjson_sink(tmp_path / "events.ndjson")
+    BUS.add_sink(sink)
+    try:
+        build_model(model, tmp_path / "a", views=["iso"])
+    finally:
+        BUS.clear_sinks()
+        sink.close()
+    build_model(model, tmp_path / "b", views=["iso"])
+    import json as _json
+    events = [_json.loads(line) for line in
+              (tmp_path / "events.ndjson").read_text(
+                  encoding="utf-8").splitlines()]
+    stages = {e["stage"] for e in events}
+    assert {"model", "metrics", "render", "export"} <= stages
+    # events must never leak into the deterministic artifacts
+    ra = (tmp_path / "a" / "report.json").read_bytes()
+    rb = (tmp_path / "b" / "report.json").read_bytes()
+    assert ra == rb
+    assert b"events" not in ra
+
+
+# --- watch mode ---------------------------------------------------------------
+
+def test_watch_fingerprint_detects_real_change(tmp_path):
+    from solidsight.runner import run_model
+    from solidsight.watch import scene_fingerprint
+    m = tmp_path / "m.py"
+    m.write_text("from solidsight import *\n"
+                 "emit(box(10, 10, 10), name='cube')\n", encoding="utf-8")
+    fp1, parts1 = scene_fingerprint(run_model(m), {"mode": "free"})
+    # cosmetic edit: same geometry -> same fingerprint
+    m.write_text("from solidsight import *\n# a comment\n"
+                 "emit(box(10, 10, 10), name='cube')\n", encoding="utf-8")
+    fp2, _ = scene_fingerprint(run_model(m), {"mode": "free"})
+    assert fp1 == fp2
+    # real edit -> different fingerprint
+    m.write_text("from solidsight import *\n"
+                 "emit(box(10, 10, 11), name='cube')\n", encoding="utf-8")
+    fp3, parts3 = scene_fingerprint(run_model(m), {"mode": "free"})
+    assert fp1 != fp3
+    assert parts1["cube"] != parts3["cube"]
+    # same geometry but different build options -> different fingerprint
+    fp4, _ = scene_fingerprint(run_model(m), {"mode": "print-safe"})
+    assert fp3 != fp4
+
+
+def test_watch_initial_build_and_export_reuse(tmp_path):
+    from solidsight.report import build_model
+    from solidsight.watch import run_watch
+    m = tmp_path / "m.py"
+    m.write_text("from solidsight import *\n"
+                 "emit(box(10, 10, 10), name='cube')\n", encoding="utf-8")
+    lines: list[str] = []
+    rc = run_watch(m, dict(out_dir=tmp_path / "out", views=["iso"],
+                           export_stl=True),
+                   say=lines.append, max_builds=1)
+    assert rc == 0
+    stl = tmp_path / "out" / "stl" / "cube.stl"
+    assert stl.exists()
+    assert any("build #1" in ln for ln in lines)
+    # unchanged part: the export file must be reused, not rewritten
+    before = stl.stat().st_mtime_ns
+    report = build_model(m, out_dir=tmp_path / "out", views=["iso"],
+                         export_stl=True, unchanged_parts={"cube"})
+    assert stl.stat().st_mtime_ns == before
+    assert "stl/cube.stl" in report["files"]["exports"][0].replace("\\", "/")
+
+
+# --- browser viewer -----------------------------------------------------------
+
+def test_viewer_payload_structure(tmp_path):
+    from solidsight.report import build_model
+    from solidsight.runner import run_model
+    from solidsight.viewer import scene_payload, write_viewer
+    m = tmp_path / "m.py"
+    m.write_text("from solidsight import *\n"
+                 "emit(box(20, 10, 5), name='plate', color='#4a708b')\n"
+                 "emit(box(6, 6, 20).translate(0, 0, 2), name='post')\n",
+                 encoding="utf-8")
+    scene = run_model(m)
+    report = build_model(m, out_dir=tmp_path / "out", views=["iso"])
+    payload = scene_payload(scene, report)
+    assert [p["name"] for p in payload["parts"]] == ["plate", "post"]
+    p0 = payload["parts"][0]
+    assert len(p0["positions"]) % 3 == 0 and len(p0["indices"]) % 3 == 0
+    assert max(p0["indices"]) < len(p0["positions"]) // 3
+    assert p0["com"] is not None and p0["volume"] == pytest.approx(1000)
+    assert payload["pairs"][0]["status"] == "collision"  # post pierces plate
+    assert payload["pairs"][0]["overlap_bbox"] is not None
+    write_viewer(tmp_path / "v", payload, "abc123")
+    assert (tmp_path / "v" / "index.html").exists()
+    assert (tmp_path / "v" / "three.module.min.js").exists()
+    assert (tmp_path / "v" / "version.txt").read_text(
+        encoding="utf-8") == "abc123"
+    import json as _json
+    again = _json.loads((tmp_path / "v" / "scene.json").read_text(
+        encoding="utf-8"))
+    assert again == _json.loads(_json.dumps(payload))  # deterministic JSON

@@ -47,8 +47,12 @@ def analyze_scene(scene: Scene,
                             where=w.get("where"),
                             suggestion=w.get("suggestion")))
 
+    from .events import BUS
+    part_stage = BUS.stage("metrics", total=len(scene.parts))
+    part_stage.__enter__()
     for part in scene.parts:
         if part.ghost:
+            part_stage.tick(f"part '{part.name}' (ghost)")
             lo, hi = part.solid.bbox
             metrics[part.name] = {
                 "ghost": True,
@@ -63,6 +67,8 @@ def analyze_scene(scene: Scene,
         m, cs = _analyze_part(part, opts)
         metrics[part.name] = m
         checks.extend(cs)
+        part_stage.tick(f"part '{part.name}'")
+    part_stage.__exit__(None, None, None)
 
     from .assembly import pair_analysis
     pairs, pair_checks = pair_analysis(scene, mode=opts.mode)

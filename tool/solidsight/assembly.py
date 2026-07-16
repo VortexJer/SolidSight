@@ -196,6 +196,11 @@ def pair_analysis(scene, mode: str = "free",
     if len(parts) < 2:
         return pairs, checks
 
+    from .events import BUS
+    n_pairs = len(parts) * (len(parts) - 1) // 2
+    pair_stage = BUS.stage("pairs", total=n_pairs)
+    pair_stage.__enter__()
+
     diag = max(scene.combined().size) * 2 + 1
 
     def _exp_text(e) -> str:
@@ -351,6 +356,9 @@ def pair_analysis(scene, mode: str = "free",
                         entry["expectation"] = "met"
                         entry["suggestion"] = None   # intent declared and met
                 pairs.append(entry)
+            pair_stage.tick(f"'{a.name}' vs '{b.name}': "
+                            f"{pairs[-1]['status']}")
+    pair_stage.__exit__(None, None, None)
 
     for key, e in exps.items():
         if key not in seen_exp and not ({e["a"], e["b"]} - part_names):

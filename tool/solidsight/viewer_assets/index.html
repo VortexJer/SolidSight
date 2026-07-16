@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>solidsight viewer</title>
+<style>
+  :root {
+    --bg: #f2f1ec; --ink: #26282b; --dim: #7a7d82; --hair: #d8d6cf;
+    --panel: #faf9f6; --accent: #b8443c; --ok: #3c7a4e;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font: 12px/1.5 "SF Mono", "Cascadia Code", Consolas, monospace;
+    background: var(--bg); color: var(--ink); display: flex;
+  }
+  #panel {
+    width: 264px; min-width: 264px; height: 100%; overflow-y: auto;
+    background: var(--panel); border-right: 1px solid var(--hair);
+    padding: 14px 14px 40px;
+  }
+  #stage { flex: 1; position: relative; }
+  canvas { display: block; }
+  h1 { font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+  h1 small { color: var(--dim); font-weight: 400; }
+  .sec {
+    margin-top: 16px; padding-top: 10px; border-top: 1px solid var(--hair);
+  }
+  .sec > .cap {
+    font-size: 10px; letter-spacing: .14em; color: var(--dim);
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+  .row { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
+  .part { cursor: pointer; user-select: none; }
+  .part.dim { opacity: .35; }
+  .sw { width: 10px; height: 10px; border: 1px solid rgba(0,0,0,.25); }
+  .part .nm { flex: 1; overflow: hidden; text-overflow: ellipsis;
+              white-space: nowrap; }
+  .part .vol { color: var(--dim); font-size: 10px; }
+  button {
+    font: inherit; font-size: 10px; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink);
+    background: transparent; border: 1px solid var(--hair);
+    padding: 3px 8px; cursor: pointer;
+  }
+  button.on { background: var(--ink); color: var(--panel);
+              border-color: var(--ink); }
+  .btns { display: flex; flex-wrap: wrap; gap: 5px; }
+  input[type=range] { flex: 1; accent-color: var(--ink); height: 14px; }
+  select {
+    font: inherit; font-size: 11px; background: var(--panel);
+    border: 1px solid var(--hair); color: var(--ink); padding: 1px 3px;
+  }
+  .check { margin: 7px 0; padding-left: 9px; cursor: pointer;
+           border-left: 2px solid var(--hair); }
+  .check.fail { border-left-color: var(--accent); }
+  .check .lvl { font-size: 10px; letter-spacing: .1em; }
+  .check.fail .lvl { color: var(--accent); }
+  .check.warn .lvl { color: #a07a1e; }
+  .check .msg { color: var(--ink); }
+  .check .whr { color: var(--dim); font-size: 10px; }
+  #hud {
+    position: absolute; left: 12px; bottom: 10px; color: var(--dim);
+    font-size: 11px; pointer-events: none; white-space: pre;
+  }
+  #status {
+    position: absolute; right: 12px; top: 10px; font-size: 10px;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--dim);
+  }
+  #status.live::before { content: "● "; color: var(--ok); }
+  #measure-out { color: var(--ink); margin-top: 4px; min-height: 16px; }
+  .kv { display: flex; justify-content: space-between; }
+  .kv .k { color: var(--dim); }
+</style>
+</head>
+<body>
+<div id="panel">
+  <h1>SOLIDSIGHT <small id="model-name"></small></h1>
+  <div class="sec"><div class="cap">Scene</div><div id="scene-info"></div></div>
+  <div class="sec"><div class="cap">Parts — click to isolate</div>
+    <div id="parts"></div></div>
+  <div class="sec"><div class="cap">Display</div>
+    <div class="btns">
+      <button id="b-wire">wire</button>
+      <button id="b-xray">x-ray</button>
+      <button id="b-norm">normals</button>
+      <button id="b-bbox">bboxes</button>
+      <button id="b-com">com</button>
+      <button id="b-find" class="on">findings</button>
+      <button id="b-grid" class="on">grid</button>
+    </div></div>
+  <div class="sec"><div class="cap">Explode</div>
+    <div class="row"><input id="explode" type="range" min="0" max="100"
+      value="0"><span id="explode-v">0%</span></div></div>
+  <div class="sec"><div class="cap">Section</div>
+    <div class="row">
+      <select id="sec-axis"><option value="">off</option>
+        <option value="x">x</option><option value="y">y</option>
+        <option value="z">z</option></select>
+      <input id="sec-pos" type="range" min="0" max="1000" value="500">
+      <span id="sec-v">—</span></div></div>
+  <div class="sec"><div class="cap">Measure</div>
+    <div class="btns"><button id="b-measure">pick 2 points</button>
+      <button id="b-clearm">clear</button></div>
+    <div id="measure-out"></div></div>
+  <div class="sec"><div class="cap">Findings — click to fly</div>
+    <div id="checks"></div></div>
+</div>
+<div id="stage"><div id="hud"></div><div id="status">static</div></div>
+
+<script type="module">
+import * as THREE from './three.module.min.js';
+
+const stage = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.localClippingEnabled = true;
+stage.appendChild(renderer.domElement);
+
+const sceneGL = new THREE.Scene();
+sceneGL.background = new THREE.Color(0xf2f1ec);
+const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100000);
+camera.up.set(0, 0, 1);
+
+sceneGL.add(new THREE.HemisphereLight(0xffffff, 0xb8b6ae, 0.95));
+const sun = new THREE.DirectionalLight(0xffffff, 1.4);
+sun.position.set(1, -0.6, 1.4);
+sceneGL.add(sun);
+
+// ---- state ----------------------------------------------------------------
+let data = null;                 // scene.json payload
+const meshes = new Map();        // name -> THREE.Mesh
+const baseMat = new Map();       // name -> material
+const offsets = new Map();       // name -> THREE.Vector3 explode direction
+let helpers = { bbox: [], com: [], find: [], grid: null, triad: null };
+let opts = { wire: false, xray: false, norm: false, bbox: false, com: false,
+             find: true, grid: true };
+let explode = 0;
+let clipPlane = null, clipAxis = '';
+let isolated = null;             // part name or null
+let version = '';
+
+// ---- orbit controls (own implementation, ~60 lines) ------------------------
+const target = new THREE.Vector3();
+let sph = { r: 100, theta: Math.PI / 4, phi: 1.1 };
+function applyCamera() {
+  const sp = Math.sin(sph.phi), cp = Math.cos(sph.phi);
+  camera.position.set(
+    target.x + sph.r * sp * Math.cos(sph.theta),
+    target.y + sph.r * sp * Math.sin(sph.theta),
+    target.z + sph.r * cp);
+  camera.lookAt(target);
+}
+let drag = null;
+renderer.domElement.addEventListener('contextmenu', e => e.preventDefault());
+renderer.domElement.addEventListener('pointerdown', e => {
+  if (measuring) return;
+  drag = { x: e.clientX, y: e.clientY,
+           pan: e.button === 2 || e.shiftKey };
+  renderer.domElement.setPointerCapture(e.pointerId);
+});
+renderer.domElement.addEventListener('pointermove', e => {
+  if (!drag) { hover(e); return; }
+  const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+  drag.x = e.clientX; drag.y = e.clientY;
+  if (drag.pan) {
+    const s = sph.r / renderer.domElement.clientHeight * 1.6;
+    const right = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 0);
+    const up = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 1);
+    target.addScaledVector(right, -dx * s).addScaledVector(up, dy * s);
+  } else {
+    sph.theta -= dx * 0.006;
+    sph.phi = Math.min(Math.PI - 0.02, Math.max(0.02, sph.phi - dy * 0.006));
+  }
+  applyCamera();
+});
+renderer.domElement.addEventListener('pointerup', () => { drag = null; });
+renderer.domElement.addEventListener('wheel', e => {
+  e.preventDefault();
+  sph.r *= Math.pow(1.0015, e.deltaY);
+  applyCamera();
+}, { passive: false });
+
+// ---- build the GL scene from payload ---------------------------------------
+function clearGroup(list) { list.forEach(o => sceneGL.remove(o)); list.length = 0; }
+
+function rebuild(payload) {
+  data = payload;
+  meshes.forEach(m => sceneGL.remove(m));
+  meshes.clear(); baseMat.clear(); offsets.clear();
+  clearGroup(helpers.bbox); clearGroup(helpers.com); clearGroup(helpers.find);
+
+  const c = payload.scene.bbox;
+  const center = new THREE.Vector3(
+    (c.min[0] + c.max[0]) / 2, (c.min[1] + c.max[1]) / 2,
+    (c.min[2] + c.max[2]) / 2);
+  const diag = Math.max(...payload.scene.size);
+
+  for (const p of payload.parts) {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position',
+      new THREE.Float32BufferAttribute(p.positions, 3));
+    g.setIndex(p.indices);
+    g.computeVertexNormals();
+    const mat = new THREE.MeshStandardMaterial({
+      color: p.color || '#8f9aa6', flatShading: true, metalness: 0.05,
+      roughness: 0.85, side: THREE.DoubleSide,
+      transparent: p.ghost, opacity: p.ghost ? 0.18 : 1 });
+    const mesh = new THREE.Mesh(g, mat);
+    mesh.name = p.name;
+    sceneGL.add(mesh);
+    meshes.set(p.name, mesh);
+    baseMat.set(p.name, mat);
+    const pc = new THREE.Vector3(
+      (p.bbox.min[0] + p.bbox.max[0]) / 2, (p.bbox.min[1] + p.bbox.max[1]) / 2,
+      (p.bbox.min[2] + p.bbox.max[2]) / 2);
+    const d = pc.clone().sub(center);
+    if (d.length() < 1e-6) d.set(0, 0, 0.0001);
+    offsets.set(p.name, d.multiplyScalar(0.6));
+
+    // helpers per part
+    const bb = boxLines(p.bbox.min, p.bbox.max, 0x9aa0a6);
+    helpers.bbox.push(bb); sceneGL.add(bb);
+    if (p.com) {
+      const s = markerSphere(p.com, diag * 0.008, 0x26282b);
+      helpers.com.push(s); sceneGL.add(s);
+    }
+    if (p.wall_at) helpers.find.push(addMarker(p.wall_at, diag, 0xb8443c,
+      `min wall ${p.wall_min} mm`));
+    if (p.overhang_at) helpers.find.push(addMarker(p.overhang_at, diag,
+      0xa07a1e, 'worst overhang'));
+    for (const v of (p.void_boxes || [])) {
+      const vb = boxLines(v.bbox.min, v.bbox.max, 0xb8443c);
+      helpers.find.push(vb); sceneGL.add(vb);
+    }
+  }
+  for (const pr of (payload.pairs || [])) {
+    if (pr.status === 'collision' && pr.overlap_bbox) {
+      const ob = boxLines(pr.overlap_bbox.min, pr.overlap_bbox.max, 0xb8443c);
+      ob.material.depthTest = false;
+      helpers.find.push(ob); sceneGL.add(ob);
+    }
+  }
+
+  if (!helpers.grid) {
+    const ext = Math.ceil(diag * 1.4 / 10) * 10;
+    const grid = new THREE.GridHelper(ext * 2, ext / 5, 0xd8d6cf, 0xe4e2db);
+    grid.rotation.x = Math.PI / 2;
+    grid.position.set(center.x, center.y, Math.min(0, c.min[2]));
+    helpers.grid = grid; sceneGL.add(grid);
+    const triad = new THREE.AxesHelper(diag * 0.18);
+    triad.position.set(c.min[0] - diag * 0.1, c.min[1] - diag * 0.1,
+                       Math.min(0, c.min[2]));
+    helpers.triad = triad; sceneGL.add(triad);
+  }
+
+  if (!rebuild.framed) {           // keep the camera between hot reloads
+    target.copy(center);
+    sph.r = diag * 2.1;
+    applyCamera();
+    rebuild.framed = true;
+  }
+  buildPanel(payload);
+  applyOptions();
+}
+
+function boxLines(mn, mx, color) {
+  const g = new THREE.BufferGeometry();
+  const [a, b, c2] = mn, [d, e, f] = mx;
+  const P = [[a,b,c2],[d,b,c2],[d,e,c2],[a,e,c2],[a,b,f],[d,b,f],[d,e,f],[a,e,f]];
+  const E = [0,1,1,2,2,3,3,0,4,5,5,6,6,7,7,4,0,4,1,5,2,6,3,7];
+  g.setAttribute('position', new THREE.Float32BufferAttribute(
+    E.flatMap(i => P[i]), 3));
+  return new THREE.LineSegments(g,
+    new THREE.LineBasicMaterial({ color }));
+}
+function markerSphere(at, r, color) {
+  const m = new THREE.Mesh(new THREE.SphereGeometry(r, 12, 8),
+    new THREE.MeshBasicMaterial({ color }));
+  m.position.set(at[0], at[1], at[2]);
+  return m;
+}
+function addMarker(at, diag, color, label) {
+  const m = markerSphere(at, diag * 0.01, color);
+  m.userData.label = label;
+  sceneGL.add(m);
+  return m;
+}
+
+// ---- panel ------------------------------------------------------------------
+function buildPanel(p) {
+  document.getElementById('model-name').textContent =
+    `${p.model} · ${p.mode} · ${p.status.toUpperCase()}`;
+  const s = p.scene;
+  document.getElementById('scene-info').innerHTML =
+    `<div class="kv"><span class="k">size</span><span>${s.size.join(' × ')} mm</span></div>` +
+    `<div class="kv"><span class="k">volume</span><span>${s.total_volume_mm3} mm³</span></div>` +
+    `<div class="kv"><span class="k">parts</span><span>${s.part_count}</span></div>`;
+
+  const pl = document.getElementById('parts');
+  pl.innerHTML = '';
+  for (const part of p.parts) {
+    const row = document.createElement('div');
+    row.className = 'row part' + (isolated && isolated !== part.name
+      ? ' dim' : '');
+    row.innerHTML = `<span class="sw" style="background:${part.color}"></span>` +
+      `<span class="nm">${part.name}${part.ghost ? ' (ghost)' : ''}</span>` +
+      `<span class="vol">${part.volume ?? ''}</span>`;
+    row.onclick = () => {
+      isolated = isolated === part.name ? null : part.name;
+      buildPanel(data); applyOptions();
+    };
+    pl.appendChild(row);
+  }
+
+  const cl = document.getElementById('checks');
+  cl.innerHTML = p.checks.length ? '' :
+    '<div style="color:var(--dim)">none — clean build</div>';
+  for (const c of p.checks) {
+    const div = document.createElement('div');
+    div.className = 'check ' + c.level;
+    div.innerHTML = `<div class="lvl">${c.level.toUpperCase()} · ${c.id}</div>` +
+      `<div class="msg">${c.message}</div>` +
+      (c.where ? `<div class="whr">${c.where}</div>` : '');
+    const at = parseWhere(c.where || '');
+    if (at) div.onclick = () => flyTo(at);
+    cl.appendChild(div);
+  }
+}
+function parseWhere(w) {
+  const m = w.match(/\(\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*\)/);
+  return m ? [+m[1], +m[2], +m[3]] : null;
+}
+function flyTo(at) {
+  target.set(at[0], at[1], at[2]);
+  sph.r = Math.max(...data.scene.size) * 0.45;
+  applyCamera();
+}
+
+// ---- options ----------------------------------------------------------------
+function applyOptions() {
+  for (const [name, mesh] of meshes) {
+    const part = data.parts.find(q => q.name === name);
+    const mat = baseMat.get(name);
+    mat.wireframe = opts.wire;
+    if (opts.norm) {
+      if (!mesh.userData.nm) mesh.userData.nm =
+        new THREE.MeshNormalMaterial({ flatShading: true });
+      mesh.material = mesh.userData.nm;
+      mesh.material.wireframe = opts.wire;
+    } else mesh.material = mat;
+    const hidden = isolated && name !== isolated;
+    mesh.visible = !hidden;
+    if (!part.ghost) {
+      mat.transparent = opts.xray;
+      mat.opacity = opts.xray ? 0.35 : 1;
+      mat.depthWrite = !opts.xray;
+    }
+    const off = offsets.get(name);
+    mesh.position.set(off.x * explode, off.y * explode,
+      off.z * explode + explode * 0.06 * Math.max(...data.scene.size) *
+      [...meshes.keys()].indexOf(name));
+    mesh.material.clippingPlanes = clipPlane ? [clipPlane] : null;
+    mesh.material.clipShadows = true;
+  }
+  helpers.bbox.forEach(h => h.visible = opts.bbox);
+  helpers.com.forEach(h => h.visible = opts.com);
+  helpers.find.forEach(h => h.visible = opts.find);
+  if (helpers.grid) helpers.grid.visible = opts.grid;
+}
+
+for (const key of ['wire', 'xray', 'norm', 'bbox', 'com', 'find', 'grid']) {
+  const btn = document.getElementById('b-' + key);
+  btn.onclick = () => {
+    opts[key] = !opts[key];
+    btn.classList.toggle('on', opts[key]);
+    applyOptions();
+  };
+}
+document.getElementById('explode').oninput = e => {
+  explode = e.target.value / 100;
+  document.getElementById('explode-v').textContent = e.target.value + '%';
+  applyOptions();
+};
+const secAxis = document.getElementById('sec-axis');
+const secPos = document.getElementById('sec-pos');
+function updateClip() {
+  clipAxis = secAxis.value;
+  if (!clipAxis || !data) { clipPlane = null;
+    document.getElementById('sec-v').textContent = '—';
+    applyOptions(); return; }
+  const i = { x: 0, y: 1, z: 2 }[clipAxis];
+  const mn = data.scene.bbox.min[i], mx = data.scene.bbox.max[i];
+  const v = mn + (mx - mn) * secPos.value / 1000;
+  const n = new THREE.Vector3(); n.setComponent(i, -1);
+  clipPlane = new THREE.Plane(n, v);
+  document.getElementById('sec-v').textContent =
+    clipAxis + ' = ' + v.toFixed(1);
+  applyOptions();
+}
+secAxis.onchange = updateClip;
+secPos.oninput = updateClip;
+
+// ---- measure ----------------------------------------------------------------
+let measuring = false, mPts = [], mObjs = [];
+const ray = new THREE.Raycaster();
+document.getElementById('b-measure').onclick = function () {
+  measuring = !measuring;
+  this.classList.toggle('on', measuring);
+  if (measuring) { mPts = []; }
+};
+document.getElementById('b-clearm').onclick = () => {
+  mObjs.forEach(o => sceneGL.remove(o)); mObjs = []; mPts = [];
+  document.getElementById('measure-out').textContent = '';
+};
+renderer.domElement.addEventListener('click', e => {
+  if (!measuring || !data) return;
+  const r = renderer.domElement.getBoundingClientRect();
+  ray.setFromCamera(new THREE.Vector2(
+    ((e.clientX - r.left) / r.width) * 2 - 1,
+    -((e.clientY - r.top) / r.height) * 2 + 1), camera);
+  const hit = ray.intersectObjects([...meshes.values()]
+    .filter(m => m.visible))[0];
+  if (!hit) return;
+  mPts.push(hit.point.clone());
+  const diag = Math.max(...data.scene.size);
+  const s = markerSphere([hit.point.x, hit.point.y, hit.point.z],
+    diag * 0.006, 0x26282b);
+  mObjs.push(s); sceneGL.add(s);
+  if (mPts.length === 2) {
+    const g = new THREE.BufferGeometry().setFromPoints(mPts);
+    const line = new THREE.Line(g, new THREE.LineBasicMaterial({
+      color: 0x26282b, depthTest: false }));
+    mObjs.push(line); sceneGL.add(line);
+    const d = mPts[0].distanceTo(mPts[1]);
+    const dx = Math.abs(mPts[0].x - mPts[1].x).toFixed(2);
+    const dy = Math.abs(mPts[0].y - mPts[1].y).toFixed(2);
+    const dz = Math.abs(mPts[0].z - mPts[1].z).toFixed(2);
+    document.getElementById('measure-out').textContent =
+      `${d.toFixed(2)} mm  (dx ${dx}  dy ${dy}  dz ${dz})`;
+    mPts = [];
+    measuring = false;
+    document.getElementById('b-measure').classList.remove('on');
+  }
+});
+
+// ---- hover HUD ---------------------------------------------------------------
+function hover(e) {
+  if (!data) return;
+  const r = renderer.domElement.getBoundingClientRect();
+  ray.setFromCamera(new THREE.Vector2(
+    ((e.clientX - r.left) / r.width) * 2 - 1,
+    -((e.clientY - r.top) / r.height) * 2 + 1), camera);
+  const hit = ray.intersectObjects([...meshes.values()]
+    .filter(m => m.visible))[0];
+  document.getElementById('hud').textContent = hit
+    ? `${hit.object.name}   (${hit.point.x.toFixed(1)}, ` +
+      `${hit.point.y.toFixed(1)}, ${hit.point.z.toFixed(1)}) mm`
+    : '';
+}
+
+// ---- resize / animate / live reload -------------------------------------------
+function resize() {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  renderer.setSize(w, h);
+  renderer.setPixelRatio(window.devicePixelRatio);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize);
+
+async function loadScene() {
+  const resp = await fetch('scene.json', { cache: 'no-store' });
+  rebuild(await resp.json());
+}
+async function pollVersion() {
+  try {
+    const v = await (await fetch('version.txt', { cache: 'no-store' })).text();
+    if (v !== version) {
+      version = v;
+      await loadScene();
+      document.getElementById('status').textContent = 'live · reloaded';
+      document.getElementById('status').classList.add('live');
+      setTimeout(() => document.getElementById('status').textContent = 'live',
+                 1200);
+    }
+  } catch (err) { /* server gone: keep last scene */ }
+}
+setInterval(pollVersion, 1000);
+
+resize();
+pollVersion();
+(function animate() {
+  requestAnimationFrame(animate);
+  renderer.render(sceneGL, camera);
+})();
+</script>
+</body>
+</html>

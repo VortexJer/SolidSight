@@ -38,6 +38,53 @@ def main(argv: list[str] | None = None) -> int:
 
     b = sub.add_parser("build", help="build a model file: geometry -> "
                                      "renders + report.json (+ STL)")
+    _add_build_flags(b)
+
+    w = sub.add_parser("watch",
+                       help="live mode: rebuild + refresh outputs whenever "
+                            "the model (or a sibling .py) changes")
+    _add_build_flags(w)
+    w.add_argument("--poll", type=float, default=0.5,
+                   help="seconds between file checks (default 0.5)")
+
+    v = sub.add_parser("view",
+                       help="interactive browser viewer (orbit, isolate, "
+                            "sections, explode, measure) with live reload")
+    _add_build_flags(v)
+    v.add_argument("--port", type=int, default=8377,
+                   help="HTTP port (default 8377; falls back to a free one)")
+    v.add_argument("--no-watch", action="store_true",
+                   help="serve the current build only, do not watch sources")
+    v.add_argument("--poll", type=float, default=0.5,
+                   help="seconds between file checks (default 0.5)")
+
+    c = sub.add_parser("catalog", help="list the parametric parts catalog")
+    c.add_argument("name", nargs="?", help="show full docs for one part")
+
+    df = sub.add_parser("diff",
+                        help="compare two build reports: what did my change "
+                             "actually change?")
+    df.add_argument("report_a", help="path to the OLD report.json")
+    df.add_argument("report_b", help="path to the NEW report.json")
+
+    isk = sub.add_parser("install-skill",
+                         help="(re)install the Claude Code skill into "
+                              "~/.claude/skills/solidsight")
+    isk.add_argument("--dir", default=None,
+                     help="alternative skills directory")
+    sub.add_parser("uninstall",
+                   help="remove the Claude Code skill AND the solidsight "
+                        "package")
+
+    _add_query_parser(sub)
+
+    sub.add_parser("version", help="print version")
+
+    args = parser.parse_args(argv)
+    return _dispatch(parser, args)
+
+
+def _add_build_flags(b) -> None:
     b.add_argument("model", help="path to the .py model file")
     mode = b.add_mutually_exclusive_group()
     mode.add_argument("--print-safe", action="store_true",
@@ -80,25 +127,15 @@ def main(argv: list[str] | None = None) -> int:
                         "disconnected pieces")
     b.add_argument("--json", action="store_true",
                    help="print the full report JSON to stdout")
+    b.add_argument("--progress", action="store_true",
+                   help="stream live per-stage progress lines to stderr "
+                        "(model, metrics, pairs, renders, exports)")
+    b.add_argument("--events", default=None, metavar="PATH",
+                   help="stream structured NDJSON build events to a file "
+                        "(one JSON object per line, written live)")
 
-    c = sub.add_parser("catalog", help="list the parametric parts catalog")
-    c.add_argument("name", nargs="?", help="show full docs for one part")
 
-    df = sub.add_parser("diff",
-                        help="compare two build reports: what did my change "
-                             "actually change?")
-    df.add_argument("report_a", help="path to the OLD report.json")
-    df.add_argument("report_b", help="path to the NEW report.json")
-
-    isk = sub.add_parser("install-skill",
-                         help="(re)install the Claude Code skill into "
-                              "~/.claude/skills/solidsight")
-    isk.add_argument("--dir", default=None,
-                     help="alternative skills directory")
-    sub.add_parser("uninstall",
-                   help="remove the Claude Code skill AND the solidsight "
-                        "package")
-
+def _add_query_parser(sub) -> None:
     q = sub.add_parser(
         "query",
         help="exact spatial queries on a model: point/ray/section/voxels")
@@ -136,10 +173,8 @@ def main(argv: list[str] | None = None) -> int:
     qv.add_argument("--layer", default=None,
                     help="print one Z layer as ASCII (index or 'all')")
 
-    sub.add_parser("version", help="print version")
 
-    args = parser.parse_args(argv)
-
+def _dispatch(parser, args) -> int:
     from .skill_install import install_skill, maybe_autoinstall, uninstall
     if args.command == "install-skill":
         install_skill(Path(args.dir) if args.dir else None)
@@ -167,18 +202,34 @@ def main(argv: list[str] | None = None) -> int:
         except SolidsightError as e:
             _say(f"BUILD FAILED\n{e.render()}", err=True)
             return 1
+    if args.command == "watch":
+        return _watch(args)
+    if args.command == "view":
+        return _view(args)
     parser.print_help()
     return 0
 
 
 # ---------------------------------------------------------------------------
 
-def _build(args) -> int:
-    from .report import build_model
-    mode = "print-safe" if args.print_safe else "free"
-    model = Path(args.model)
-    out_dir = Path(args.out) if args.out else model.parent / "out"
+def _attach_sinks(args):
+    """Wire --progress / --events sinks; returns the ndjson sink or None."""
+    ndjson = None
+    if getattr(args, "progress", False):
+        from .events import BUS, console_sink
+        BUS.add_sink(console_sink())
+    if getattr(args, "events", None):
+        from .events import BUS, ndjson_sink
+        Path(args.events).parent.mkdir(parents=True, exist_ok=True)
+        ndjson = ndjson_sink(args.events)
+        BUS.add_sink(ndjson)
+    return ndjson
 
+
+def _parse_build_kwargs(args) -> dict | None:
+    """Shared by build/watch: turn CLI flags into build_model kwargs.
+    Returns None (after printing the error) on a malformed flag."""
+    model = Path(args.model)
     slices = []
     for s in args.slice:
         try:
@@ -187,7 +238,7 @@ def _build(args) -> int:
         except ValueError:
             _say(f"BUILD FAILED\nbad --slice {s!r}\n  try: --slice z=5",
                  err=True)
-            return 1
+            return None
 
     focus = None
     if args.focus:
@@ -199,16 +250,16 @@ def _build(args) -> int:
             _say(f"BUILD FAILED\nbad --focus {args.focus!r}\n"
                  "  try: --focus 70,43,24,25  (X,Y,Z and a positive radius)",
                  err=True)
-            return 1
+            return None
 
-    report = build_model(
-        model_path=model,
-        out_dir=out_dir,
-        mode=mode,
+    return dict(
+        out_dir=Path(args.out) if args.out else model.parent / "out",
+        mode="print-safe" if args.print_safe else "free",
         views=[v.strip() for v in args.views.split(",") if v.strip()],
         turntable=args.turntable,
         slices=slices,
-        only_parts=[p.strip() for p in args.part.split(",")] if args.part else None,
+        only_parts=([p.strip() for p in args.part.split(",")]
+                    if args.part else None),
         export_stl=args.stl,
         export_3mf=args.threemf,
         size=args.size,
@@ -219,6 +270,21 @@ def _build(args) -> int:
         focus=focus,
     )
 
+
+def _build(args) -> int:
+    from .report import build_model
+    mode = "print-safe" if args.print_safe else "free"
+    ndjson = _attach_sinks(args)
+    kwargs = _parse_build_kwargs(args)
+    if kwargs is None:
+        return 1
+
+    try:
+        report = build_model(model_path=Path(args.model), **kwargs)
+    finally:
+        if ndjson is not None:
+            ndjson.close()
+
     if args.json:
         print(json.dumps(report, indent=2))
     else:
@@ -227,6 +293,37 @@ def _build(args) -> int:
     if report["status"] == "failed" and mode == "print-safe":
         return 2
     return 0
+
+
+def _watch(args) -> int:
+    from .watch import run_watch
+    ndjson = _attach_sinks(args)
+    kwargs = _parse_build_kwargs(args)
+    if kwargs is None:
+        return 1
+    try:
+        return run_watch(Path(args.model), kwargs, say=_say,
+                         poll_s=args.poll)
+    finally:
+        if ndjson is not None:
+            ndjson.close()
+
+
+def _view(args) -> int:
+    from .viewer import run_view
+    ndjson = _attach_sinks(args)
+    kwargs = _parse_build_kwargs(args)
+    if kwargs is None:
+        return 1
+    try:
+        return run_view(Path(args.model), kwargs, say=_say, port=args.port,
+                        watch=not args.no_watch, poll_s=args.poll)
+    except SolidsightError as e:
+        _say(f"VIEW FAILED\n{e.render()}", err=True)
+        return 1
+    finally:
+        if ndjson is not None:
+            ndjson.close()
 
 
 def _print_summary(report: dict) -> None:

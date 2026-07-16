@@ -10,6 +10,7 @@ import json
 from pathlib import Path
 
 from . import __version__
+from .events import BUS
 from .render import render_slice, render_view, turntable_views
 from .runner import run_model
 from .scene import Scene
@@ -25,11 +26,21 @@ def build_model(model_path: Path, out_dir: Path, mode: str = "free",
                 min_wall: float = 1.2, max_overhang: float = 50.0,
                 allow_multiple_shells: bool = False,
                 exploded: bool = False,
-                focus: tuple | None = None) -> dict:
+                focus: tuple | None = None,
+                scene: Scene | None = None,
+                unchanged_parts: set[str] | None = None) -> dict:
+    """scene: pass a pre-executed Scene to skip re-running the model (watch
+    mode does this to fingerprint first). unchanged_parts: export files for
+    these parts are reused if already on disk (incremental rebuilds)."""
     views = views or ["iso", "front", "right", "top"]
     slices = slices or []
 
-    scene = run_model(model_path)
+    if scene is None:
+        with BUS.stage("model", f"executing {model_path.name}"):
+            scene = run_model(model_path)
+    BUS.emit("model", "info",
+             f"{len(scene.parts)} part(s): "
+             + ", ".join(p.name for p in scene.parts))
 
     if only_parts:
         keep = [scene.get(name) for name in only_parts]  # errors on bad names
@@ -41,7 +52,8 @@ def build_model(model_path: Path, out_dir: Path, mode: str = "free",
     opts = ValidationOptions(mode=mode, min_wall=min_wall,
                              max_overhang=max_overhang,
                              allow_multiple_shells=allow_multiple_shells)
-    metrics, checks, pairs = analyze_scene(scene, opts)
+    with BUS.stage("validate", "metrics + checks + pair analysis"):
+        metrics, checks, pairs = analyze_scene(scene, opts)
 
     combined = scene.combined()
     lo, hi = combined.bbox
@@ -52,49 +64,67 @@ def build_model(model_path: Path, out_dir: Path, mode: str = "free",
 
     title = model_path.stem
     render_files: list[str] = []
-    for i, view in enumerate(views, start=1):
-        img = render_view(scene, view, size=size, title=title, subtitle=mode,
-                          focus=focus)
-        fname = (f"{i:02d}_{view}_focus.png" if focus
-                 else f"{i:02d}_{view}.png")
-        img.save(renders_dir / fname)
-        render_files.append(f"renders/{fname}")
-
-    for axis, value in slices:
-        img = render_slice(scene, axis, value, size=size, title=title)
-        fname = f"slice_{axis}_{_slug(value)}.png"
-        img.save(renders_dir / fname)
-        render_files.append(f"renders/{fname}")
-
-    if exploded and len(scene.parts) > 1:
-        img = render_view(_exploded_scene(scene), "iso", size=size,
-                          title=title, subtitle=f"{mode} · exploded")
-        img.save(renders_dir / "exploded.png")
-        render_files.append("renders/exploded.png")
-
-    if turntable > 0:
-        for i, tview in enumerate(turntable_views(turntable)):
-            img = render_view(scene, tview, size=size, title=title,
-                              subtitle=f"{mode} · frame {i + 1}/{turntable}")
-            fname = f"turntable_{i:02d}.png"
+    n_renders = (len(views) + len(slices) + max(turntable, 0)
+                 + (1 if exploded and len(scene.parts) > 1 else 0))
+    with BUS.stage("render", total=n_renders) as st:
+        for i, view in enumerate(views, start=1):
+            img = render_view(scene, view, size=size, title=title,
+                              subtitle=mode, focus=focus)
+            fname = (f"{i:02d}_{view}_focus.png" if focus
+                     else f"{i:02d}_{view}.png")
             img.save(renders_dir / fname)
             render_files.append(f"renders/{fname}")
+            st.tick(f"view {view}")
+
+        for axis, value in slices:
+            img = render_slice(scene, axis, value, size=size, title=title)
+            fname = f"slice_{axis}_{_slug(value)}.png"
+            img.save(renders_dir / fname)
+            render_files.append(f"renders/{fname}")
+            st.tick(f"slice {axis}={value:g}")
+
+        if exploded and len(scene.parts) > 1:
+            img = render_view(_exploded_scene(scene), "iso", size=size,
+                              title=title, subtitle=f"{mode} · exploded")
+            img.save(renders_dir / "exploded.png")
+            render_files.append("renders/exploded.png")
+            st.tick("exploded view")
+
+        if turntable > 0:
+            for i, tview in enumerate(turntable_views(turntable)):
+                img = render_view(scene, tview, size=size, title=title,
+                                  subtitle=f"{mode} · frame "
+                                           f"{i + 1}/{turntable}")
+                fname = f"turntable_{i:02d}.png"
+                img.save(renders_dir / fname)
+                render_files.append(f"renders/{fname}")
+                st.tick(f"turntable frame {i + 1}")
 
     export_files: list[str] = []
     solid_parts = [p for p in scene.parts if not p.ghost]
-    for enabled, ext in ((export_stl, "stl"), (export_3mf, "3mf")):
-        if not enabled:
-            continue
-        mesh_dir = out_dir / ext
-        mesh_dir.mkdir(exist_ok=True)
-        for part in solid_parts:
-            part.solid.to_trimesh().export(mesh_dir / f"{part.name}.{ext}")
-            export_files.append(f"{ext}/{part.name}.{ext}")
-        if len(solid_parts) > 1:
-            from .geom import union as _union
-            _union(*[p.solid for p in solid_parts]).to_trimesh().export(
-                mesh_dir / f"combined.{ext}")
-            export_files.append(f"{ext}/combined.{ext}")
+    n_exports = sum(1 for e in (export_stl, export_3mf) if e) * (
+        len(solid_parts) + (1 if len(solid_parts) > 1 else 0))
+    with BUS.stage("export", total=n_exports or None) as st:
+        for enabled, ext in ((export_stl, "stl"), (export_3mf, "3mf")):
+            if not enabled:
+                continue
+            mesh_dir = out_dir / ext
+            mesh_dir.mkdir(exist_ok=True)
+            for part in solid_parts:
+                target = mesh_dir / f"{part.name}.{ext}"
+                if (unchanged_parts and part.name in unchanged_parts
+                        and target.exists()):
+                    st.tick(f"{part.name}.{ext} (reused, unchanged)")
+                else:
+                    part.solid.to_trimesh().export(target)
+                    st.tick(f"{part.name}.{ext}")
+                export_files.append(f"{ext}/{part.name}.{ext}")
+            if len(solid_parts) > 1:
+                from .geom import union as _union
+                _union(*[p.solid for p in solid_parts]).to_trimesh().export(
+                    mesh_dir / f"combined.{ext}")
+                export_files.append(f"{ext}/combined.{ext}")
+                st.tick(f"combined.{ext}")
 
     has_fail = any(c["level"] == "fail" for c in checks)
     has_warn = any(c["level"] == "warn" for c in checks)
