@@ -8,70 +8,70 @@
     "part_count": 1,
     "bbox": {
       "min": [
-        -110.0,
-        -57.0,
-        0.0
+        -6.0,
+        -136.0,
+        -60.0
       ],
       "max": [
-        110.0,
-        68.0,
-        130.0
+        420.0,
+        132.0,
+        220.0
       ]
     },
     "size": [
-      220.0,
-      125.0,
-      130.0
+      426.0,
+      268.0,
+      280.0
     ],
-    "total_volume_mm3": 1312610.871
+    "total_volume_mm3": 8243493.534
   },
   "parts": {
     "blind_block": {
-      "volume_mm3": 1312610.871,
-      "surface_area_mm2": 281228.969,
+      "volume_mm3": 8243493.534,
+      "surface_area_mm2": 1280234.449,
       "bbox": {
         "min": [
-          -110.0,
-          -57.0,
-          0.0
+          -6.0,
+          -136.0,
+          -60.0
         ],
         "max": [
-          110.0,
-          68.0,
-          130.0
+          420.0,
+          132.0,
+          220.0
         ],
         "size": [
-          220.0,
-          125.0,
-          130.0
+          426.0,
+          268.0,
+          280.0
         ]
       },
       "center_of_mass": [
-        -0.283,
-        2.69,
-        68.074
+        212.181,
+        -1.015,
+        78.93
       ],
-      "triangles": 12060,
+      "triangles": 19360,
       "shells": 1,
       "watertight": true,
-      "genus": 36,
+      "genus": 59,
       "wall_thickness": {
-        "min_mm": 1.161,
+        "min_mm": 0.439,
         "at": [
-          -50.923,
-          1.175,
-          115.0
+          273.774,
+          -75.0,
+          92.438
         ],
         "samples": 600,
         "method": "inward-normal-ray"
       },
       "overhangs": {
         "max_deg": 90.0,
-        "area_mm2": 16476.87,
+        "area_mm2": 58074.56,
         "worst_at": [
-          -89.392,
-          -23.396,
-          55.0
+          17.248,
+          -103.762,
+          -42.0
         ],
         "threshold_deg": 50.0
       },
@@ -81,14 +81,14 @@
         "voids": []
       },
       "print_estimate": {
-        "material_g_pla": 1627.6,
-        "material_g_petg": 1667.0,
-        "rough_time_min": 2188,
+        "material_g_pla": 10221.9,
+        "material_g_petg": 10469.2,
+        "rough_time_min": 13739,
         "note": "solid part at 100% infill; time is +-50%, slicer-dependent"
       },
       "stability": {
         "standing": true,
-        "com_margin_mm": 54.31
+        "com_margin_mm": 116.63
       },
       "color": "#8b8b88"
     }
@@ -100,8 +100,8 @@
     "renders": [
       "renders/01_iso.png",
       "renders/02_iso_back.png",
-      "renders/slice_x_24.png",
-      "renders/slice_z_127.png"
+      "renders/slice_x_163p5.png",
+      "renders/slice_z_160.png"
     ],
     "exports": []
   }

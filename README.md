@@ -24,12 +24,15 @@ write code  ->  solidsight build  ->  renders + report.json  ->  inspect  ->  ad
 ## Same prompt, with and without the tool
 
 *"Make a detailed 3D model of an inline-4 engine block"* — once as a blind
-one-shot (plain Python + trimesh, no renders, no validation: what a bare
-agent does), once through solidsight's loop. Same model knowledge, same
+one-shot by a fresh-context agent (plain Python + trimesh, no renders, no
+validation: what a bare agent does), once through solidsight's loop. Same
 kinds of mistakes on both sides; the loop is the difference between
 shipping them and catching them. The blind result ended convinced of
-success — the audit found head bolts drilled into the cam tunnel, 1.16 mm
-jacket walls, ports drilled along the wrong axis and mounts lying flat.
+success (`is_watertight: True`) — the audit found its main oil gallery
+tangent to the block's outer face (a 0.45 mm skin over a pressurized oil
+line), oil drain-backs that dead-end inside a wall 1.0 mm from the water
+jacket, and a crankcase open to the outside through a slot a ray crosses
+with **0 crossings**.
 
 <p align="center">
   <img src="docs/comparison/blind/out/renders/02_iso_back.png" width="49%">

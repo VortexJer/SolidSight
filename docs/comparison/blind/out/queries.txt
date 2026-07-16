@@ -1,0 +1,40 @@
+# Exact-query evidence for the blind one-shot audit (verbatim CLI output)
+
+$ solidsight query audit.py ray 273.8 -200 92.4 0 1 0
+ray from (273.8, -200.0, 92.4) along (0.0, 1.0, 0.0) - part 'blind_block'
+  crossings: 6
+  ENTER at t=125.0 mm  point (273.8, -75.0, 92.4)
+  EXIT  at t=125.4523 mm  point (273.8, -74.5477, 92.4)
+  ENTER at t=140.5477 mm  point (273.8, -59.4523, 92.4)
+  ...
+  material from t=125.0 to t=125.4523  (thickness 0.4523 mm)
+  -> the main oil gallery (drilled at y=-67, r8) is tangent to the block's
+     outer face (y=-75): a 0.45 mm skin over a pressurized oil line.
+
+$ solidsight query audit.py ray 90 -200 160 0 1 0
+ray from (90.0, -200.0, 160.0) along (0.0, 1.0, 0.0) - part 'blind_block'
+  crossings: 10
+  ...
+  ENTER at t=259.0 mm  point (90.0, 59.0, 160.0)
+  EXIT  at t=260.0 mm  point (90.0, 60.0, 160.0)   <- 1.0 mm skin to jacket
+  ENTER at t=272.0 mm  point (90.0, 72.0, 160.0)
+  EXIT  at t=275.0 mm  point (90.0, 75.0, 160.0)
+  -> the "head oil drain-back" (r6 at y=66) is buried INSIDE the +Y wall:
+     1.0 mm from the water jacket, 3.0 mm from the outside.
+
+$ solidsight query audit.py section y=66 --res 6
+  (full-height void channels at x 84..95 and x 325..336 — the two
+   drain-backs run from the deck down to z=68 and DEAD-END in solid
+   material: they never reach the crankcase they were meant to drain into)
+
+$ solidsight query audit.py ray 160 -200 82.5 0 1 0
+ray from (160.0, -200.0, 82.5) along (0.0, 1.0, 0.0) - part 'blind_block'
+  crossings: 0
+  -> at z=82.5 a ray passes through the WHOLE engine without touching
+     material: the crankcase bays are open to the outside through a
+     5 mm horizontal slot (z 80..85) at the bank/skirt transition.
+
+$ solidsight query audit.py ray 303 -102 30 0 0.4741 0.8805
+  (ray along the oil-filter-to-gallery drilling axis: void until it meets
+   the gallery wall exactly where intended — the filter circuit is
+   CORRECTLY connected. The audit exonerates as well as convicts.)

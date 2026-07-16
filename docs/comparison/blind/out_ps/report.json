@@ -8,70 +8,70 @@
     "part_count": 1,
     "bbox": {
       "min": [
-        -110.0,
-        -57.0,
-        0.0
+        -6.0,
+        -136.0,
+        -60.0
       ],
       "max": [
-        110.0,
-        68.0,
-        130.0
+        420.0,
+        132.0,
+        220.0
       ]
     },
     "size": [
-      220.0,
-      125.0,
-      130.0
+      426.0,
+      268.0,
+      280.0
     ],
-    "total_volume_mm3": 1312610.871
+    "total_volume_mm3": 8243493.534
   },
   "parts": {
     "blind_block": {
-      "volume_mm3": 1312610.871,
-      "surface_area_mm2": 281228.969,
+      "volume_mm3": 8243493.534,
+      "surface_area_mm2": 1280234.449,
       "bbox": {
         "min": [
-          -110.0,
-          -57.0,
-          0.0
+          -6.0,
+          -136.0,
+          -60.0
         ],
         "max": [
-          110.0,
-          68.0,
-          130.0
+          420.0,
+          132.0,
+          220.0
         ],
         "size": [
-          220.0,
-          125.0,
-          130.0
+          426.0,
+          268.0,
+          280.0
         ]
       },
       "center_of_mass": [
-        -0.283,
-        2.69,
-        68.074
+        212.181,
+        -1.015,
+        78.93
       ],
-      "triangles": 12060,
+      "triangles": 19360,
       "shells": 1,
       "watertight": true,
-      "genus": 36,
+      "genus": 59,
       "wall_thickness": {
-        "min_mm": 1.161,
+        "min_mm": 0.439,
         "at": [
-          -50.923,
-          1.175,
-          115.0
+          273.774,
+          -75.0,
+          92.438
         ],
         "samples": 600,
         "method": "inward-normal-ray"
       },
       "overhangs": {
         "max_deg": 90.0,
-        "area_mm2": 16476.87,
+        "area_mm2": 58074.56,
         "worst_at": [
-          -89.392,
-          -23.396,
-          55.0
+          17.248,
+          -103.762,
+          -42.0
         ],
         "threshold_deg": 50.0
       },
@@ -81,14 +81,14 @@
         "voids": []
       },
       "print_estimate": {
-        "material_g_pla": 1627.6,
-        "material_g_petg": 1667.0,
-        "rough_time_min": 2188,
+        "material_g_pla": 10221.9,
+        "material_g_petg": 10469.2,
+        "rough_time_min": 13739,
         "note": "solid part at 100% infill; time is +-50%, slicer-dependent"
       },
       "stability": {
         "standing": true,
-        "com_margin_mm": 54.31
+        "com_margin_mm": 116.63
       },
       "color": "#8b8b88"
     }
@@ -99,17 +99,25 @@
       "id": "thin-wall",
       "level": "fail",
       "part": "blind_block",
-      "message": "part \"blind_block\" has a 1.161 mm wall \u2014 below the 1.2 mm print-safe minimum",
-      "where": "thinnest point near (-50.923, 1.175, 115)",
-      "suggestion": "thicken that region, or lower --min-wall if your printer really handles it. Inspect: solidsight build <model> --views iso,iso_back --focus -50.9,1.2,115.0,8.0 --slice z=115.0 --out out_focus"
+      "message": "part \"blind_block\" has a 0.439 mm wall \u2014 below the 1.2 mm print-safe minimum",
+      "where": "thinnest point near (273.774, -75, 92.438)",
+      "suggestion": "thicken that region, or lower --min-wall if your printer really handles it. Inspect: solidsight build <model> --views iso,iso_back --focus 273.8,-75.0,92.4,8.0 --slice z=92.4 --out out_focus"
     },
     {
       "id": "overhang",
       "level": "warn",
       "part": "blind_block",
-      "message": "part \"blind_block\" has 16476.9 mm2 of faces steeper than 50 deg overhang (worst: 90 deg)",
-      "where": "worst face near (-89.392, -23.396, 55)",
-      "suggestion": "reorient the part, chamfer the underside (45 deg cones under bosses), or accept support material. Flat roofs spanning an opening wall-to-wall (port slots, windows) are BRIDGES and usually print fine despite this warning. Inspect: solidsight build <model> --views iso,iso_back --focus -89.4,-23.4,55.0,12.0 --slice z=55.0 --out out_focus"
+      "message": "part \"blind_block\" has 58074.6 mm2 of faces steeper than 50 deg overhang (worst: 90 deg)",
+      "where": "worst face near (17.248, -103.762, -42)",
+      "suggestion": "reorient the part, chamfer the underside (45 deg cones under bosses), or accept support material. Flat roofs spanning an opening wall-to-wall (port slots, windows) are BRIDGES and usually print fine despite this warning. Inspect: solidsight build <model> --views iso,iso_back --focus 17.2,-103.8,-42.0,12.0 --slice z=-42.0 --out out_focus"
+    },
+    {
+      "id": "below-plate",
+      "level": "warn",
+      "part": "blind_block",
+      "message": "part \"blind_block\" extends 60 mm below Z=0 (the build plate)",
+      "where": null,
+      "suggestion": "finish the part with .on_ground() or translate it up"
     }
   ],
   "files": {
