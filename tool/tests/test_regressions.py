@@ -180,3 +180,28 @@ def test_tube_path_single_shell():
     pts = [(0, 0, 0), (0, 0, 10), (5, 0, 15), (12, 0, 16)]
     t = parts.tube_path(pts, d=6)
     assert len([s for s in t.manifold.decompose() if s.volume() > 1e-9]) == 1
+
+
+# --- skill self-hosting -----------------------------------------------------
+
+def test_skill_install_and_remove(tmp_path):
+    from solidsight.skill_install import MARKER, install_skill
+    dst = install_skill(tmp_path / "solidsight", quiet=True)
+    assert (dst / "SKILL.md").exists()
+    assert (dst / "references" / "design-language.md").exists()
+    assert (dst / MARKER).read_text(encoding="utf-8").strip()
+
+
+def test_packaged_skill_matches_repo_copy():
+    # the wheel ships tool/solidsight/skill_data as a copy of /skill —
+    # this guards against the two drifting apart
+    from pathlib import Path
+    repo = Path(__file__).parents[2]          # tool/tests -> repo root
+    skill, pkg = repo / "skill", repo / "tool" / "solidsight" / "skill_data"
+    if not (skill / "SKILL.md").exists():
+        pytest.skip("repo layout not present (installed package only)")
+    for rel in ["SKILL.md"] + [f"references/{p.name}"
+                               for p in (skill / "references").glob("*.md")]:
+        a = (skill / rel).read_text(encoding="utf-8")
+        b = (pkg / rel).read_text(encoding="utf-8")
+        assert a == b, f"skill_data/{rel} is out of sync with skill/{rel}"

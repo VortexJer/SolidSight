@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "solidsight"
-version = "0.2.0"
+version = "0.2.1"
 description = "A 3D design tool built exclusively for AI agents: parametric code in, renders + machine-readable validation reports out."
 readme = "README.md"
 license = { text = "MIT" }
@@ -25,3 +25,6 @@ solidsight = "solidsight.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["solidsight*"]
+
+[tool.setuptools.package-data]
+solidsight = ["skill_data/SKILL.md", "skill_data/references/*.md"]

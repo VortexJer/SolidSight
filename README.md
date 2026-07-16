@@ -81,15 +81,18 @@ The build summary ends with the tool's whole philosophy in one line:
 [`skill/SKILL.md`](skill/SKILL.md) teaches an agent the full workflow — bill
 of parts before code, catalog before derivation, build-and-look after every
 change, exact queries when eyes are not enough, the assembly
-collision/clearance loop, and a definition-of-done checklist. Install it:
+collision/clearance loop, detail mode for faithful technical models, and a
+definition-of-done checklist.
+
+**It installs itself.** The skill ships inside the pip package: the first
+`solidsight` command on a machine with Claude Code drops it into
+`~/.claude/skills/solidsight` and keeps it updated. From then on, any 3D
+design request in Claude Code routes through it. Manual control:
 
 ```bash
-mkdir -p ~/.claude/skills/solidsight
-cp -r skill/* ~/.claude/skills/solidsight/
+solidsight install-skill        # (re)install explicitly
+solidsight uninstall            # remove the skill AND the package
 ```
-
-Then `/solidsight` (or any 3D design request) picks it up. The skill needs no
-context beyond its own files.
 
 ## Parametric parts catalog
 

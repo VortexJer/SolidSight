@@ -78,6 +78,15 @@ def main(argv: list[str] | None = None) -> int:
     c = sub.add_parser("catalog", help="list the parametric parts catalog")
     c.add_argument("name", nargs="?", help="show full docs for one part")
 
+    isk = sub.add_parser("install-skill",
+                         help="(re)install the Claude Code skill into "
+                              "~/.claude/skills/solidsight")
+    isk.add_argument("--dir", default=None,
+                     help="alternative skills directory")
+    sub.add_parser("uninstall",
+                   help="remove the Claude Code skill AND the solidsight "
+                        "package")
+
     q = sub.add_parser(
         "query",
         help="exact spatial queries on a model: point/ray/section/voxels")
@@ -118,6 +127,15 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("version", help="print version")
 
     args = parser.parse_args(argv)
+
+    from .skill_install import install_skill, maybe_autoinstall, uninstall
+    if args.command == "install-skill":
+        install_skill(Path(args.dir) if args.dir else None)
+        return 0
+    if args.command == "uninstall":
+        return uninstall()
+    maybe_autoinstall()   # self-host the skill on machines with Claude Code
+
     if args.command == "version":
         print(f"solidsight {__version__}")
         return 0

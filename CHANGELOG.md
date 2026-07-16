@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.2.1 — 2026-07-16
+
+Self-hosting skill.
+
+- The Claude Code skill (SKILL.md + references) now ships inside the pip
+  package. On any CLI run on a machine with Claude Code (`~/.claude`
+  exists), the skill installs itself into `~/.claude/skills/solidsight`
+  and silently refreshes on version changes.
+- `solidsight install-skill [--dir]` for explicit/custom installs;
+  `solidsight uninstall` removes the skill AND the package in one command.
+- CI-enforced drift guard: `/skill` and the packaged copy must be identical.
+
 ## v0.2.0 — 2026-07-16
 
 Detail mode: faithful functional models of real technical objects.
