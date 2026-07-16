@@ -68,6 +68,45 @@ The build summary ends with the tool's whole philosophy in one line:
   coordinates, bounding boxes), and what to try next. Never "invalid
   geometry".
 
+## Before / after: one turn of the loop
+
+Real, committed output from [`05-assembly`](skill/examples/05-assembly): a
+divider tray was designed 8 mm too tall and pokes through the closed lid.
+
+<p align="center">
+  <img src="skill/examples/05-assembly/out_collision/renders/01_iso.png" width="45%">
+  <img src="skill/examples/05-assembly/out/renders/01_iso.png" width="45%">
+</p>
+<p align="center"><em>before: the tray (green) pierces the lid &nbsp;·&nbsp; after: seated under the lip with declared clearance</em></p>
+
+**Before** — the agent doesn't have to *see* it; the report says exactly
+what, where and how much:
+
+```
+[WARN] parts "lid" and "card" occupy the same space (160 mm3 of overlap)
+       where: overlap bbox x -20..20, y 4.2..5.8, z 24..26.5
+       try:   move 'card' 1.7 mm along y, or rework the joint; ...
+```
+
+**After** — one edit later, the declared spec holds:
+
+```
+pair 'box' <-> 'lid':  touching, clearance 0.0 mm   [spec MET: touching]
+pair 'card' <-> 'lid': clear, clearance 0.2 mm      [spec MET: clearance >= 0.15 mm]
+```
+
+**And the change is auditable** — `solidsight diff before/ after/`:
+
+```
+diff: model_collision.py [warnings] -> model.py [ok]
+  part 'card': volume 1536.0 -> 1024.0 (-512.0 mm3); size [40.0, 1.6, 24.0] -> [40.0, 1.6, 16.0]
+  part 'box': unchanged        part 'lid': unchanged
+  GONE [WARN] parts "lid" and "card" occupy the same space (160 mm3 of overlap)
+  render 01_iso.png: 0.3% of pixels differ
+```
+
+The edit did what it meant — and provably nothing else.
+
 ## Two validation modes
 
 - `--print-safe` — for parts that will be manufactured: enforces watertight,
