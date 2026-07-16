@@ -17,7 +17,7 @@ write code  ->  solidsight build  ->  renders + report.json  ->  inspect  ->  ad
 ```
 
 <p align="center">
-  <img src="skill/examples/07-engine-block/out/renders/01_iso.png" width="45%">
+  <img src="skill/examples/07-engine-block/out/renders/02_iso_back.png" width="45%">
   <img src="skill/examples/03-gear-train/out/renders/01_iso.png" width="45%">
 </p>
 
