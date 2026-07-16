@@ -1,0 +1,215 @@
+---
+name: solidsight
+description: "Use whenever the user asks to design, model, CAD, or 3D-print a physical part, enclosure, mechanism, or assembly — or to inspect/fix an existing solidsight model. Parametric Python in; deterministic geometry, PNG renders, and a machine-readable validation report out. Built exclusively for AI agents: you are blind until you render, and this tool is how you see."
+---
+
+# /solidsight
+
+Design 3D parts with code, then SEE and MEASURE what you made: every build
+produces PNG renders from several angles plus a `report.json` with volume,
+bounding box, shells, wall thickness, overhangs, sealed cavities and
+part-to-part collisions/clearances. The loop is: write code -> build ->
+inspect renders + report -> adjust -> repeat. Never trust geometry you have
+not rendered and validated.
+
+## Usage
+
+```
+solidsight build model.py                        # free mode (default): report everything, enforce nothing
+solidsight build model.py --print-safe           # enforce 3D-printability (fails on thin walls, cavities, split shells)
+solidsight build model.py --out DIR              # output dir (default: <model dir>/out)
+solidsight build model.py --views iso,front,right,top,back,left,bottom,iso_back
+solidsight build model.py --turntable 8          # 8 orbit frames
+solidsight build model.py --slice z=5 --slice x=0   # cross-section renders (repeatable)
+solidsight build model.py --part lid             # build/validate only one named part
+solidsight build model.py --stl                  # export binary STL per part + combined
+solidsight build model.py --exploded             # exploded view render of multi-part scenes
+solidsight build model.py --min-wall 0.8 --max-overhang 45 --allow-multiple-shells
+solidsight build model.py --json                 # full report JSON on stdout
+
+solidsight query model.py point X Y Z            # INSIDE | OUTSIDE | ON_SURFACE + distance
+solidsight query model.py ray OX OY OZ DX DY DZ  # every surface crossing along a ray
+solidsight query model.py section z=4            # ASCII material grid at a cut plane
+solidsight query model.py voxels --res 1         # voxel grid + sealed-cavity detection
+solidsight query model.py voxels --layer 5       # one Z layer as ASCII
+   (all query ops accept --part NAME and --json)
+
+solidsight catalog                               # list parametric parts (gears, threads, hinges, clips...)
+solidsight catalog spur_gear                     # full docs for one part
+solidsight version
+```
+
+Exit codes: 0 ok, 1 build error (bad model code), 2 print-safe validation
+failed.
+
+## What You Must Do When Invoked
+
+Follow these steps in order. Do not skip steps.
+
+### Step 0 - Ensure solidsight is installed
+
+```bash
+solidsight version || pip install "git+https://github.com/VortexJer/SolidSight#subdirectory=tool"
+```
+
+If the user gave you a checkout of the repo instead: `pip install ./tool`.
+
+### Step 1 - Write the bill of parts BEFORE any geometry code
+
+Decompose the request into a short list of named functional parts and key
+dimensions. Put it at the top of the model file as a comment:
+
+```python
+# bill of parts (mm):
+#   base_plate  60 x 40 x 5, four M4 holes
+#   wall        upright at back, 35 tall, two M4 holes
+#   rib         triangular gusset tying wall to plate
+```
+
+Every part name here becomes an `emit(solid, name="...")` at the end of the
+file. If you cannot write this list, you do not understand the request yet —
+ask the user, do not guess geometry.
+
+### Step 2 - Check the catalog before deriving geometry
+
+Run `solidsight catalog`. Gears, threads, bolts, nuts, hinges, snap clips,
+boxes with lids, standoffs, honeycomb panels, and patterns already exist as
+tested parametric parts (`parts.spur_gear(...)`, `parts.iso_thread(...)`, ...).
+Composing catalog parts is always better than re-deriving an involute or a
+helix from math. Full signatures and pairing rules (gear meshing distance,
+thread clearances, clip/slot matching): `references/parts-catalog.md`.
+
+### Step 3 - Build the model incrementally, in this order
+
+1. Base forms first (`box`, `cylinder`, extruded/revolved sketches).
+2. Features and cuts (holes, pockets, windows) via booleans.
+3. Assembly positioning.
+4. Rounding LAST (`round_corners` on 2D profiles is cheap; 3D `.fillet()` is
+   expensive — apply once, at the end, if at all).
+
+Core rules (full language reference: `references/design-language.md`):
+- Units are mm, angles degrees. Same code always produces identical geometry.
+- Primitives sit centered on XY with their base on Z=0 (the build plate).
+- Booleans: `a + b`, `a - b`, `a & b`. Sketches extrude with `.extrude(h)`.
+- **Overlap, never touch**: pieces that must fuse need >= 0.1 mm of shared
+  volume; cutters must pierce >= 1 mm past the faces they cut. Coincident
+  faces create zero-thickness seams and blind holes — solidsight warns when
+  it detects them; take those warnings seriously.
+- End the file with `emit(solid, name="snake_case_name")` per part.
+
+### Step 4 - Build and LOOK after every geometric change
+
+```bash
+solidsight build model.py            # or --print-safe, see Step 6
+```
+
+Then, non-negotiable:
+1. **Open the renders with the Read tool and actually look at them** (if you
+   have vision): shape, proportions, holes where they belong, parts where
+   they belong. The legend maps colors to part names; the footer gives exact
+   bbox dimensions; the grid squares are 10 mm.
+2. **Read the checks in report.json** (always, vision or not). Each check
+   carries `where` (coordinates) and a `try:` suggestion.
+3. If anything is off, fix the code and rebuild. Never declare a design
+   finished without having built and inspected the LAST version of the code.
+
+`--slice z=H` renders a filled cross-section — use it whenever inner walls,
+pockets or fits are involved; outside views cannot show them.
+
+### Step 5 - Use exact queries when looking is not enough
+
+Renders answer "does it look right?". The query API answers "is it
+geometrically right, with mathematical certainty" — and it works without
+vision:
+
+- A render looks solid but you must prove there is no sealed pocket inside:
+  `solidsight query model.py voxels` (flood-fill cavity detection), or cast
+  `ray` through the suspect line and count crossings (2 material segments
+  where you expected 1 = cavity or second shell on that line).
+- Verify a wall thickness at an exact plane: `section z=4` and read the `#`
+  band widths (cell size is printed), or `ray` across the wall and read
+  `material_segments[].thickness_mm`.
+- Confirm a point is inside/outside a part: `point X Y Z` (e.g. checking a
+  screw hole really pierces a boss).
+- Layer-by-layer shape/symmetry check: `voxels --layer N`.
+
+Interpretation guide for every field: `references/report-guide.md`.
+
+### Step 6 - Choose the validation mode deliberately
+
+- `--print-safe` — the part will be physically manufactured (FDM/resin).
+  Enforces: watertight, one shell per part, min wall (default 1.2 mm), warns
+  on overhangs past 50 deg and parts floating off the plate; FAILS on sealed
+  internal cavities. Exit code 2 on failure.
+- `--free` (default) — visual/artistic exploration. Same metrics reported,
+  nothing enforced.
+
+If the user says "print", "printable", "PLA", "resin", "manufacture" — use
+`--print-safe` from the first build, not as a final afterthought.
+
+### Step 7 - Assemblies: position, collide, measure, repeat
+
+For multiple interacting parts (or checking fits between separately designed
+parts):
+
+```python
+from solidsight import *
+body  = from_model("../box/model.py", "box")   # reuse another model's part
+motor = from_stl("nema17.stl")                 # import external mesh
+place(body,  name="body")
+place(motor, name="motor", at=(0, 0, 8), rotate=(0, 0, 90))
+```
+
+Every multi-part build writes `pairs[]` into report.json: for each pair of
+parts either the exact collision (overlap bbox + volume + a concrete move
+suggestion) or the minimum clearance between their surfaces. Iterate until:
+- zero collisions, and
+- clearances are intentional: sliding/snapping fits need 0.15-0.3 mm printed;
+  0.0 mm ("touching") is only right for parts meant to press together.
+
+Use `--exploded` to render mating faces, and `--slice` through the joint to
+see engagement. Example of the full loop: `examples/05-assembly/`.
+
+### Step 8 - Definition of done (checklist)
+
+Do not report the task complete until ALL of these hold for the final code:
+
+1. Renders from at least 4 angles reviewed (`iso,front,right,top`), plus a
+   `--slice` through any internal feature.
+2. `report.json` status is `ok`, or every remaining `warn` is explained to
+   the user and accepted (e.g. supported overhangs).
+3. Dimensions in the report's `scene.size` / part bboxes match the user's
+   spec numbers — check them one by one against the bill of parts.
+4. Assemblies: `pairs[]` shows zero collisions and sensible clearances.
+5. One aesthetics pass on the renders: proportions, symmetry, consistent
+   wall thicknesses, aligned features. Ugly-but-valid is not done.
+6. If printing was requested: built with `--print-safe`, exit code 0, STL
+   exported with `--stl`.
+
+## Reference documents (load on demand)
+
+- `references/design-language.md` — complete API: primitives, sketches,
+  transforms, booleans, fillets, text, patterns, assembly helpers, common
+  recipes and the errors you will hit.
+- `references/parts-catalog.md` — every parametric part with signatures,
+  pairing math and worked examples.
+- `references/report-guide.md` — every report.json field and check id, what
+  it means, how to fix it; query output interpretation.
+
+Worked examples with real reports and renders: `examples/01-mounting-bracket`
+(simple), `02-snap-box` (booleans + snap fit), `03-gear-train` (catalog),
+`04-vase` (organic, --free), `05-assembly` (collision found -> fixed),
+`06-hidden-cavity` (cavity invisible in renders, caught by report + queries).
+
+## Honesty Rules
+
+- Never present a design as done without building the final version of the
+  code and looking at its renders/report.
+- Never invent or estimate metrics — quote them from report.json.
+- Never silence a FAIL by switching to --free; free mode is for exploration,
+  not for making errors disappear. Surface every warn/fail to the user with
+  its suggestion, even when you disagree with it.
+- Never hand-edit STL/PNG/report outputs; they must be reproducible from the
+  model file (same input -> byte-identical output).
+- If the tool errors, show the user the real error text — it contains the
+  location and a suggestion by design.

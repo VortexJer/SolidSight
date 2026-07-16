@@ -1,0 +1,148 @@
+"""Orchestrates a build: run model -> validate -> render -> report.json.
+
+The report is deterministic: no timestamps, no machine-specific paths inside
+(file references are relative to the output directory).
+"""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+from . import __version__
+from .render import render_slice, render_view, turntable_views
+from .runner import run_model
+from .scene import Scene
+from .validate import ValidationOptions, analyze_scene
+
+
+def build_model(model_path: Path, out_dir: Path, mode: str = "free",
+                views: list[str] | None = None, turntable: int = 0,
+                slices: list[tuple[str, float]] | None = None,
+                only_parts: list[str] | None = None,
+                export_stl: bool = False, size: int = 900,
+                min_wall: float = 1.2, max_overhang: float = 50.0,
+                allow_multiple_shells: bool = False,
+                exploded: bool = False) -> dict:
+    views = views or ["iso", "front", "right", "top"]
+    slices = slices or []
+
+    scene = run_model(model_path)
+
+    if only_parts:
+        keep = [scene.get(name) for name in only_parts]  # errors on bad names
+        scene = Scene(parts=keep, warnings=scene.warnings)
+
+    opts = ValidationOptions(mode=mode, min_wall=min_wall,
+                             max_overhang=max_overhang,
+                             allow_multiple_shells=allow_multiple_shells)
+    metrics, checks, pairs = analyze_scene(scene, opts)
+
+    combined = scene.combined()
+    lo, hi = combined.bbox
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    renders_dir = out_dir / "renders"
+    renders_dir.mkdir(exist_ok=True)
+
+    title = model_path.stem
+    render_files: list[str] = []
+    for i, view in enumerate(views, start=1):
+        img = render_view(scene, view, size=size, title=title, subtitle=mode)
+        fname = f"{i:02d}_{view}.png"
+        img.save(renders_dir / fname)
+        render_files.append(f"renders/{fname}")
+
+    for axis, value in slices:
+        img = render_slice(scene, axis, value, size=size, title=title)
+        fname = f"slice_{axis}_{_slug(value)}.png"
+        img.save(renders_dir / fname)
+        render_files.append(f"renders/{fname}")
+
+    if exploded and len(scene.parts) > 1:
+        img = render_view(_exploded_scene(scene), "iso", size=size,
+                          title=title, subtitle=f"{mode} · exploded")
+        img.save(renders_dir / "exploded.png")
+        render_files.append("renders/exploded.png")
+
+    if turntable > 0:
+        for i, tview in enumerate(turntable_views(turntable)):
+            img = render_view(scene, tview, size=size, title=title,
+                              subtitle=f"{mode} · frame {i + 1}/{turntable}")
+            fname = f"turntable_{i:02d}.png"
+            img.save(renders_dir / fname)
+            render_files.append(f"renders/{fname}")
+
+    export_files: list[str] = []
+    if export_stl:
+        stl_dir = out_dir / "stl"
+        stl_dir.mkdir(exist_ok=True)
+        for part in scene.parts:
+            p = stl_dir / f"{part.name}.stl"
+            part.solid.to_trimesh().export(p)
+            export_files.append(f"stl/{part.name}.stl")
+        if len(scene.parts) > 1:
+            p = stl_dir / "combined.stl"
+            combined.to_trimesh().export(p)
+            export_files.append("stl/combined.stl")
+
+    has_fail = any(c["level"] == "fail" for c in checks)
+    has_warn = any(c["level"] == "warn" for c in checks)
+    status = "failed" if has_fail else ("warnings" if has_warn else "ok")
+
+    report = {
+        "tool": f"solidsight {__version__}",
+        "model": model_path.name,
+        "mode": mode,
+        "units": "mm",
+        "status": status,
+        "scene": {
+            "part_count": len(scene.parts),
+            "bbox": {"min": _r3(lo), "max": _r3(hi)},
+            "size": _r3(combined.size),
+            "total_volume_mm3": round(sum(p.solid.volume for p in scene.parts), 3),
+        },
+        "parts": metrics,
+        "pairs": pairs,
+        "checks": checks,
+        "files": {
+            "report": str(out_dir / "report.json"),
+            "renders": [str(out_dir / r) for r in render_files],
+            "exports": [str(out_dir / e) for e in export_files],
+        },
+    }
+
+    on_disk = dict(report)
+    on_disk["files"] = {"report": "report.json", "renders": render_files,
+                        "exports": export_files}
+    (out_dir / "report.json").write_text(
+        json.dumps(on_disk, indent=2) + "\n", encoding="utf-8")
+    return report
+
+
+def _exploded_scene(scene: Scene) -> Scene:
+    """Parts pushed radially away from the assembly center (60% of their
+    center offset, plus a Z stagger) so mating faces become visible."""
+    from .scene import Part
+    combined = scene.combined()
+    c = combined.bbox_center
+    diag = max(combined.size)
+    out = []
+    for i, p in enumerate(scene.parts):
+        pc = p.solid.bbox_center
+        d = [pc[k] - c[k] for k in range(3)]
+        norm = max((d[0] ** 2 + d[1] ** 2 + d[2] ** 2) ** 0.5, 1e-9)
+        f = 0.6 * diag / norm if norm < 1e-6 else 0.6
+        moved = p.solid.translate(d[0] * f, d[1] * f,
+                                  d[2] * f + i * diag * 0.06)
+        out.append(Part(name=p.name, solid=moved, color=p.color))
+    return Scene(parts=out, warnings=[])
+
+
+def _r3(v) -> list[float]:
+    return [round(float(x), 3) for x in v]
+
+
+def _slug(value: float) -> str:
+    s = f"{value:g}".replace("-", "m").replace(".", "p")
+    return s

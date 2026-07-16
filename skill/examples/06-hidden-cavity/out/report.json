@@ -1,0 +1,132 @@
+{
+  "tool": "solidsight 0.1.0",
+  "model": "model.py",
+  "mode": "print-safe",
+  "units": "mm",
+  "status": "failed",
+  "scene": {
+    "part_count": 1,
+    "bbox": {
+      "min": [
+        -18.0,
+        -18.0,
+        0.0
+      ],
+      "max": [
+        18.0,
+        18.0,
+        26.5
+      ]
+    },
+    "size": [
+      36.0,
+      36.0,
+      26.5
+    ],
+    "total_volume_mm3": 14007.604
+  },
+  "parts": {
+    "knob": {
+      "volume_mm3": 14007.604,
+      "surface_area_mm2": 4788.501,
+      "bbox": {
+        "min": [
+          -18.0,
+          -18.0,
+          0.0
+        ],
+        "max": [
+          18.0,
+          18.0,
+          26.5
+        ],
+        "size": [
+          36.0,
+          36.0,
+          26.5
+        ]
+      },
+      "center_of_mass": [
+        -0.0,
+        0.0,
+        11.138
+      ],
+      "triangles": 6706,
+      "shells": 1,
+      "watertight": true,
+      "genus": null,
+      "wall_thickness": {
+        "min_mm": 4.0,
+        "at": [
+          3.402,
+          4.785,
+          0.0
+        ],
+        "samples": 600,
+        "method": "inward-normal-ray"
+      },
+      "overhangs": {
+        "max_deg": 90.0,
+        "area_mm2": 541.45,
+        "worst_at": [
+          -9.459,
+          -1.276,
+          11.5
+        ],
+        "threshold_deg": 50.0
+      },
+      "internal_voids": {
+        "count": 1,
+        "res_mm": 0.75,
+        "voids": [
+          {
+            "voxels": 6083,
+            "volume_mm3": 2566.27,
+            "bbox": {
+              "min": [
+                -9.7,
+                -9.7,
+                3.75
+              ],
+              "max": [
+                9.8,
+                9.8,
+                12.0
+              ]
+            }
+          }
+        ]
+      },
+      "color": "#a56a6a"
+    }
+  },
+  "pairs": [],
+  "checks": [
+    {
+      "id": "internal-cavity",
+      "level": "fail",
+      "part": "knob",
+      "message": "part \"knob\" contains 1 sealed internal cavity (largest ~2566.27 mm3) that no opening reaches \u2014 the outside render looks solid",
+      "where": "largest cavity bbox [-9.7, -9.7, 3.75]..[9.8, 9.8, 12.0] (voxel resolution 0.75 mm)",
+      "suggestion": "resin/powder cannot drain and FDM cannot print a sealed roof; add a drain hole or remove the void. Inspect it with: solidsight query <model> section z=7.875 \u2014 if the void is intentional, build with --free"
+    },
+    {
+      "id": "overhang",
+      "level": "warn",
+      "part": "knob",
+      "message": "part \"knob\" has 541.45 mm2 of faces steeper than 50 deg overhang (worst: 90 deg)",
+      "where": "worst face near (-9.459, -1.276, 11.5)",
+      "suggestion": "reorient the part, chamfer the underside (45\u00b0 cones under bosses), or accept support material"
+    }
+  ],
+  "files": {
+    "report": "report.json",
+    "renders": [
+      "renders/01_iso.png",
+      "renders/02_front.png",
+      "renders/03_right.png",
+      "renders/04_top.png"
+    ],
+    "exports": []
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "tool": "solidsight 0.1.0",
+  "model": "model.py",
+  "mode": "print-safe",
+  "units": "mm",
+  "status": "warnings",
+  "scene": {
+    "part_count": 1,
+    "bbox": {
+      "min": [
+        -30.0,
+        -20.0,
+        0.0
+      ],
+      "max": [
+        30.0,
+        20.0,
+        40.0
+      ]
+    },
+    "size": [
+      60.0,
+      40.0,
+      40.0
+    ],
+    "total_volume_mm3": 21653.237
+  },
+  "parts": {
+    "bracket": {
+      "volume_mm3": 21653.237,
+      "surface_area_mm2": 10339.47,
+      "bbox": {
+        "min": [
+          -30.0,
+          -20.0,
+          0.0
+        ],
+        "max": [
+          30.0,
+          20.0,
+          40.0
+        ],
+        "size": [
+          60.0,
+          40.0,
+          40.0
+        ]
+      },
+      "center_of_mass": [
+        0.0,
+        7.64,
+        11.207
+      ],
+      "triangles": 1856,
+      "shells": 1,
+      "watertight": true,
+      "genus": 6,
+      "wall_thickness": {
+        "min_mm": 5.0,
+        "at": [
+          -1.851,
+          20.0,
+          32.22
+        ],
+        "samples": 600,
+        "method": "inward-normal-ray"
+      },
+      "overhangs": {
+        "max_deg": 87.2,
+        "area_mm2": 30.91,
+        "worst_at": [
+          -18.147,
+          16.667,
+          30.243
+        ],
+        "threshold_deg": 50.0
+      },
+      "internal_voids": {
+        "count": 0,
+        "res_mm": null,
+        "voids": []
+      },
+      "color": "#5b7c99"
+    }
+  },
+  "pairs": [],
+  "checks": [
+    {
+      "id": "overhang",
+      "level": "warn",
+      "part": "bracket",
+      "message": "part \"bracket\" has 30.91 mm2 of faces steeper than 50 deg overhang (worst: 87.2 deg)",
+      "where": "worst face near (-18.147, 16.667, 30.243)",
+      "suggestion": "reorient the part, chamfer the underside (45\u00b0 cones under bosses), or accept support material"
+    }
+  ],
+  "files": {
+    "report": "report.json",
+    "renders": [
+      "renders/01_iso.png",
+      "renders/02_front.png",
+      "renders/03_right.png",
+      "renders/04_top.png"
+    ],
+    "exports": [
+      "stl/bracket.stl"
+    ]
+  }
+}
