@@ -20,7 +20,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .errors import BadArgumentError, SceneError, fmt_num
+from .errors import BadArgumentError, SceneError, fmt_num, fmt_vec
 from .geom import Solid
 from .scene import emit
 
@@ -144,31 +144,76 @@ def pair_analysis(scene, mode: str = "free",
             vol = float(inter.volume())
             if vol > 1e-3:
                 bb = inter.bounding_box()
-                size = [bb[3] - bb[0], bb[4] - bb[1], bb[5] - bb[2]]
-                axis = int(min(range(3), key=lambda k: size[k]))
-                axis_name = "xyz"[axis]
-                move = size[axis]
+                pieces = [p for p in inter.decompose() if p.volume() > 1e-3]
+                patch_boxes = [p.bounding_box() for p in pieces[:4]]
+                if len(pieces) > 1:
+                    # several separate contact patches: the part is OVERSIZED
+                    # (it pokes into the other on multiple sides), moving it
+                    # would only trade one patch for another
+                    depths = [min(pb[3] - pb[0], pb[4] - pb[1], pb[5] - pb[2])
+                              for pb in patch_boxes]
+                    ax_of = [int(min(range(3), key=lambda k:
+                                     (pb[3 + k] - pb[k]))) for pb in patch_boxes]
+                    axis_name = "xyz"[max(set(ax_of), key=ax_of.count)]
+                    shrink = 2 * max(depths)
+                    suggestion = (
+                        f"the overlap is {len(pieces)} separate patches — "
+                        f"'{b.name}' is oversized rather than misplaced: "
+                        f"shrink it {fmt_num(shrink + 0.2)} mm in {axis_name} "
+                        f"(and keep 0.2+ mm of real clearance), or rework "
+                        f"the joint")
+                    where = "; ".join(
+                        f"patch {i + 1} at {fmt_vec(pb[:3])}..{fmt_vec(pb[3:])}"
+                        for i, pb in enumerate(patch_boxes))
+                else:
+                    # minimum translation of b (per axis) that separates the
+                    # part bounding boxes — an honest "how far to move"
+                    (alo, ahi), (blo, bhi) = a.solid.bbox, b.solid.bbox
+                    moves = [min(ahi[k] - blo[k], bhi[k] - alo[k])
+                             for k in range(3)]
+                    axis = int(min(range(3), key=lambda k: moves[k]))
+                    axis_name = "xyz"[axis]
+                    move = moves[axis]
+                    b_size = b.solid.size[axis]
+                    if move > 0.4 * b_size:
+                        # moving that far means "take it out" — the part
+                        # probably does not fit where it is
+                        mid = (bb[2] + bb[5]) / 2
+                        suggestion = (
+                            f"'{b.name}' does not fit here: clearing "
+                            f"'{a.name}' needs {fmt_num(move + 0.1)} mm of "
+                            f"travel in {axis_name} ({fmt_num(b_size)} mm "
+                            f"part). Shrink '{b.name}' where it presses into "
+                            f"'{a.name}', and render --slice z={fmt_num(mid)} "
+                            f"through the overlap to see the contact")
+                    else:
+                        suggestion = (
+                            f"move '{b.name}' {fmt_num(move + 0.1)} mm along "
+                            f"{axis_name}, or shrink one part there")
+                    where = (f"overlap bbox x {fmt_num(bb[0])}..{fmt_num(bb[3])}, "
+                             f"y {fmt_num(bb[1])}..{fmt_num(bb[4])}, "
+                             f"z {fmt_num(bb[2])}..{fmt_num(bb[5])}")
                 pairs.append({
                     "a": a.name, "b": b.name, "status": "collision",
                     "overlap_volume_mm3": round(vol, 3),
                     "overlap_bbox": {
                         "min": [round(float(v), 3) for v in bb[:3]],
                         "max": [round(float(v), 3) for v in bb[3:]]},
+                    "overlap_patches": [
+                        {"min": [round(float(v), 3) for v in pb[:3]],
+                         "max": [round(float(v), 3) for v in pb[3:]]}
+                        for pb in patch_boxes],
                     "min_clearance_mm": None,
-                    "suggestion": f"move '{b.name}' {fmt_num(move + 0.1)} mm "
-                                  f"along {axis_name} (the thinnest overlap "
-                                  f"axis), or shrink one part there",
+                    "suggestion": suggestion,
                 })
                 checks.append(check(
                     "fail" if ps else "warn", "parts-overlap",
                     f'parts "{a.name}" and "{b.name}" occupy the same space '
-                    f"({fmt_num(vol)} mm3 of overlap)",
-                    where=f"overlap bbox x {fmt_num(bb[0])}..{fmt_num(bb[3])}, "
-                          f"y {fmt_num(bb[1])}..{fmt_num(bb[4])}, "
-                          f"z {fmt_num(bb[2])}..{fmt_num(bb[5])}",
-                    suggestion=f"move '{b.name}' {fmt_num(move + 0.1)} mm "
-                               f"along {axis_name}, or rework the joint; "
-                               "separate parts must never intersect"))
+                    f"({fmt_num(vol)} mm3 of overlap"
+                    + (f" in {len(pieces)} patches)" if len(pieces) > 1 else ")"),
+                    where=where,
+                    suggestion=suggestion + "; separate parts must never "
+                                            "intersect"))
             else:
                 gap = float(a.solid.manifold.min_gap(b.solid.manifold, diag))
                 gap = round(gap, 3)

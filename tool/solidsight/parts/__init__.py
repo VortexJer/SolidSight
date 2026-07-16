@@ -4,9 +4,11 @@ compose with instead of re-deriving geometry from scratch.
 `solidsight catalog` lists everything here with signatures and docs.
 """
 
-from .enclosures import box_with_lid, container, honeycomb_panel, standoff
+from .enclosures import (box_with_lid, container, hex_grid, honeycomb_panel,
+                         standoff)
 from .gears import spur_gear
 from .mechanisms import hinge, snap_clip, snap_slot
+from .paths import tube_path
 from .patterns import circular_pattern, grid_pattern, linear_pattern
 from .threads import ISO_COARSE_PITCH, bolt, iso_thread, nut
 
@@ -21,6 +23,8 @@ CATALOG = {
     "box_with_lid": box_with_lid,
     "container": container,
     "standoff": standoff,
+    "hex_grid": hex_grid,
+    "tube_path": tube_path,
     "honeycomb_panel": honeycomb_panel,
     "linear_pattern": linear_pattern,
     "grid_pattern": grid_pattern,

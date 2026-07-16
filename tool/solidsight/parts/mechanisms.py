@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-import math
 
 from ..errors import BadArgumentError, fmt_num
-from ..geom import Solid, box, cylinder, polygon, union
+from ..geom import Solid, box, cylinder, polygon
 
 
 def hinge(length: float = 40.0, leaf: float = 15.0, t: float = 3.0,

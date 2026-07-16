@@ -16,7 +16,7 @@ Conventions (chosen for agents reasoning about parts on a build plate):
 from __future__ import annotations
 
 import math
-from typing import Iterable, Sequence
+from typing import Sequence
 
 import numpy as np
 from manifold3d import CrossSection, FillRule, JoinType, Manifold, OpType
@@ -182,7 +182,11 @@ class Solid:
         va, vb, vr = self.volume, other.volume, result.volume
         if (va > _EPS and vb > _EPS
                 and abs(vr - (va + vb)) < 1e-9 * max(vr, 1.0)
-                and not _bbox_disjoint(self.bbox, other.bbox)):
+                and not _bbox_disjoint(self.bbox, other.bbox)
+                # additive volume + overlapping bboxes is not enough: the
+                # pieces must actually TOUCH (interleaved cutter patterns
+                # overlap in bbox while staying apart — no warning for those)
+                and float(self._m.min_gap(other._m, 1e-3)) < 1e-6):
             _warn("union-touching",
                   f"union of '{self.desc}' and '{other.desc}' only TOUCHES — "
                   f"no shared volume, so the pieces will not truly fuse "
@@ -252,17 +256,22 @@ class Solid:
 
     def grow(self, r: float, segments: int | None = 16) -> "Solid":
         """Minkowski-dilate by a sphere of radius r: offsets every face
-        outward by r and rounds every convex edge. The part gets bigger."""
+        outward by r and rounds every convex edge. The part gets bigger.
+        The input is simplified to r/20 tolerance first — invisible at the
+        rounding scale, but it keeps Minkowski cost sane on dense meshes."""
         _positive("grow", r=r)
         ball = Manifold.sphere(float(r), _segments(segments))
-        return Solid(self._m.minkowski_sum(ball), f"grow({self.desc}, r={fmt_num(r)})")
+        src = self._m.simplify(float(r) / 20)
+        return Solid(src.minkowski_sum(ball), f"grow({self.desc}, r={fmt_num(r)})")
 
     def shrink(self, r: float, segments: int | None = 16) -> "Solid":
         """Minkowski-erode by a sphere of radius r. The part gets smaller;
-        walls thinner than 2*r vanish (raises if everything vanishes)."""
+        walls thinner than 2*r vanish (raises if everything vanishes).
+        Input simplified to r/20 tolerance first, like grow()."""
         _positive("shrink", r=r)
         ball = Manifold.sphere(float(r), _segments(segments))
-        out = Solid(self._m.minkowski_difference(ball),
+        src = self._m.simplify(float(r) / 20)
+        out = Solid(src.minkowski_difference(ball),
                     f"shrink({self.desc}, r={fmt_num(r)})")
         if out.is_empty:
             raise EmptyGeometryError(
@@ -695,7 +704,50 @@ def polygon(points: Sequence[tuple[float, float]] | Sequence[Sequence[tuple[floa
             suggestion="points may be collinear or the ring self-intersects; "
                        "list the outline counter-clockwise without repeating "
                        "the first point at the end")
+    if len(rings) == 1 and out._cs.num_contour() > 1:
+        _warn("self-intersecting-polygon",
+              f"polygon() outline self-intersects and split into "
+              f"{out._cs.num_contour()} separate regions — extrusions of it "
+              f"will be disconnected pieces",
+              where=f"outline of {len(rings[0])} points, "
+                    f"bounds {tuple(round(v, 2) for v in out._cs.bounds())}",
+              suggestion="re-order the points so the outline never crosses "
+                         "itself, or build the shape from simpler sketches "
+                         "with 2D booleans / stroke()")
     return out
+
+
+def stroke(points: Sequence[tuple[float, float]], width: float,
+           segments: int | None = None) -> Sketch:
+    """A 2D ribbon of constant width along a polyline — round joints, round
+    caps. The natural way to draw smooth curved profiles (hooks, handles,
+    brackets): generate the centerline points with a bit of math, stroke it,
+    then extrude. Sample curves every few degrees for smooth results."""
+    pts = [(float(x), float(y)) for x, y in points]
+    if len(pts) < 2:
+        raise BadArgumentError(
+            f"stroke() needs at least 2 centerline points, got {len(pts)}")
+    _positive("stroke", width=width)
+    r = width / 2.0
+    seg = _segments(segments if segments is not None else 24)
+    pieces = []
+    for (x0, y0), (x1, y1) in zip(pts[:-1], pts[1:]):
+        dx, dy = x1 - x0, y1 - y0
+        length = math.hypot(dx, dy)
+        if length < 1e-9:
+            continue
+        nx, ny = -dy / length * r, dx / length * r
+        # counter-clockwise winding (Positive fill drops clockwise rings)
+        quad = CrossSection([[(x0 - nx, y0 - ny), (x1 - nx, y1 - ny),
+                              (x1 + nx, y1 + ny), (x0 + nx, y0 + ny)]],
+                            FillRule.Positive)
+        pieces.append(quad)
+    if not pieces:
+        raise BadArgumentError("stroke() centerline has zero length",
+                               suggestion="points are all identical")
+    caps = [CrossSection.circle(r, seg).translate([x, y]) for x, y in pts]
+    cs = CrossSection.batch_boolean(pieces + caps, OpType.Add)
+    return Sketch(cs, f"stroke({len(pts)} pts, w={fmt_num(width)})")
 
 
 def text(string: str, size: float = 10.0, font: str | None = None,

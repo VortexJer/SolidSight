@@ -1,0 +1,43 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ["3.10", "3.13"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install ./tool pytest ruff
+      - name: Lint (errors only)
+        run: ruff check tool --select E9,F
+      - name: Tests
+        run: pytest tool/tests -q
+      - name: CLI smoke (quickstart model)
+        shell: bash
+        run: |
+          mkdir -p /tmp/smoke && cd /tmp/smoke
+          cat > model.py <<'EOF'
+          from solidsight import *
+          plate = rect(60, 40).round_corners(4).extrude(5)
+          hole = cylinder(h=7, d=4.5).translate(0, 0, -1)
+          plate = plate - parts.grid_pattern(hole, 2, 2, 44, 28).translate(-22, -14, 0)
+          emit(plate + parts.standoff(h=8, od=8, id_=3.2), name="plate")
+          EOF
+          solidsight build model.py --print-safe --stl
+          solidsight query model.py voxels
+          test -f out/report.json && test -f out/renders/01_iso.png

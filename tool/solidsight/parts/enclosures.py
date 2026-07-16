@@ -5,8 +5,8 @@ from __future__ import annotations
 import math
 
 from ..errors import BadArgumentError, fmt_num
-from ..geom import (Sketch, Solid, box, circle, cone, cylinder, ngon,
-                    rect, rounded_box, union)
+from ..geom import (Sketch, Solid, cone, cylinder, ngon,
+                    rect, rounded_box)
 
 
 def box_with_lid(inner_x: float, inner_y: float, inner_z: float,
@@ -87,19 +87,10 @@ def standoff(h: float, od: float = 6.0, id_: float = 2.5,
     return out
 
 
-def honeycomb_panel(x: float, y: float, t: float, cell: float = 8.0,
-                    wall: float = 1.6, border: float = 4.0) -> Solid:
-    """Flat panel with a hexagonal ventilation/lightening pattern.
-    cell: hex hole size across flats. wall: rib width between holes.
-    border: solid margin kept around the edges. Centered on XY, base Z=0."""
-    if cell <= 0 or wall <= 0:
-        raise BadArgumentError("honeycomb_panel() cell and wall must be positive")
-    inner_x, inner_y = x - 2 * border, y - 2 * border
-    if inner_x < cell or inner_y < cell:
-        raise BadArgumentError(
-            f"honeycomb_panel() {fmt_num(x)}x{fmt_num(y)} with border "
-            f"{fmt_num(border)} leaves no room for {fmt_num(cell)} cells",
-            suggestion="shrink the border or the cell size")
+def _hex_hole_sketches(inner_x: float, inner_y: float, cell: float,
+                       wall: float) -> list:
+    """Centered honeycomb hole profiles that fit whole inside inner_x x
+    inner_y. Shared by hex_grid() and honeycomb_panel()."""
     hex_r = (cell / 2) / math.cos(math.pi / 6)  # across-flats -> circumradius
     pitch_x = cell + wall
     pitch_y = (cell + wall) * math.sqrt(3) / 2
@@ -112,8 +103,57 @@ def honeycomb_panel(x: float, y: float, t: float, cell: float = 8.0,
             cy = j * pitch_y
             if abs(cx) + hex_r <= inner_x / 2 and abs(cy) + hex_r <= inner_y / 2:
                 holes.append(ngon(6, r=hex_r).rotate(30).translate(cx, cy))
+    return holes
+
+
+def hex_grid(x: float, y: float, t: float, cell: float = 8.0,
+             wall: float = 1.6) -> Solid:
+    """CUTTER: a centered honeycomb field of hexagonal prisms, base on Z=0,
+    thickness t. Subtract it from any wall or floor to add ventilation —
+    make t thicker than the wall and sink it 1 mm so it pierces through:
+
+        tray = tray - parts.hex_grid(70, 45, floor_t + 2).translate(0, 0, -1)
+
+    cell: hex size across flats. wall: rib width left between holes. Only
+    whole cells inside x by y are generated, so nothing pokes past the field.
+    For a ready-made SOLID panel use honeycomb_panel() instead."""
+    if cell <= 0 or wall <= 0:
+        raise BadArgumentError("hex_grid() cell and wall must be positive")
+    if x < cell or y < cell:
+        raise BadArgumentError(
+            f"hex_grid() field {fmt_num(x)}x{fmt_num(y)} is smaller than one "
+            f"{fmt_num(cell)} cell",
+            suggestion="grow the field or shrink cell")
+    holes = _hex_hole_sketches(x, y, cell, wall)
+    if not holes:
+        raise BadArgumentError(
+            f"hex_grid() produced no cells in {fmt_num(x)}x{fmt_num(y)}",
+            suggestion="the field fits no whole hex; grow it or shrink cell")
+    profile = holes[0]
+    for h in holes[1:]:
+        profile = profile + h
+    out = profile.extrude(t)
+    out.desc = (f"hex_grid({fmt_num(x)}x{fmt_num(y)}, cell={fmt_num(cell)}, "
+                f"{len(holes)} cells)")
+    return out
+
+
+def honeycomb_panel(x: float, y: float, t: float, cell: float = 8.0,
+                    wall: float = 1.6, border: float = 4.0) -> Solid:
+    """Flat panel with a hexagonal ventilation/lightening pattern.
+    cell: hex hole size across flats. wall: rib width between holes.
+    border: solid margin kept around the edges. Centered on XY, base Z=0.
+    To cut vents into an EXISTING wall use hex_grid() instead."""
+    if cell <= 0 or wall <= 0:
+        raise BadArgumentError("honeycomb_panel() cell and wall must be positive")
+    inner_x, inner_y = x - 2 * border, y - 2 * border
+    if inner_x < cell or inner_y < cell:
+        raise BadArgumentError(
+            f"honeycomb_panel() {fmt_num(x)}x{fmt_num(y)} with border "
+            f"{fmt_num(border)} leaves no room for {fmt_num(cell)} cells",
+            suggestion="shrink the border or the cell size")
     plate = rect(x, y)
-    for h in holes:
+    for h in _hex_hole_sketches(inner_x, inner_y, cell, wall):
         plate = plate - h
     out = plate.extrude(t)
     out.desc = (f"honeycomb_panel({fmt_num(x)}x{fmt_num(y)}x{fmt_num(t)}, "

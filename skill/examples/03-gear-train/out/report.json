@@ -56,11 +56,11 @@
       "watertight": true,
       "genus": 6,
       "wall_thickness": {
-        "min_mm": 2.637,
+        "min_mm": 2.705,
         "at": [
-          3.608,
-          -14.452,
-          2.667
+          3.721,
+          -17.098,
+          5.333
         ],
         "samples": 600,
         "method": "inward-normal-ray"

@@ -93,8 +93,18 @@ parts.container(profile_sketch, height, wall=2.0, floor=None)
 parts.standoff(h, od=6.0, id_=2.5, base_od=0.0, base_h=0.0)
     # screw boss; add base_od/base_h for a conical strength flare
 
+parts.hex_grid(x, y, t, cell=8.0, wall=1.6)
+    # CUTTER: honeycomb field of hex prisms — subtract from any wall/floor
+    # to add vents; make t = wall + 2 and sink it 1 mm so it pierces
+
 parts.honeycomb_panel(x, y, t, cell=8.0, wall=1.6, border=4.0)
-    # ventilation/lightening panel
+    # ready-made SOLID vented panel (use hex_grid to vent an existing wall)
+```
+
+Venting an enclosure floor:
+
+```python
+tray = tray - parts.hex_grid(70, 45, FLOOR + 2, cell=8, wall=2).translate(0, 0, -1)
 ```
 
 ## Patterns
@@ -112,6 +122,17 @@ Patterns union their copies — pattern CUTTERS then subtract once:
 hole = cylinder(h=plate_t + 2, d=4.5).translate(0, 0, -1)
 plate = plate - parts.grid_pattern(hole, 2, 2, 44, 28).translate(-22, -14, 0)
 ```
+
+## Sweeps
+
+```python
+parts.tube_path(points_3d, d, segments=24)
+    # round tube along a 3D polyline (chained capsule hulls): hooks,
+    # handles, wire guides, curved feet. Sample curves every few degrees.
+```
+
+For flat/ribbon curved shapes prefer the 2D `stroke()` + extrude (see
+design-language.md).
 
 ## Sizing cheat sheet for printed parts
 

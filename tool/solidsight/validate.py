@@ -12,7 +12,6 @@ Two modes:
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
 
 import numpy as np
@@ -177,8 +176,11 @@ def _analyze_part(part: Part, opts: ValidationOptions) -> tuple[dict, list[dict]
             f'(worst: {fmt_num(overhang["max_deg"])} deg)',
             part=part.name,
             where=f"worst face near {fmt_vec(overhang['worst_at'])}",
-            suggestion="reorient the part, chamfer the underside (45° cones "
-                       "under bosses), or accept support material"))
+            suggestion="reorient the part, chamfer the underside (45 deg "
+                       "cones under bosses), or accept support material. "
+                       "Flat roofs spanning an opening wall-to-wall (port "
+                       "slots, windows) are BRIDGES and usually print fine "
+                       "despite this warning"))
 
     if ps:
         if lo[2] < -0.05:
@@ -233,7 +235,49 @@ def _wall_thickness(mesh, n_samples: int) -> dict:
         return {"min_mm": None, "at": None, "samples": int(len(idx)),
                 "method": "inward-normal-ray"}
     dist = dist + eps
-    k = int(np.argmin(np.where(valid, dist, np.inf)))
+
+    # A candidate reading only counts as a WALL if:
+    #  (1) there is AIR just past the exit (folded-surface slivers from
+    #      twisted extrusions read near-zero but material continues), and
+    #  (2) it is not a TAPER: knife wedges (thread chamfer feathers, blade
+    #      edges) thin out to zero by construction — that is geometry, not a
+    #      wall defect. Plates have antiparallel faces; wedges do not, and
+    #      re-measuring a little way along the wedge reads much thicker.
+    order = np.argsort(np.where(valid, dist, np.inf), kind="stable")
+    probe_dir = np.array([[0.577350269, 0.211324865, 0.788675134]])
+    probe_dir /= np.linalg.norm(probe_dir)
+    k = -1
+    for cand in order[:60]:
+        if not valid[cand]:
+            break
+        n1 = normals[cand]
+        d0 = float(dist[cand])
+        # (1) air beyond the exit?
+        probe = (origins[cand] - n1 * d0 - n1 * 0.05)[None, :]
+        if len(ts.cast(probe, probe_dir)[0]) % 2 == 1:
+            continue                    # material continues: surface fold
+        n2 = ts.normals[tri_hit[cand]]
+        if float(n1 @ n2) < -0.995:
+            k = int(cand)               # parallel faces: a true wall
+            break
+        # (2) wedge? re-measure 0.8 mm to each side, perpendicular to the
+        # wedge edge but along the entry surface
+        edge = np.cross(n1, n2)
+        edge /= max(np.linalg.norm(edge), 1e-12)
+        u = np.cross(edge, n1)
+        side_o = np.stack([origins[cand] + u * 0.8 - n1 * eps,
+                           origins[cand] - u * 0.8 - n1 * eps])
+        side_d, _tri = ts.first_exit(side_o, np.stack([-n1, -n1]))
+        grown = np.where(np.isfinite(side_d), side_d, np.inf).max()
+        if grown < 1.8 * d0 + 0.15:
+            k = int(cand)               # stays thin along the surface: wall
+            break
+        # else: thickens fast -> taper edge, skip this candidate
+    if k < 0:
+        return {"min_mm": None, "at": None, "samples": int(len(idx)),
+                "method": "inward-normal-ray",
+                "note": "only taper edges found (wedges thinning to zero "
+                        "by construction); no plate-like wall measured"}
     return {"min_mm": round(float(dist[k]), 3),
             "at": _r3(origins[k]),
             "samples": int(len(idx)),

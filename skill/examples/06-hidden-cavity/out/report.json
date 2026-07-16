@@ -116,7 +116,7 @@
       "part": "knob",
       "message": "part \"knob\" has 541.45 mm2 of faces steeper than 50 deg overhang (worst: 90 deg)",
       "where": "worst face near (-9.459, -1.276, 11.5)",
-      "suggestion": "reorient the part, chamfer the underside (45\u00b0 cones under bosses), or accept support material"
+      "suggestion": "reorient the part, chamfer the underside (45 deg cones under bosses), or accept support material. Flat roofs spanning an opening wall-to-wall (port slots, windows) are BRIDGES and usually print fine despite this warning"
     }
   ],
   "files": {

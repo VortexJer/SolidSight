@@ -11,8 +11,8 @@ from __future__ import annotations
 import math
 
 from ..errors import BadArgumentError, fmt_num
-from ..geom import (Sketch, Solid, circle, cone, cylinder, intersection,
-                    polygon, prism, union)
+from ..geom import (Sketch, Solid, cone, cylinder, intersection,
+                    polygon, prism)
 
 # Coarse-pitch lookup for common metric sizes (ISO 261).
 ISO_COARSE_PITCH = {2: 0.4, 2.5: 0.45, 3: 0.5, 4: 0.7, 5: 0.8, 6: 1.0,
@@ -78,8 +78,11 @@ def iso_thread(d: float, length: float, pitch: float | None = None,
 
     turns = length / p
     sign = 1.0 if left_hand else -1.0
+    # twist per division must stay BELOW the profile's angular vertex
+    # spacing (360/n), or the swept quads fold into zero-thickness fins;
+    # 2x oversampling keeps a comfortable margin
     thread = profile.extrude(length, twist=sign * 360.0 * turns,
-                             divisions=max(8, int(turns * n)))
+                             divisions=max(16, int(turns * n * 2)))
 
     if chamfer and not internal:
         # Taper both ends so the thread starts cleanly (also print-friendlier).

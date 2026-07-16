@@ -14,7 +14,6 @@ identical PNG bytes.
 from __future__ import annotations
 
 import math
-from pathlib import Path
 
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
@@ -127,16 +126,8 @@ def _rasterize(color: np.ndarray, zbuf: np.ndarray, cam: _Camera, tm,
                rgb: np.ndarray) -> None:
     size = cam.size
     # Gouraud shading with creases: split vertices at sharp edges so curved
-    # surfaces shade smoothly while box edges stay crisp
-    try:
-        sm = tm.smoothed(angle=math.radians(30))
-        verts = np.asarray(sm.vertices, float)
-        faces = np.asarray(sm.faces)
-        vnormals = np.asarray(sm.vertex_normals, float)
-    except BaseException:
-        verts = np.asarray(tm.vertices, float)
-        faces = np.asarray(tm.faces)
-        vnormals = np.asarray(tm.vertex_normals, float)
+    # surfaces shade smoothly while flat faces and box edges stay crisp
+    verts, faces, vnormals = _crease_split(tm, math.radians(30))
     pix, depth = cam.project(verts)
 
     key = np.array([0.35, -0.5, 0.79])
@@ -179,6 +170,54 @@ def _rasterize(color: np.ndarray, zbuf: np.ndarray, cam: _Camera, tm,
         sub_z[upd] = zi[upd]
         si = (w0 * s[0] + w1 * s[1] + w2 * s[2])[upd]
         color[ymin:ymax + 1, xmin:xmax + 1][upd] = rgb[None, :] * si[:, None]
+
+
+def _crease_split(tm, crease_angle: float):
+    """Duplicate vertices along sharp edges so per-vertex normals never
+    average across a crease. Faces are grouped into smoothing regions
+    (union-find over adjacency with dihedral < crease_angle); each vertex
+    gets one copy per region, with an area-weighted normal from that region
+    only. Flat faces therefore shade perfectly flat. Deterministic."""
+    faces = np.asarray(tm.faces)
+    verts = np.asarray(tm.vertices, float)
+    fnormals = np.asarray(tm.face_normals, float)
+    areas = np.asarray(tm.area_faces, float)
+    n_faces = len(faces)
+    if n_faces == 0:
+        return verts, faces, np.zeros_like(verts)
+
+    parent = np.arange(n_faces)
+
+    def find(i: int) -> int:
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+
+    adj = np.asarray(tm.face_adjacency)
+    if len(adj):
+        smooth = np.asarray(tm.face_adjacency_angles) < crease_angle
+        for (a, b) in adj[smooth]:
+            ra, rb = find(int(a)), find(int(b))
+            if ra != rb:
+                parent[ra] = rb
+    group = np.fromiter((find(i) for i in range(n_faces)), dtype=np.int64,
+                        count=n_faces)
+
+    # one output vertex per unique (original vertex, smoothing group)
+    keys = faces.astype(np.int64) * (group.max() + 1) + group[:, None]
+    uniq, new_idx = np.unique(keys.ravel(), return_inverse=True)
+    new_faces = new_idx.reshape(-1, 3)
+    orig_v = (uniq // (group.max() + 1)).astype(np.int64)
+    new_verts = verts[orig_v]
+
+    new_normals = np.zeros((len(uniq), 3))
+    w = fnormals * areas[:, None]                    # (F,3)
+    for corner in range(3):
+        np.add.at(new_normals, new_faces[:, corner], w)
+    lens = np.linalg.norm(new_normals, axis=1, keepdims=True)
+    new_normals /= np.maximum(lens, 1e-12)
+    return new_verts, new_faces, new_normals
 
 
 def _bary(p: np.ndarray, gx: np.ndarray, gy: np.ndarray):

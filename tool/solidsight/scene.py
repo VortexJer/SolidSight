@@ -10,7 +10,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
-from .errors import SceneError, fmt_bbox
+from .errors import SceneError
 from .geom import Solid
 
 _NAME_RE = re.compile(r"^[a-z][a-z0-9_]*$")

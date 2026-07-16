@@ -34,7 +34,7 @@ match the spec?) -> per-part numbers.
 | `shells` | disconnected SOLID pieces | must be 1 per part; >1 means pieces did not fuse (see `multiple-shells`) |
 | `watertight` | closed surface | always true from solidsight primitives |
 | `genus` | number of through-holes (topological) | a handle you expected = 1; 0 means the hole did not go through |
-| `wall_thickness.min_mm` + `.at` | thinnest material measured by inward rays | below printer limits -> thicken at the given coordinates. `null` = no opposing-wall measurement found (chunky convex part) |
+| `wall_thickness.min_mm` + `.at` | thinnest PLATE-LIKE wall measured by inward rays. Knife wedges that thin to zero by construction (thread chamfer feathers, blade edges) are excluded — they are geometry, not defects; when only such tapers exist, `min_mm` is `null` with a `note` | below printer limits -> thicken at the given coordinates. `null` = no plate-like wall found (chunky convex part, or taper-only geometry — read the note) |
 | `overhangs.max_deg`, `.area_mm2`, `.worst_at` | downward faces steeper than the threshold (90 = horizontal ceiling) | reorient, chamfer at 45 deg, or accept supports |
 | `internal_voids` | sealed cavities (count, bbox, ~volume) | almost always a bug; add a drain hole or remove |
 

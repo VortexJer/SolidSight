@@ -11,8 +11,8 @@ from .errors import (BadArgumentError, EmptyGeometryError, ModelRuntimeError,
                      SceneError, SolidsightError)
 from .geom import (DEFAULT_SEGMENTS, Sketch, Solid, box, circle, cone,
                    cylinder, difference, hull, intersection, ngon, polygon,
-                   prism, rect, rounded_box, sphere, text, torus, union,
-                   wedge)
+                   prism, rect, rounded_box, sphere, stroke, text, torus,
+                   union, wedge)
 from .scene import Scene, emit
 from .assembly import from_model, from_stl, place
 from . import parts
@@ -22,7 +22,7 @@ __all__ = [
     "box", "cylinder", "cone", "sphere", "prism", "wedge", "torus",
     "rounded_box",
     # 2D sketches
-    "rect", "circle", "ngon", "polygon", "text",
+    "rect", "circle", "ngon", "polygon", "text", "stroke",
     # combinators
     "union", "difference", "intersection", "hull",
     # classes / registry

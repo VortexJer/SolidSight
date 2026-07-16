@@ -42,9 +42,29 @@ sk.round_corners(r)              # round ALL 2D corners — do this BEFORE extru
 sk + sk2, sk - sk2, sk & sk2     # 2D booleans
 sk.translate(x, y) .rotate(deg) .scale(s) .mirror("x")
 
+stroke(points, width)            # 2D ribbon along a polyline: round joints
+                                 # and caps — THE way to draw smooth curved
+                                 # profiles (hooks, arms); generate the
+                                 # centerline points with a little math
+
 sk.extrude(h, twist=0, scale_top=1.0)   # twist deg over the height; scale_top flares
 sk.revolve(angle=360)            # around Z; sketch x = radius, sketch y = height
 ```
+
+Twist warning: when extruding with `twist`, the default division count is
+safe; if you pass `divisions` yourself, keep the twist per division BELOW
+the profile's angular vertex spacing or the swept quads fold into
+zero-thickness fins.
+
+Vertical-profile recipe (side profiles: brackets, arms, clip shapes): draw
+the profile in sketch coordinates (x = outward, y = up), then
+
+```python
+solid = profile.extrude(width).rotate(x=90).rotate(z=90).translate(-width/2, 0, 0)
+```
+
+maps sketch-x to world +Y (outward), sketch-y to world +Z (up), and the
+extrusion width along world X, centered.
 
 Text is real geometry (bundled DejaVu Sans — identical on every machine):
 emboss with `body + text("A", 8).extrude(1.5).translate(...)`, engrave with

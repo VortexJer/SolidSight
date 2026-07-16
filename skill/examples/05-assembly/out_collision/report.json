@@ -227,8 +227,22 @@
           26.5
         ]
       },
+      "overlap_patches": [
+        {
+          "min": [
+            -20.0,
+            4.2,
+            24.0
+          ],
+          "max": [
+            20.0,
+            5.8,
+            26.5
+          ]
+        }
+      ],
       "min_clearance_mm": null,
-      "suggestion": "move 'card' 1.7 mm along y (the thinnest overlap axis), or shrink one part there"
+      "suggestion": "'card' does not fit here: clearing 'lid' needs 12.6 mm of travel in z (24 mm part). Shrink 'card' where it presses into 'lid', and render --slice z=25.25 through the overlap to see the contact"
     }
   ],
   "checks": [
@@ -238,7 +252,7 @@
       "part": null,
       "message": "parts \"lid\" and \"card\" occupy the same space (160 mm3 of overlap)",
       "where": "overlap bbox x -20..20, y 4.2..5.8, z 24..26.5",
-      "suggestion": "move 'card' 1.7 mm along y, or rework the joint; separate parts must never intersect"
+      "suggestion": "'card' does not fit here: clearing 'lid' needs 12.6 mm of travel in z (24 mm part). Shrink 'card' where it presses into 'lid', and render --slice z=25.25 through the overlap to see the contact; separate parts must never intersect"
     }
   ],
   "files": {
