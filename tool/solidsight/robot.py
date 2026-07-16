@@ -83,7 +83,6 @@ def validate_robot(scene) -> tuple[dict, list[str]]:
     """Check the joint graph is a proper tree over emitted parts.
     Returns ({child: joint}, ordered link names root-first)."""
     names = [p.name for p in scene.parts]
-    problems = []
     for j in scene.joints:
         for end in ("parent", "child"):
             if j[end] not in names:

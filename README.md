@@ -126,6 +126,39 @@ diff: model_collision.py [warnings] -> model.py [ok]
 
 The edit did what it meant — and provably nothing else.
 
+## The engineering platform (v0.6)
+
+Everything an autonomous agent needs from concept to manufacturing, all
+deterministic and headless:
+
+- **Live mode** — `solidsight watch` rebuilds on save with provable
+  skips (exact scene fingerprints); `solidsight view` serves an
+  interactive browser viewer (isolate, x-ray, section planes, explode,
+  finding markers with fly-to, two-point measuring) that hot-reloads on
+  every successful rebuild. Self-contained: vendored three.js, no CDN.
+- **Progress everywhere** — `--progress` live stage lines (%, ETA) and
+  `--events file.ndjson` structured streams; artifacts stay
+  byte-deterministic.
+- **Formats** — STL, 3MF, OBJ, GLB (combined GLB keeps part names +
+  colors), DXF/SVG section outlines, `solidsight convert`.
+- **Real components** — an offline database of ~70 real parts with the
+  standards' exact dimensions: `solidsight components search "m4 socket
+  head"` → `parts.component("iso4762_m4", length=16)`. Plus catalog
+  generators for bearings, NEMA motors, GT2 pulleys, MGN rails, T-slot
+  extrusions, springs, shafts, servos.
+- **Engineering outputs** — `solidsight drawing` (dimensioned
+  third-angle PDF with true hidden lines and a hole table),
+  `solidsight robot` (joint() → URDF/SDF with exact inertials),
+  `solidsight motion` (sweep joints through limits → exact collision
+  map).
+- **Reasoning & review** — `query distance`, `fit 8 H7 g6` (real
+  ISO 286), `explain <check-id>`, `critique` (design review with fix
+  menus and a verified-good list), `cost` (FDM/SLA/CNC estimates),
+  `assembly` (BOM, axis play, assembly sequence).
+- **Extensible & measurable** — plugin entry points
+  (`solidsight.plugins`, crash-isolated) and a graded benchmark suite
+  (`benchmarks/`, six commissions with machine-checkable expectations).
+
 ## Two validation modes
 
 - `--print-safe` — for parts that will be manufactured: enforces watertight,

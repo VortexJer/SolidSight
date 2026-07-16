@@ -53,7 +53,7 @@ def axis_play(scene) -> dict:
         spans = sorted((p.solid.bbox[0][k], p.solid.bbox[1][k], p.name)
                        for p in solid)
         gaps = []
-        reach = None
+        reach, prev_name = None, ""
         for lo, hi, name in spans:
             if reach is not None and lo > reach + 1e-9:
                 gaps.append({"gap_mm": round(lo - reach, 3),

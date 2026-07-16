@@ -580,7 +580,7 @@ def test_cap_screw_single_shell():
 
 def test_drawing_circle_detection_and_pdf(tmp_path):
     from solidsight.drawings import draw_sheet, find_circles, hole_table
-    sc = make_scene()
+    make_scene()
     plate = box(40, 30, 6)
     plate = plate - parts.hole(5, 8).translate(10, 5, 6) \
                   - parts.hole(5, 8).translate(-10, -5, 6)
@@ -593,7 +593,7 @@ def test_drawing_circle_detection_and_pdf(tmp_path):
     holes = hole_table(circles, tm.extents)
     thru = [h for h in holes if abs(h["d"] - 5) < 0.2 and h["thru"]]
     assert len(thru) == 2                      # paired rims -> THRU holes
-    info = draw_sheet("plate", tm, tmp_path / "plate.pdf", "m.py", "test")
+    draw_sheet("plate", tm, tmp_path / "plate.pdf", "m.py", "test")
     pdf = (tmp_path / "plate.pdf").read_bytes()
     assert pdf.startswith(b"%PDF") and len(pdf) > 5000
     assert b"CreationDate" not in pdf          # deterministic sheet
@@ -603,7 +603,7 @@ def test_drawing_hidden_lines(tmp_path):
     from solidsight.drawings import view_edges
     # a block with a lug BEHIND it (as seen from the front): the lug's
     # edges must classify as hidden
-    sc = make_scene()
+    make_scene()
     solid = box(30, 10, 20) + box(10, 10, 10).translate(0, 10, 5)
     d = view_edges(solid.to_trimesh(), "front", res=500)
     assert len(d["visible"]) > 0 and len(d["hidden"]) > 0
@@ -813,3 +813,34 @@ def test_critique_and_cost():
     from solidsight.errors import SolidsightError
     with pytest.raises(SolidsightError):
         cost_estimate(sc, "laser")
+
+
+# --- motion inspection ------------------------------------------------------------
+
+def test_motion_finds_the_blocked_arc():
+    from solidsight.motion import inspect_motion
+    from solidsight.robot import joint
+    sc = make_scene()
+    sc.emit(box(60, 60, 5), name="base")
+    # arm rotating about Z at the origin; a post stands in its path at +X
+    sc.emit(box(40, 8, 5).translate(15, 0, 5), name="arm")
+    sc.emit(cylinder(h=20, d=10).translate(25, 25, 0), name="post")
+    joint("base", "arm", type="revolute", axis=(0, 0, 1),
+          origin=(0, 0, 5), limits=(0, 90))
+    reports = inspect_motion(sc, steps=6)
+    r = reports[0]
+    assert r["joint"] == "base_to_arm"
+    hit_posts = [s for s in r["collisions"]
+                 if any(h["part"] == "post" for h in s["hits"])]
+    assert hit_posts, "the arm must hit the post around 45 deg"
+    assert any(abs(s["value"] - 45) < 16 for s in hit_posts)
+    assert 0.0 in r["free_positions"]        # start is clear of the post
+    # non-principal axis -> actionable error
+    from solidsight.errors import SolidsightError
+    sc2 = make_scene()
+    sc2.emit(box(10, 10, 10), name="a")
+    sc2.emit(box(10, 10, 10).translate(20, 0, 0), name="b")
+    joint("a", "b", type="revolute", axis=(1, 1, 0), origin=(0, 0, 0),
+          limits=(0, 90))
+    with pytest.raises(SolidsightError, match="principal"):
+        inspect_motion(sc2)

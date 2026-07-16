@@ -132,6 +132,16 @@ def main(argv: list[str] | None = None) -> int:
                     help="material density g/cm3 for mass/inertia "
                          "(default 1.24 = solid PLA)")
 
+    mo = sub.add_parser("motion",
+                        help="sweep declared joints through their limits "
+                             "and report exact collisions per position")
+    mo.add_argument("model", help="path to the .py model file")
+    mo.add_argument("--joint", default=None,
+                    help="one joint (parent_to_child); default: all moving")
+    mo.add_argument("--steps", type=int, default=12,
+                    help="positions sampled across the range (default 12)")
+    mo.add_argument("--json", action="store_true")
+
     dr = sub.add_parser("drawing",
                         help="technical drawing: dimensioned third-angle "
                              "multi-view PDF per part")
@@ -402,6 +412,30 @@ def _dispatch(parser, args) -> int:
         for i, f in enumerate(e["fixes"], 1):
             _say(f"  fix {i}:    {f}")
         return 0
+    if args.command == "motion":
+        from .motion import inspect_motion
+        from .runner import run_model
+        try:
+            scene = run_model(Path(args.model))
+            reports = inspect_motion(scene, args.joint, steps=args.steps)
+        except SolidsightError as e:
+            _say(f"MOTION FAILED\n{e.render()}", err=True)
+            return 1
+        if args.json:
+            print(json.dumps(reports, indent=2))
+            return 0
+        rc = 0
+        for r in reports:
+            _say(f"joint {r['joint']} ({r['type']}, "
+                 f"{r['range'][0]}..{r['range'][1]} {r['unit']}): "
+                 f"{r['verdict']}")
+            for s in r["collisions"][:8]:
+                hits = "; ".join(f"{h['part']} ({h['overlap_mm3']} mm3)"
+                                 for h in s["hits"])
+                _say(f"  at {s['value']} {r['unit']}: hits {hits}")
+            if r["collisions"]:
+                rc = 1
+        return rc
     if args.command == "robot":
         from .robot import export_urdf
         from .runner import run_model

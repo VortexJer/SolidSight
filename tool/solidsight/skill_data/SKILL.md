@@ -40,6 +40,25 @@ solidsight diff old_out/ new_out/                # what did my change actually c
 
 solidsight catalog                               # list parametric parts (gears, threads, hinges, clips...)
 solidsight catalog spur_gear                     # full docs for one part
+
+solidsight watch model.py [build flags]          # live mode: rebuild on every source change (skips no-op edits)
+solidsight view model.py                         # interactive browser viewer with hot reload (isolate, section, explode, measure)
+solidsight build model.py --obj --glb --dxf --svg --skip-pairs --progress --events events.ndjson
+solidsight convert part.stl part.glb             # mesh format conversion
+
+solidsight components search "m4 socket head"    # offline real-part database -> exact parts.* call
+solidsight components show bearing_608
+solidsight query model.py distance lid box       # exact min distance / overlap between two parts
+solidsight fit 8 H7 g6                           # ISO 286 limits & fits, real values
+solidsight explain thin-wall                     # what a check id means + evidence + fix menu
+solidsight critique model.py                     # full design review (findings + verified good)
+solidsight cost model.py --process fdm           # material + machine-time estimate
+solidsight assembly model.py                     # BOM, per-axis play, suggested assembly sequence
+solidsight drawing model.py                      # dimensioned third-angle PDF per part
+solidsight robot model.py --sdf                  # joint() declarations -> URDF/SDF with real inertials
+solidsight motion model.py --steps 24            # sweep joints through limits: exact collision map
+solidsight bench run --dir benchmarks            # graded benchmark suite (grade solutions with --solution)
+solidsight plugins                               # installed extensions (entry-point group solidsight.plugins)
 solidsight version
 ```
 
@@ -93,12 +112,18 @@ drilling into any face, `parts.bolt_circle`, patterns.
 
 ### Step 2 - Check the catalog before deriving geometry
 
-Run `solidsight catalog`. Gears, threads, bolts, nuts, hinges, snap clips,
-boxes with lids, standoffs, honeycomb panels, and patterns already exist as
-tested parametric parts (`parts.spur_gear(...)`, `parts.iso_thread(...)`, ...).
-Composing catalog parts is always better than re-deriving an involute or a
-helix from math. Full signatures and pairing rules (gear meshing distance,
-thread clearances, clip/slot matching): `references/parts-catalog.md`.
+Run `solidsight catalog`. Gears, threads, bolts, cap screws, washers, nuts,
+bearings, shafts, timing pulleys, springs, NEMA motors, servos, T-slot
+extrusions, lead screws, linear rails, hinges, snap clips, boxes with lids,
+standoffs, honeycomb panels, and patterns already exist as tested parametric
+parts. Composing catalog parts is always better than re-deriving an involute
+or a helix from math. Full signatures and pairing rules: `references/parts-catalog.md`.
+
+When the design uses a REAL purchased component, search the offline
+database first: `solidsight components search "608 bearing"` returns the
+standard's exact dimensions and the ready-made call
+(`parts.component("bearing_608")`). Bought parts usually enter the scene as
+ghost references: `place(parts.component("nema17", length=40), ghost=True)`.
 
 ### Step 3 - Build the model incrementally, in this order
 
@@ -117,6 +142,15 @@ Core rules (full language reference: `references/design-language.md`):
   faces create zero-thickness seams and blind holes — solidsight warns when
   it detects them; take those warnings seriously.
 - End the file with `emit(solid, name="snake_case_name")` per part.
+- Attach SEMANTIC metadata to parts whose features matter downstream:
+  `emit(p, name="plate", features=[{"type": "hole", "d": 5,
+  "at": [10, 0, 6], "thru": True}])` — stored in report.json
+  parts[].features, so consumers reason about meaning, not triangles.
+
+**Iterating?** `solidsight watch model.py` rebuilds on every save (and
+proves when an edit changed nothing), and `solidsight view model.py`
+serves a live browser viewer — section planes, isolate, explode,
+two-point measuring — that hot-reloads on each successful rebuild.
 
 ### Step 4 - Build and LOOK after every geometric change
 
@@ -211,6 +245,15 @@ interfere by design (judge their overlap DEPTH, not contact).
 Use `--exploded` to render mating faces, and `--slice` through the joint to
 see engagement. Example of the full loop: `examples/05-assembly/`.
 
+`solidsight assembly model.py` adds the BOM, per-axis play of fit chains
+and a suggested bottom-up assembly sequence. When a printed part mates a
+MACHINED one (bearing seat, shaft, dowel), get the real numbers from
+`solidsight fit 8 H7 g6` (ISO 286). For mechanisms, declare
+`joint(parent, child, type="revolute", axis=..., origin=..., limits=...)`
+in the model: `solidsight robot` exports URDF/SDF with true masses and
+inertia, and `solidsight motion` sweeps each joint through its limits and
+reports the exact collision map (which angles hit what).
+
 ### Step 8 - Definition of done (checklist)
 
 Do not report the task complete until ALL of these hold for the final code:
@@ -239,6 +282,12 @@ Do not report the task complete until ALL of these hold for the final code:
 - `references/detail-mode.md` — modeling real technical objects faithfully:
   the detail-level question, the Feature Specification method, and the
   feature -> toolbox mapping table. Load it whenever detailed mode applies.
+- `references/platform.md` — the platform commands beyond build/query:
+  watch, view, formats/convert, components, drawing, robot, motion,
+  assembly/BOM, fit, explain, critique, cost, bench, plugins, events.
+- `references/domains.md` — choosing a modeling strategy per domain
+  (enclosures, mechanisms, furniture, architecture, organic/artistic,
+  terrain, jewelry, miniatures) and which validation mode fits each.
 
 Worked examples with real reports and renders: `examples/01-mounting-bracket`
 (simple), `02-snap-box` (booleans + snap fit), `03-gear-train` (catalog),
