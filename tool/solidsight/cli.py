@@ -237,6 +237,10 @@ def _print_summary(report: dict) -> None:
           f"{sc['size'][0]} x {sc['size'][1]} x {sc['size'][2]} mm, "
           f"{sc['total_volume_mm3']} mm3")
     for name, p in report["parts"].items():
+        if p.get("ghost"):
+            _say(f"  part '{name}': GHOST reference volume, "
+                 f"{p['volume_mm3']} mm3")
+            continue
         t = p["wall_thickness"]["min_mm"]
         _say(f"  part '{name}': vol {p['volume_mm3']} mm3, "
               f"{p['shells']} shell(s), min wall "
@@ -375,9 +379,9 @@ def _query(args) -> int:
 
 
 def _diff(path_a: Path, path_b: Path) -> int:
-    """Compare two report.json files: per-part geometry deltas and checks
-    that appeared or disappeared."""
-    reports = []
+    """Compare two build outputs: per-part geometry deltas, checks that
+    appeared or disappeared, and pixel differences between matching renders."""
+    reports, render_dirs = [], []
     for p in (path_a, path_b):
         if p.is_dir():
             p = p / "report.json"
@@ -386,6 +390,7 @@ def _diff(path_a: Path, path_b: Path) -> int:
                  "  try: point at an out/ dir or its report.json", err=True)
             return 1
         reports.append(json.loads(p.read_text(encoding="utf-8")))
+        render_dirs.append(p.parent / "renders")
     a, b = reports
 
     _say(f"diff: {a['model']} [{a['status']}] -> {b['model']} [{b['status']}]")
@@ -430,6 +435,26 @@ def _diff(path_a: Path, path_b: Path) -> int:
         _say(f"  GONE [{c['level'].upper()}] {c['message']}")
     if not (kb.keys() - ka.keys()) and not (ka.keys() - kb.keys()):
         _say("  checks: no differences")
+
+    da, db = render_dirs
+    if da.is_dir() and db.is_dir():
+        shared = sorted({f.name for f in da.glob("*.png")}
+                        & {f.name for f in db.glob("*.png")})
+        for name in shared:
+            try:
+                import numpy as np
+                from PIL import Image
+                ia = np.asarray(Image.open(da / name).convert("RGB"), int)
+                ib = np.asarray(Image.open(db / name).convert("RGB"), int)
+                if ia.shape != ib.shape:
+                    _say(f"  render {name}: different sizes")
+                    continue
+                changed = (np.abs(ia - ib).max(axis=2) > 8).mean() * 100
+                _say(f"  render {name}: "
+                     + ("identical" if changed == 0
+                        else f"{changed:.1f}% of pixels differ"))
+            except Exception as e:
+                _say(f"  render {name}: could not compare ({e})")
     return 0
 
 

@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.5.0 — 2026-07-16
+
+Rim breaks, ghost volumes, visual diffs.
+
+- `Solid.chamfer_rim(c)` / `Solid.round_rim(r)` — break ALL edges on a
+  top/bottom rim (any outline, holes included: a container mouth gets both
+  wall edges at once). Exact construction (slice + Minkowski roof), no BREP
+  needed. The most-requested "CSG can't do that" finally scoped and solved
+  for prismatic rims.
+- Ghost parts (`place(..., ghost=True)`): keep-out zones, connector
+  envelopes, swept insertion paths — fully measured in `pairs[]`/`expect()`,
+  rendered as X-ray outlines, excluded from print checks, exports and
+  material totals.
+- `parts.swept(solid, dx=, dy=, dz=)` — insertion-path volumes. Docs teach
+  the snap-fit semantics: sweep the RIGID body only and stop just above
+  seating; flexible hooks interfere by design — judge their overlap DEPTH
+  against allowed deflection.
+- `solidsight diff` now also compares renders: % of pixels changed per
+  matching view.
+- 4 new regression tests (29 total).
+
 ## v0.4.0 — 2026-07-16
 
 Spec-driven assemblies, freeform shapes, manufacturing sanity.

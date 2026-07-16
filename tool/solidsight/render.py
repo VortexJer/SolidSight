@@ -90,9 +90,10 @@ def render_view(scene: Scene, view: str | tuple, size: int = 900,
         # threads and Minkowski fillets
         from .geom import Solid as _S
         tm = _S(part.solid.manifold.simplify(0.05)).to_trimesh()
-        meshes.append((part.name, tm, _hex_rgb(part.color)))
+        meshes.append((part.name, tm, _hex_rgb(part.color),
+                       getattr(part, "ghost", False)))
 
-    all_pts = np.vstack([m.vertices for _, m, _ in meshes])
+    all_pts = np.vstack([m.vertices for _, m, _, _ in meshes])
     lo, hi = all_pts.min(axis=0), all_pts.max(axis=0)
     if focus is not None:
         center = np.asarray(focus[:3], float)
@@ -121,10 +122,13 @@ def render_view(scene: Scene, view: str | tuple, size: int = 900,
     zbuf = np.full((size, size), np.inf)
 
     _draw_grid(color, zbuf, cam, lo, hi)
-    for name, tm, rgb in meshes:
-        _rasterize(color, zbuf, cam, tm, rgb)
-    for name, tm, rgb in meshes:
-        _draw_edges(color, zbuf, cam, tm, rgb)
+    for name, tm, rgb, ghost in meshes:
+        if not ghost:
+            _rasterize(color, zbuf, cam, tm, rgb)
+    for name, tm, rgb, ghost in meshes:
+        # ghosts: X-ray outline only — edges drawn without occlusion so the
+        # reference volume reads through the solid parts
+        _draw_edges(color, zbuf, cam, tm, rgb, xray=ghost)
 
     img = Image.fromarray(color.clip(0, 255).astype(np.uint8), "RGB")
     _annotate(img, scene, cam, view_name, lo, hi, title, subtitle)
@@ -245,7 +249,7 @@ def _bary(p: np.ndarray, gx: np.ndarray, gy: np.ndarray):
 
 
 def _draw_edges(color: np.ndarray, zbuf: np.ndarray, cam: _Camera, tm,
-                rgb: np.ndarray) -> None:
+                rgb: np.ndarray, xray: bool = False) -> None:
     verts = np.asarray(tm.vertices, float)
     normals = np.asarray(tm.face_normals, float)
     adj = tm.face_adjacency
@@ -265,7 +269,11 @@ def _draw_edges(color: np.ndarray, zbuf: np.ndarray, cam: _Camera, tm,
     for ei in np.nonzero(keep)[0]:
         a, b = edges[ei]
         c = sil_rgb if silhouette[ei] else edge_rgb
-        _line(color, zbuf, pix[a], depth[a], pix[b], depth[b], c)
+        if xray:
+            _line(color, zbuf, pix[a], depth[a], pix[b], depth[b],
+                  rgb, bias=1e9)      # always visible, never occludes
+        else:
+            _line(color, zbuf, pix[a], depth[a], pix[b], depth[b], c)
 
 
 def _line(color: np.ndarray, zbuf: np.ndarray, p0, z0, p1, z1,
@@ -344,7 +352,10 @@ def _annotate(img: Image.Image, scene: Scene, cam: _Camera, view_name: str,
     ly = 64
     for part in scene.parts[:10]:
         draw.rectangle([18, ly, 30, ly + 12], fill=part.color, outline=None)
-        draw.text((38, ly - 1), part.name.upper(), fill=INK_SOFT, font=f_small)
+        label = part.name.upper()
+        if getattr(part, "ghost", False):
+            label += " (GHOST)"
+        draw.text((38, ly - 1), label, fill=INK_SOFT, font=f_small)
         ly += 20
     if len(scene.parts) > 10:
         draw.text((18, ly), f"+{len(scene.parts) - 10} MORE",

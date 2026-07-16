@@ -160,6 +160,11 @@ parts.loft(profiles, heights)
 parts.wrapped_text(string, d, size=10, depth=1, outward=0.5)
     # text wrapped around a d-cylinder, centered on +X. Subtract to
     # engrave; emboss with depth=0.3, outward=1.5 and union.
+
+parts.swept(solid, dx=, dy=, dz=, steps=None)
+    # the volume a part passes through while translating: place as a
+    # GHOST + expect() to test insertion paths (rigid bodies only —
+    # snap hooks interfere by design; judge their depth, not contact)
 ```
 
 For flat/ribbon curved shapes prefer the 2D `stroke()` + extrude (see

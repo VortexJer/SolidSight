@@ -258,6 +258,48 @@ def test_stability_detects_tippy_part():
     assert any(c["id"] == "unstable" for c in checks)
 
 
+# --- rim breaks --------------------------------------------------------------
+
+def test_chamfer_rim_removes_edge_material():
+    cup = cylinder(h=30, d=40) - cylinder(h=30, d=34).translate(0, 0, 3)
+    broken = cup.chamfer_rim(1.2)
+    assert broken.volume < cup.volume - 10
+    assert abs(broken.size[2] - cup.size[2]) < 1e-6   # height preserved
+    assert len([s for s in broken.manifold.decompose()
+                if s.volume() > 1e-9]) == 1
+
+
+def test_round_rim_both_ends_single_shell():
+    b = box(20, 20, 10).round_rim(2).round_rim(2, bottom=True)
+    assert b.volume < 4000
+    assert len([s for s in b.manifold.decompose() if s.volume() > 1e-9]) == 1
+
+
+# --- ghost parts + swept insertion paths -------------------------------------
+
+def test_ghost_measured_but_not_analyzed():
+    from solidsight.assembly import expect
+    sc = make_scene()
+    sc.emit(box(20, 20, 10), name="body")
+    sc.emit(box(5, 5, 30).translate(30, 0, 0), name="keepout", ghost=True)
+    expect("keepout", "body", clearance=15)
+    metrics, checks, pairs = analyze_scene(
+        sc, ValidationOptions(mode="print-safe"))
+    assert metrics["keepout"]["ghost"] is True
+    assert "wall_thickness" not in metrics["keepout"]   # not print-analyzed
+    by = {frozenset((p["a"], p["b"])): p for p in pairs}
+    assert by[frozenset(("keepout", "body"))]["expectation"] == "met"
+    # ghost must not trigger print-safe part checks (floating etc.)
+    assert not any(c.get("part") == "keepout" for c in checks)
+
+
+def test_swept_covers_travel():
+    bar = box(4, 4, 4)
+    path = parts.swept(bar, dz=-20)
+    assert path.size[2] == pytest.approx(24, abs=0.01)
+    assert path.volume > bar.volume * 4
+
+
 # --- skill self-hosting -----------------------------------------------------
 
 def test_skill_install_and_remove(tmp_path):

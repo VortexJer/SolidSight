@@ -324,6 +324,63 @@ class Solid:
         opened.desc = f"fillet({self.desc}, r={fmt_num(r)})"
         return opened
 
+    # -- directional edge breaks (rims) -----------------------------------------
+
+    def chamfer_rim(self, c: float, z: float | None = None,
+                    bottom: bool = False, segments: int | None = 24) -> "Solid":
+        """Break ALL edges lying on the top (or bottom) rim with a 45-degree
+        chamfer of size c — box tops, cylinder mouths, container lips (both
+        sides of the wall at once). Works on any outline, holes included.
+        Requires roughly vertical walls near the rim (true for boxes,
+        cylinders, extrusions, containers). z overrides which plane is
+        treated as the rim (default: the solid's top/bottom)."""
+        return self._break_rim(c, z, bottom, "chamfer", segments)
+
+    def round_rim(self, r: float, z: float | None = None,
+                  bottom: bool = False, segments: int | None = 24) -> "Solid":
+        """Like chamfer_rim() but with a quarter-round of radius r —
+        the finger-friendly rim for cups, vases and handles."""
+        return self._break_rim(r, z, bottom, "round", segments)
+
+    def _break_rim(self, c: float, z: float | None, bottom: bool,
+                   style: str, segments: int | None) -> "Solid":
+        _positive("chamfer_rim" if style == "chamfer" else "round_rim", c=c)
+        work = self.mirror("z") if bottom else self
+        lo, hi = work.bbox
+        z_top = float(z) if z is not None and not bottom else \
+            (-float(z) if z is not None else hi[2])
+        c = float(c)
+        contour = work._m.slice(z_top - c)
+        if contour.is_empty():
+            raise EmptyGeometryError(
+                f"no material at z={fmt_num(z_top - c)} to build the rim from",
+                suggestion="the rim size is bigger than the part, or z is "
+                           "outside the part")
+        inner = contour.offset(-c, JoinType.Round, 2.0, _segments(segments))
+        if inner.is_empty():
+            raise EmptyGeometryError(
+                f"rim break of {fmt_num(c)} consumed the whole outline — "
+                "the top is thinner than 2x the break size",
+                suggestion="use a smaller c/r")
+        slab = Manifold.extrude(inner, 0.01).translate([0, 0, z_top - 0.01])
+        seg = _segments(segments)
+        if style == "chamfer":
+            # cone: apex at origin, widening downward, 45 degrees
+            tool = Manifold.cylinder(c, c, 0.001, seg, False).translate(
+                [0, 0, -c])
+        else:
+            # quarter-round: sphere tangent at the origin from below
+            tool = Manifold.sphere(c, seg).translate([0, 0, -c])
+        roof = slab.minkowski_sum(tool)
+        below = work._m.trim_by_plane([0, 0, -1], -(z_top - c))
+        crown = work._m ^ roof
+        out = Solid(below + crown,
+                    f"{style}_rim({_short(self.desc)}, {fmt_num(c)})")
+        if bottom:
+            out = out.mirror("z")
+        out.desc = f"{style}_rim({_short(self.desc)}, {fmt_num(c)})"
+        return out
+
     # -- freeform ---------------------------------------------------------------
 
     def refine(self, edge_mm: float) -> "Solid":

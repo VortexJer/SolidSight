@@ -38,3 +38,32 @@ def tube_path(points, d: float, segments: int | None = 24) -> Solid:
 
 def _dist(a, b) -> float:
     return math.dist(a, b)
+
+
+def swept(solid: Solid, dx: float = 0.0, dy: float = 0.0, dz: float = 0.0,
+          steps: int | None = None) -> Solid:
+    """The volume a part passes through while translating by (dx, dy, dz) —
+    place it as a GHOST to test an insertion/removal path against the other
+    parts:
+
+        body = from_model("lid.py")
+        rigid = body - clips                    # sweep the RIGID body only
+        place(parts.swept(rigid, dz=-30), name="lid_path", ghost=True)
+        expect("lid_path", "box", status="clear")   # rigid path must be free
+
+    Snap-fit members interfere BY DESIGN during insertion: do not sweep
+    them; judge their interference DEPTH (pairs[] overlap patches) against
+    the hook's allowed deflection instead.
+
+    Union of `steps` translated copies (default: one copy every 0.5 mm)."""
+    travel = math.sqrt(dx * dx + dy * dy + dz * dz)
+    if travel < 1e-9:
+        raise BadArgumentError("swept() travel is zero",
+                               suggestion="pass dx/dy/dz, e.g. swept(lid, dz=-30)")
+    n = steps if steps is not None else min(200, max(8, int(travel / 0.5)))
+    copies = [solid.translate(dx * i / n, dy * i / n, dz * i / n)
+              for i in range(n + 1)]
+    out = union(*copies)
+    out.desc = (f"swept({fmt_num(travel)} mm along "
+                f"({fmt_num(dx)}, {fmt_num(dy)}, {fmt_num(dz)}))")
+    return out

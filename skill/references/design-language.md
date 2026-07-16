@@ -111,9 +111,14 @@ Cheapest first:
 1. `rect(...).round_corners(r).extrude(h)` — 2D fillets, use whenever the
    edges you want rounded are vertical.
 2. `rounded_box(x, y, z, r)` / `(..., vertical_only=True)` — exact.
-3. `solid.fillet(r)` — rounds ALL edges via Minkowski morphology. Accurate
-   but slow; apply once on the finished shape, keep `segments` low.
-4. `solid.grow(r)` / `solid.shrink(r)` — Minkowski dilate/erode when you
+3. `solid.chamfer_rim(c)` / `solid.round_rim(r)` — break ALL edges on the
+   top rim (`bottom=True` for the base, `z=` for another plane). Works on
+   any outline, holes included — a container mouth gets both sides of its
+   wall broken at once. Needs roughly vertical walls at that rim (boxes,
+   cylinders, extrusions). Exact and fast.
+4. `solid.fillet(r)` — rounds ALL edges everywhere via Minkowski
+   morphology. Accurate but slow; apply once on the finished shape.
+5. `solid.grow(r)` / `solid.shrink(r)` — Minkowski dilate/erode when you
    need an offset shell.
 
 ## Freeform deformation
@@ -171,6 +176,21 @@ expect("card", "lid", clearance=0.5)               # at least 0.5 mm
 `params.py` next to the models and `from params import *` in each one.
 Duplicate constants that drift between box.py and lid.py are how printed
 fits die silently.
+
+**Ghost parts** (`place(..., ghost=True)` / `emit(..., ghost=True)`) are
+reference volumes: keep-out zones, connector envelopes, swept insertion
+paths. They are fully measured in `pairs[]` and `expect()`, drawn as X-ray
+outlines, and excluded from print checks, exports and material totals.
+
+**Insertion checks** with `parts.swept(solid, dx=, dy=, dz=)`: place the
+swept volume of the moving part as a ghost and declare its clearance.
+Two rules learned the hard way:
+- Sweep the RIGID body only. Snap-fit hooks interfere BY DESIGN while
+  flexing past a wall — judge their interference DEPTH (the overlap patch
+  thickness in `pairs[]`) against the hook's allowed deflection, never
+  "zero contact".
+- Stop the sweep just above the seated position (0.2 mm), or the final
+  resting contact reads as a violation of a `clear` expectation.
 
 ## Parametric style
 

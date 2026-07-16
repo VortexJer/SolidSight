@@ -26,10 +26,19 @@ from .scene import emit
 
 
 def place(solid: Solid, name: str, at: tuple = (0, 0, 0),
-          rotate: tuple = (0, 0, 0), color: str | None = None) -> Solid:
+          rotate: tuple = (0, 0, 0), color: str | None = None,
+          ghost: bool = False) -> Solid:
     """Position a part in the assembly: rotate (degrees, X then Y then Z,
     around the origin), THEN translate by `at`. Registers it under `name`
-    like emit() does, and returns the placed solid."""
+    like emit() does, and returns the placed solid.
+
+    ghost=True places a REFERENCE volume (keep-out zone, swept insertion
+    path, connector envelope): fully measured in pairs[] / expect(), but
+    rendered as an X-ray outline and excluded from prints, exports and
+    material totals. Snap-fit note: flexible members interfere ON PURPOSE
+    while inserting — sweep only the RIGID body as a ghost, and judge the
+    flexible hook's interference DEPTH (in the overlap patches) against its
+    allowed deflection instead of expecting zero contact."""
     if not isinstance(solid, Solid):
         raise BadArgumentError(
             f"place() got a {type(solid).__name__}, not a Solid",
@@ -38,7 +47,7 @@ def place(solid: Solid, name: str, at: tuple = (0, 0, 0),
     rx, ry, rz = rotate
     x, y, z = at
     placed = solid.rotate(rx, ry, rz).translate(x, y, z)
-    return emit(placed, name=name, color=color)
+    return emit(placed, name=name, color=color, ghost=ghost)
 
 
 def _resolve(path: str) -> Path:

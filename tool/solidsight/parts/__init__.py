@@ -10,7 +10,7 @@ from .features import bolt_circle, hole
 from .gears import spur_gear
 from .lofts import loft, wrapped_text
 from .mechanisms import hinge, snap_clip, snap_slot
-from .paths import tube_path
+from .paths import swept, tube_path
 from .patterns import circular_pattern, grid_pattern, linear_pattern
 from .threads import ISO_COARSE_PITCH, bolt, iso_thread, nut
 
@@ -29,6 +29,7 @@ CATALOG = {
     "standoff": standoff,
     "hex_grid": hex_grid,
     "tube_path": tube_path,
+    "swept": swept,
     "loft": loft,
     "wrapped_text": wrapped_text,
     "honeycomb_panel": honeycomb_panel,

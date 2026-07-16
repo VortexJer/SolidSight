@@ -202,6 +202,12 @@ iteration. Share dimensions between the assembly's model files through a
 - every declared expectation is met (clearances 0.15-0.3 mm for printed
   sliding/snapping fits; "touching" only for parts meant to press together).
 
+Keep-out zones and insertion paths: place reference volumes with
+`place(..., ghost=True)` (measured in pairs[]/expect(), X-ray rendered,
+never printed) and test insertions with `parts.swept(rigid_body, dz=-30)`
+— sweep the RIGID body only and stop just above seating; snap-fit hooks
+interfere by design (judge their overlap DEPTH, not contact).
+
 Use `--exploded` to render mating faces, and `--slice` through the joint to
 see engagement. Example of the full loop: `examples/05-assembly/`.
 

@@ -81,16 +81,19 @@ def build_model(model_path: Path, out_dir: Path, mode: str = "free",
             render_files.append(f"renders/{fname}")
 
     export_files: list[str] = []
+    solid_parts = [p for p in scene.parts if not p.ghost]
     for enabled, ext in ((export_stl, "stl"), (export_3mf, "3mf")):
         if not enabled:
             continue
         mesh_dir = out_dir / ext
         mesh_dir.mkdir(exist_ok=True)
-        for part in scene.parts:
+        for part in solid_parts:
             part.solid.to_trimesh().export(mesh_dir / f"{part.name}.{ext}")
             export_files.append(f"{ext}/{part.name}.{ext}")
-        if len(scene.parts) > 1:
-            combined.to_trimesh().export(mesh_dir / f"combined.{ext}")
+        if len(solid_parts) > 1:
+            from .geom import union as _union
+            _union(*[p.solid for p in solid_parts]).to_trimesh().export(
+                mesh_dir / f"combined.{ext}")
             export_files.append(f"{ext}/combined.{ext}")
 
     has_fail = any(c["level"] == "fail" for c in checks)
@@ -107,7 +110,8 @@ def build_model(model_path: Path, out_dir: Path, mode: str = "free",
             "part_count": len(scene.parts),
             "bbox": {"min": _r3(lo), "max": _r3(hi)},
             "size": _r3(combined.size),
-            "total_volume_mm3": round(sum(p.solid.volume for p in scene.parts), 3),
+            "total_volume_mm3": round(sum(p.solid.volume for p in scene.parts
+                                          if not p.ghost), 3),
         },
         "parts": metrics,
         "pairs": pairs,

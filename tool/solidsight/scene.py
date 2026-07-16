@@ -35,11 +35,15 @@ NAMED_COLORS = {
 }
 
 
+GHOST_COLOR = "#9aa0a6"
+
+
 @dataclass
 class Part:
     name: str
     solid: Solid
     color: str
+    ghost: bool = False
 
 
 @dataclass
@@ -48,7 +52,8 @@ class Scene:
     warnings: list[dict] = field(default_factory=list)
     expectations: list[dict] = field(default_factory=list)
 
-    def emit(self, solid: Solid, name: str, color: str | None = None) -> Solid:
+    def emit(self, solid: Solid, name: str, color: str | None = None,
+             ghost: bool = False) -> Solid:
         if not isinstance(solid, Solid):
             got = type(solid).__name__
             hint = ("call .extrude(height) on the Sketch first"
@@ -71,8 +76,10 @@ class Scene:
                 f'part "{name}" is empty geometry',
                 suggestion="an earlier boolean removed everything; check the "
                            "construction of this part")
-        resolved = _resolve_color(color, len(self.parts))
-        self.parts.append(Part(name=name, solid=solid, color=resolved))
+        resolved = (GHOST_COLOR if ghost and color is None
+                    else _resolve_color(color, len(self.parts)))
+        self.parts.append(Part(name=name, solid=solid, color=resolved,
+                               ghost=ghost))
         return solid
 
     def warn(self, code: str, message: str, where: str | None = None,
@@ -146,13 +153,19 @@ def deactivate() -> None:
     _current = None
 
 
-def emit(solid: Solid, name: str, color: str | None = None) -> Solid:
+def emit(solid: Solid, name: str, color: str | None = None,
+         ghost: bool = False) -> Solid:
     """Register a finished part under a name. Call once per part, at the end
-    of the model file. Returns the solid unchanged so it can be reused."""
+    of the model file. Returns the solid unchanged so it can be reused.
+
+    ghost=True makes it a REFERENCE volume: it participates fully in the
+    pair collision/clearance analysis (keep-out zones, swept insertion
+    paths, board outlines) but is rendered as an X-ray outline and excluded
+    from print checks, material totals and STL/3MF exports."""
     sc = current()
     if sc is None:
         raise SceneError(
             "emit() called outside a solidsight build",
             suggestion="run the model through `solidsight build model.py`; "
                        "for ad-hoc scripts create a Scene and call scene.emit()")
-    return sc.emit(solid, name=name, color=color)
+    return sc.emit(solid, name=name, color=color, ghost=ghost)

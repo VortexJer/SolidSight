@@ -48,6 +48,18 @@ def analyze_scene(scene: Scene,
                             suggestion=w.get("suggestion")))
 
     for part in scene.parts:
+        if part.ghost:
+            lo, hi = part.solid.bbox
+            metrics[part.name] = {
+                "ghost": True,
+                "volume_mm3": round(part.solid.volume, 3),
+                "bbox": {"min": _r3(lo), "max": _r3(hi),
+                         "size": _r3(part.solid.size)},
+                "color": part.color,
+                "note": "reference volume: measured in pairs[], excluded "
+                        "from print checks, exports and material totals",
+            }
+            continue
         m, cs = _analyze_part(part, opts)
         metrics[part.name] = m
         checks.extend(cs)
