@@ -21,6 +21,22 @@ write code  ->  solidsight build  ->  renders + report.json  ->  inspect  ->  ad
   <img src="skill/examples/03-gear-train/out/renders/01_iso.png" width="45%">
 </p>
 
+## Same prompt, with and without the tool
+
+*"Make a detailed 3D model of an inline-4 engine block"* — once as a blind
+one-shot (plain Python + trimesh, no renders, no validation: what a bare
+agent does), once through solidsight's loop. Same model knowledge, same
+kinds of mistakes on both sides; the loop is the difference between
+shipping them and catching them. The blind result ended convinced of
+success — the audit found head bolts drilled into the cam tunnel, 1.16 mm
+jacket walls, ports drilled along the wrong axis and mounts lying flat.
+
+<p align="center">
+  <img src="docs/comparison/blind/out/renders/02_iso_back.png" width="49%">
+  <img src="skill/examples/07-engine-block/out/renders/02_iso_back.png" width="49%">
+</p>
+<p align="center"><em>left: blind one-shot · right: same prompt through the loop — full protocol, audit evidence and honest caveats in <a href="docs/comparison/README.md">docs/comparison</a></em></p>
+
 ## Quickstart (30 seconds)
 
 ```bash

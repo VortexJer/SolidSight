@@ -1,0 +1,122 @@
+{
+  "tool": "solidsight 0.5.0",
+  "model": "audit.py",
+  "mode": "print-safe",
+  "units": "mm",
+  "status": "failed",
+  "scene": {
+    "part_count": 1,
+    "bbox": {
+      "min": [
+        -110.0,
+        -57.0,
+        0.0
+      ],
+      "max": [
+        110.0,
+        68.0,
+        130.0
+      ]
+    },
+    "size": [
+      220.0,
+      125.0,
+      130.0
+    ],
+    "total_volume_mm3": 1312610.871
+  },
+  "parts": {
+    "blind_block": {
+      "volume_mm3": 1312610.871,
+      "surface_area_mm2": 281228.969,
+      "bbox": {
+        "min": [
+          -110.0,
+          -57.0,
+          0.0
+        ],
+        "max": [
+          110.0,
+          68.0,
+          130.0
+        ],
+        "size": [
+          220.0,
+          125.0,
+          130.0
+        ]
+      },
+      "center_of_mass": [
+        -0.283,
+        2.69,
+        68.074
+      ],
+      "triangles": 12060,
+      "shells": 1,
+      "watertight": true,
+      "genus": 36,
+      "wall_thickness": {
+        "min_mm": 1.161,
+        "at": [
+          -50.923,
+          1.175,
+          115.0
+        ],
+        "samples": 600,
+        "method": "inward-normal-ray"
+      },
+      "overhangs": {
+        "max_deg": 90.0,
+        "area_mm2": 16476.87,
+        "worst_at": [
+          -89.392,
+          -23.396,
+          55.0
+        ],
+        "threshold_deg": 50.0
+      },
+      "internal_voids": {
+        "count": 0,
+        "res_mm": null,
+        "voids": []
+      },
+      "print_estimate": {
+        "material_g_pla": 1627.6,
+        "material_g_petg": 1667.0,
+        "rough_time_min": 2188,
+        "note": "solid part at 100% infill; time is +-50%, slicer-dependent"
+      },
+      "stability": {
+        "standing": true,
+        "com_margin_mm": 54.31
+      },
+      "color": "#8b8b88"
+    }
+  },
+  "pairs": [],
+  "checks": [
+    {
+      "id": "thin-wall",
+      "level": "fail",
+      "part": "blind_block",
+      "message": "part \"blind_block\" has a 1.161 mm wall \u2014 below the 1.2 mm print-safe minimum",
+      "where": "thinnest point near (-50.923, 1.175, 115)",
+      "suggestion": "thicken that region, or lower --min-wall if your printer really handles it. Inspect: solidsight build <model> --views iso,iso_back --focus -50.9,1.2,115.0,8.0 --slice z=115.0 --out out_focus"
+    },
+    {
+      "id": "overhang",
+      "level": "warn",
+      "part": "blind_block",
+      "message": "part \"blind_block\" has 16476.9 mm2 of faces steeper than 50 deg overhang (worst: 90 deg)",
+      "where": "worst face near (-89.392, -23.396, 55)",
+      "suggestion": "reorient the part, chamfer the underside (45 deg cones under bosses), or accept support material. Flat roofs spanning an opening wall-to-wall (port slots, windows) are BRIDGES and usually print fine despite this warning. Inspect: solidsight build <model> --views iso,iso_back --focus -89.4,-23.4,55.0,12.0 --slice z=55.0 --out out_focus"
+    }
+  ],
+  "files": {
+    "report": "report.json",
+    "renders": [
+      "renders/01_iso.png"
+    ],
+    "exports": []
+  }
+}

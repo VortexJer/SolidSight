@@ -58,7 +58,9 @@ for cx in BORE_XS:
     block = block - parts.hole(BORE, 6, counterbore=(45, 4)).translate(
         cx, 0, DECK_Z)                    # liner step (shallow spigot)
 
-head_bolt = parts.hole(6.8, 22, chamfer=0.5, drill_point=True)
+# depth 15: a 22 mm drilling (plus its 118-deg point) broke through into
+# the cam tunnel on the y=-33 row — found with `query ray 0 -33 132 0 0 -1`
+head_bolt = parts.hole(6.8, 15, chamfer=0.5, drill_point=True)
 for hx in (-96, -48, 0, 48, 96):
     for hy in (-33, 33):
         block = block - head_bolt.translate(hx, hy, DECK_Z)
