@@ -1,5 +1,5 @@
 {
-  "tool": "solidsight 0.1.0",
+  "tool": "solidsight 0.2.0",
   "model": "model.py",
   "mode": "print-safe",
   "units": "mm",

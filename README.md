@@ -17,8 +17,8 @@ write code  ->  solidsight build  ->  renders + report.json  ->  inspect  ->  ad
 ```
 
 <p align="center">
+  <img src="skill/examples/07-engine-block/out/renders/01_iso.png" width="45%">
   <img src="skill/examples/03-gear-train/out/renders/01_iso.png" width="45%">
-  <img src="skill/examples/04-vase/out/renders/01_iso.png" width="45%">
 </p>
 
 ## Quickstart (30 seconds)
@@ -117,6 +117,7 @@ metric. Each real bug is pinned by a regression test in `tool/tests/`
 | [`04-vase`](skill/examples/04-vase) | organic twisted form in `--free` mode |
 | [`05-assembly`](skill/examples/05-assembly) | multi-part assembly; intentional collision caught with exact bbox/volume, then fixed with measured clearances |
 | [`06-hidden-cavity`](skill/examples/06-hidden-cavity) | a sealed cavity invisible in renders, caught by the report and provable via `query ray`/`voxels` |
+| [`07-engine-block`](skill/examples/07-engine-block) | **detail mode**: a faithful inline-4 block (bores, liner steps, head-bolt matrix, water jacket, cam tunnel, oil galleries, pan rail, gussets, filter pad, inclined mounts) built region-by-region from a feature specification |
 
 ## Stack and why
 

@@ -6,6 +6,7 @@ compose with instead of re-deriving geometry from scratch.
 
 from .enclosures import (box_with_lid, container, hex_grid, honeycomb_panel,
                          standoff)
+from .features import bolt_circle, hole
 from .gears import spur_gear
 from .mechanisms import hinge, snap_clip, snap_slot
 from .paths import tube_path
@@ -13,6 +14,8 @@ from .patterns import circular_pattern, grid_pattern, linear_pattern
 from .threads import ISO_COARSE_PITCH, bolt, iso_thread, nut
 
 CATALOG = {
+    "hole": hole,
+    "bolt_circle": bolt_circle,
     "spur_gear": spur_gear,
     "iso_thread": iso_thread,
     "bolt": bolt,

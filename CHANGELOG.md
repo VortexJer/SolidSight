@@ -1,5 +1,28 @@
 # Changelog
 
+## v0.2.0 — 2026-07-16
+
+Detail mode: faithful functional models of real technical objects.
+
+- Skill: when the request is a technical object and the fidelity was not
+  stated, the agent asks ONE question (representative vs detailed
+  functional). Detailed mode follows `references/detail-mode.md`: a
+  per-region Feature Specification before code, named datums, region-by-
+  region build + verify, and a feature -> toolbox mapping table.
+- `parts.hole()` — the workhorse of mechanical detail: plain, counterbored,
+  countersunk, chamfered, drill-point blind holes as one cutter.
+- `Solid.aim(direction)` — orient any downward-built tool to drill/pocket
+  into any axis-aligned face (kills the double-rotate dance).
+- `parts.bolt_circle()` — hole patterns on a circle.
+- Composed operation descriptions are now capped, keeping warning/error
+  texts readable on deeply built models.
+- New worked proof: `examples/07-engine-block`, a detailed inline-4 block
+  (deep skirt, pan rail + gussets, bores + liner steps, head-bolt matrix,
+  siamese water jacket, cam tunnel, oil galleries, coolant ports, filter
+  pad, inclined engine mounts) built with the method. While building it,
+  the validator caught two sealed cavities (buried mount drillings) and a
+  0.75 mm jacket-to-bore wall — the loop works at this density.
+
 ## v0.1.0 — 2026-07-16
 
 First public release.

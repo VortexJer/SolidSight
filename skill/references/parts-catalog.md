@@ -4,6 +4,29 @@ Everything here is available in model files as `parts.<name>(...)`. Compose
 these instead of re-deriving mechanical geometry. `solidsight catalog <name>`
 prints the same signatures at the terminal.
 
+## Holes (the workhorse of mechanical detail)
+
+```python
+parts.hole(d, depth, counterbore=(D, h), countersink=D | (D, angle),
+           chamfer=0.0, drill_point=False, through_margin=1.0)
+    # drilling CUTTER: entry at the origin, drilling -Z; subtract it.
+parts.bolt_circle(cutter, count, d)
+    # n copies on a circle of diameter d around Z (first on +X)
+```
+
+Orient onto any face with `.aim(direction)` (the direction the tool
+travels), then translate the entry point onto the surface:
+
+```python
+block -= parts.hole(5.5, 12, counterbore=(9.5, 5.5)).translate(10, 0, TOP_Z)
+block -= parts.hole(4.2, 10, chamfer=0.4).aim("-y").translate(0, WALL_Y, 8)
+flange -= parts.bolt_circle(parts.hole(6.6, 99), 6, 72).translate(0, 0, T)
+```
+
+Tapped holes: model the tap drill (`hole(d=4.2)` for M5) with `chamfer` +
+`drill_point=True`; only use `parts.iso_thread(internal=True)` when the
+thread must actually work.
+
 ## Gears
 
 ```python

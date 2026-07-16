@@ -63,6 +63,11 @@ def _positive(name: str, **dims: float) -> None:
                 suggestion=f"call {name}() with {k} > 0 (units are mm)")
 
 
+def _short(desc: str, n: int = 70) -> str:
+    """Cap composed descriptions so error/warning texts stay readable."""
+    return desc if len(desc) <= n else desc[:n - 3] + "..."
+
+
 def _warn(code: str, message: str, where: str | None = None,
           suggestion: str | None = None) -> None:
     """Record a build warning on the active scene, if any."""
@@ -161,6 +166,32 @@ class Solid:
                 suggestion='e.g. part.mirror("x") reflects left<->right')
         return Solid(self._m.mirror(normals[axis]), self.desc)
 
+    def aim(self, direction: str) -> "Solid":
+        """Re-orient a DOWNWARD-built tool so it works along an axis.
+        Cutters from the catalog (parts.hole, ...) are built drilling -Z
+        with their entry point at the origin; aim() maps that -Z onto the
+        given axis direction, then you translate the entry point onto the
+        face:
+
+            block -= parts.hole(d=6, depth=10).aim("-y").translate(0, 20, 8)
+            # drills INTO the wall whose outside faces +Y, at (0, 20, 8)
+
+        direction: "+x" "-x" "+y" "-y" "+z" "-z" (the way the tool travels).
+
+        Extrusions grow UP (+Z) — make one a downward tool first:
+            pocket = outline.extrude(depth).translate(0, 0, -depth).aim("+x")
+        """
+        rots = {"-z": (0, 0, 0), "+z": (180, 0, 0),
+                "+y": (90, 0, 0), "-y": (-90, 0, 0),
+                "+x": (0, -90, 0), "-x": (0, 90, 0)}
+        if direction not in rots:
+            raise BadArgumentError(
+                f"aim() direction must be one of {sorted(rots)}, "
+                f"got {direction!r}",
+                suggestion='e.g. .aim("-y") to drill into a +Y-facing wall')
+        rx, ry, rz = rots[direction]
+        return self.rotate(rx, ry, rz)
+
     def centered(self) -> "Solid":
         """Move so the bounding-box center sits at the origin."""
         c = self.bbox_center
@@ -175,7 +206,8 @@ class Solid:
 
     def __add__(self, other: "Solid") -> "Solid":
         _check_solid("union", other)
-        result = Solid(self._m + other._m, f"union({self.desc}, {other.desc})")
+        result = Solid(self._m + other._m,
+                       f"union({_short(self.desc)}, {_short(other.desc)})")
         # Coplanar-touch unions are degenerate: the pieces stay separated by
         # a zero-thickness seam (they look fused but are not). Volume being
         # exactly additive while the bboxes touch is the fingerprint.
@@ -202,7 +234,7 @@ class Solid:
         _check_solid("difference", other)
         before = self.volume
         result = Solid(self._m - other._m,
-                       f"difference({self.desc} minus {other.desc})")
+                       f"difference({_short(self.desc)} minus {_short(other.desc)})")
         if result.is_empty:
             raise EmptyGeometryError(
                 f"difference removed the entire solid: '{other.desc}' "
@@ -233,7 +265,7 @@ class Solid:
     def __and__(self, other: "Solid") -> "Solid":
         _check_solid("intersection", other)
         result = Solid(self._m ^ other._m,
-                       f"intersection({self.desc}, {other.desc})")
+                       f"intersection({_short(self.desc)}, {_short(other.desc)})")
         if result.is_empty:
             if _bbox_disjoint(self.bbox, other.bbox):
                 where = (f"'{self.desc}' bbox {fmt_bbox(self.bbox)} vs "
@@ -550,14 +582,15 @@ class Sketch:
     # booleans
     def __add__(self, other: "Sketch") -> "Sketch":
         _check_sketch("union", other)
-        return Sketch(self._cs + other._cs, f"union({self.desc}, {other.desc})")
+        return Sketch(self._cs + other._cs,
+                      f"union({_short(self.desc)}, {_short(other.desc)})")
 
     __or__ = __add__
 
     def __sub__(self, other: "Sketch") -> "Sketch":
         _check_sketch("difference", other)
         out = Sketch(self._cs - other._cs,
-                     f"difference({self.desc} minus {other.desc})")
+                     f"difference({_short(self.desc)} minus {_short(other.desc)})")
         if out.is_empty:
             raise EmptyGeometryError(
                 f"2D difference removed the entire sketch '{self.desc}'",

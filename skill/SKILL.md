@@ -70,6 +70,17 @@ Every part name here becomes an `emit(solid, name="...")` at the end of the
 file. If you cannot write this list, you do not understand the request yet —
 ask the user, do not guess geometry.
 
+**Technical objects — ask the detail level.** If the request is a real
+technical object (engine, gearbox, housing, pump...) and the user did not
+say how faithful it must be, ask ONE question: *representative model, or
+detailed functional model (every bolt pattern, port, gallery, rib)?*
+For detailed mode, load `references/detail-mode.md` and replace the short
+bill of parts with a per-region **Feature Specification**, then build and
+verify region by region. Detail lives in features (holes, bosses, flanges,
+tunnels, pockets), and the catalog has first-class tools for them:
+`parts.hole` (counterbore/countersink/chamfer/drill-point), `.aim()` for
+drilling into any face, `parts.bolt_circle`, patterns.
+
 ### Step 2 - Check the catalog before deriving geometry
 
 Run `solidsight catalog`. Gears, threads, bolts, nuts, hinges, snap clips,
@@ -195,11 +206,15 @@ Do not report the task complete until ALL of these hold for the final code:
   pairing math and worked examples.
 - `references/report-guide.md` — every report.json field and check id, what
   it means, how to fix it; query output interpretation.
+- `references/detail-mode.md` — modeling real technical objects faithfully:
+  the detail-level question, the Feature Specification method, and the
+  feature -> toolbox mapping table. Load it whenever detailed mode applies.
 
 Worked examples with real reports and renders: `examples/01-mounting-bracket`
 (simple), `02-snap-box` (booleans + snap fit), `03-gear-train` (catalog),
 `04-vase` (organic, --free), `05-assembly` (collision found -> fixed),
-`06-hidden-cavity` (cavity invisible in renders, caught by report + queries).
+`06-hidden-cavity` (cavity invisible in renders, caught by report + queries),
+`07-engine-block` (detail mode: inline-4 from a feature specification).
 
 ## Honesty Rules
 

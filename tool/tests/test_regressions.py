@@ -156,6 +156,26 @@ def test_stroke_single_region():
                 if s.volume() > 1e-9]) == 1
 
 
+def test_hole_counterbore_geometry():
+    block = box(30, 30, 20)
+    cut = block - parts.hole(6, 12, counterbore=(10, 5)).translate(0, 0, 20)
+    import math as m
+    removed = block.volume - cut.volume
+    expected = m.pi * (3 ** 2) * 12 + m.pi * (5 ** 2 - 3 ** 2) * 5
+    assert abs(removed - expected) / expected < 0.01   # 64-segment circles
+    assert len([s for s in cut.manifold.decompose() if s.volume() > 1e-9]) == 1
+
+
+def test_aim_directions():
+    h = parts.hole(4, 10, through_margin=1)
+    for direction, axis, sign in (("+x", 0, +1), ("-x", 0, -1),
+                                  ("+y", 1, +1), ("-y", 1, -1),
+                                  ("-z", 2, -1), ("+z", 2, +1)):
+        lo, hi = h.aim(direction).bbox
+        deep_end = hi[axis] if sign > 0 else lo[axis]
+        assert abs(deep_end - sign * 10) < 1e-6, direction
+
+
 def test_tube_path_single_shell():
     pts = [(0, 0, 0), (0, 0, 10), (5, 0, 15), (12, 0, 16)]
     t = parts.tube_path(pts, d=6)
