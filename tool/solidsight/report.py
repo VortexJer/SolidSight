@@ -23,7 +23,8 @@ def build_model(model_path: Path, out_dir: Path, mode: str = "free",
                 export_stl: bool = False, size: int = 900,
                 min_wall: float = 1.2, max_overhang: float = 50.0,
                 allow_multiple_shells: bool = False,
-                exploded: bool = False) -> dict:
+                exploded: bool = False,
+                focus: tuple | None = None) -> dict:
     views = views or ["iso", "front", "right", "top"]
     slices = slices or []
 
@@ -48,8 +49,10 @@ def build_model(model_path: Path, out_dir: Path, mode: str = "free",
     title = model_path.stem
     render_files: list[str] = []
     for i, view in enumerate(views, start=1):
-        img = render_view(scene, view, size=size, title=title, subtitle=mode)
-        fname = f"{i:02d}_{view}.png"
+        img = render_view(scene, view, size=size, title=title, subtitle=mode,
+                          focus=focus)
+        fname = (f"{i:02d}_{view}_focus.png" if focus
+                 else f"{i:02d}_{view}.png")
         img.save(renders_dir / fname)
         render_files.append(f"renders/{fname}")
 

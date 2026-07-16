@@ -79,7 +79,11 @@ class _Camera:
 
 
 def render_view(scene: Scene, view: str | tuple, size: int = 900,
-                title: str = "", subtitle: str = "") -> Image.Image:
+                title: str = "", subtitle: str = "",
+                focus: tuple | None = None) -> Image.Image:
+    """focus=(cx, cy, cz, r): zoom the camera onto a sphere of radius r
+    around a point instead of framing the whole scene — for inspecting a
+    single feature on a large part."""
     meshes = []
     for part in scene.parts:
         # 0.05 mm simplification: invisible at render scale, big speedup on
@@ -90,8 +94,15 @@ def render_view(scene: Scene, view: str | tuple, size: int = 900,
 
     all_pts = np.vstack([m.vertices for _, m, _ in meshes])
     lo, hi = all_pts.min(axis=0), all_pts.max(axis=0)
-    center = (lo + hi) / 2
-    radius = float(np.linalg.norm(hi - lo)) / 2 or 1.0
+    if focus is not None:
+        center = np.asarray(focus[:3], float)
+        radius = max(float(focus[3]), 0.1)
+        subtitle = (subtitle + " · " if subtitle else "") + \
+            f"focus ({fmt_num(focus[0])}, {fmt_num(focus[1])}, " \
+            f"{fmt_num(focus[2])}) r{fmt_num(focus[3])}"
+    else:
+        center = (lo + hi) / 2
+        radius = float(np.linalg.norm(hi - lo)) / 2 or 1.0
 
     if isinstance(view, str):
         if view not in VIEWS:

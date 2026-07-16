@@ -62,6 +62,9 @@ def main(argv: list[str] | None = None) -> int:
                    help="export binary STL per part + combined")
     b.add_argument("--exploded", action="store_true",
                    help="also render an exploded view of multi-part scenes")
+    b.add_argument("--focus", default=None, metavar="X,Y,Z,R",
+                   help="zoom every view onto a sphere of radius R around "
+                        "the point (X,Y,Z) — inspect one feature up close")
     b.add_argument("--size", type=int, default=900,
                    help="render size in pixels (default 900)")
     b.add_argument("--min-wall", type=float, default=1.2,
@@ -77,6 +80,12 @@ def main(argv: list[str] | None = None) -> int:
 
     c = sub.add_parser("catalog", help="list the parametric parts catalog")
     c.add_argument("name", nargs="?", help="show full docs for one part")
+
+    df = sub.add_parser("diff",
+                        help="compare two build reports: what did my change "
+                             "actually change?")
+    df.add_argument("report_a", help="path to the OLD report.json")
+    df.add_argument("report_b", help="path to the NEW report.json")
 
     isk = sub.add_parser("install-skill",
                          help="(re)install the Claude Code skill into "
@@ -139,6 +148,8 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "version":
         print(f"solidsight {__version__}")
         return 0
+    if args.command == "diff":
+        return _diff(Path(args.report_a), Path(args.report_b))
     if args.command == "catalog":
         return _catalog(args.name)
     if args.command == "query":
@@ -175,6 +186,18 @@ def _build(args) -> int:
                  err=True)
             return 1
 
+    focus = None
+    if args.focus:
+        try:
+            focus = tuple(float(v) for v in args.focus.split(","))
+            if len(focus) != 4 or focus[3] <= 0:
+                raise ValueError
+        except ValueError:
+            _say(f"BUILD FAILED\nbad --focus {args.focus!r}\n"
+                 "  try: --focus 70,43,24,25  (X,Y,Z and a positive radius)",
+                 err=True)
+            return 1
+
     report = build_model(
         model_path=model,
         out_dir=out_dir,
@@ -189,6 +212,7 @@ def _build(args) -> int:
         max_overhang=args.max_overhang,
         allow_multiple_shells=args.allow_multiple_shells,
         exploded=args.exploded,
+        focus=focus,
     )
 
     if args.json:
@@ -340,6 +364,65 @@ def _query(args) -> int:
                                         for i in range(nx)))
         return 0
     return 1
+
+
+def _diff(path_a: Path, path_b: Path) -> int:
+    """Compare two report.json files: per-part geometry deltas and checks
+    that appeared or disappeared."""
+    reports = []
+    for p in (path_a, path_b):
+        if p.is_dir():
+            p = p / "report.json"
+        if not p.exists():
+            _say(f"DIFF FAILED\nno report at {p}\n"
+                 "  try: point at an out/ dir or its report.json", err=True)
+            return 1
+        reports.append(json.loads(p.read_text(encoding="utf-8")))
+    a, b = reports
+
+    _say(f"diff: {a['model']} [{a['status']}] -> {b['model']} [{b['status']}]")
+    names_a, names_b = set(a["parts"]), set(b["parts"])
+    for name in sorted(names_b - names_a):
+        _say(f"  + part '{name}' added")
+    for name in sorted(names_a - names_b):
+        _say(f"  - part '{name}' removed")
+    for name in sorted(names_a & names_b):
+        pa, pb = a["parts"][name], b["parts"][name]
+        lines = []
+        dv = pb["volume_mm3"] - pa["volume_mm3"]
+        if abs(dv) > 1e-3:
+            lines.append(f"volume {pa['volume_mm3']} -> {pb['volume_mm3']} "
+                         f"({'+' if dv > 0 else ''}{round(dv, 3)} mm3)")
+        sa, sb = pa["bbox"]["size"], pb["bbox"]["size"]
+        if sa != sb:
+            lines.append(f"size {sa} -> {sb}")
+        wa = pa["wall_thickness"]["min_mm"]
+        wb = pb["wall_thickness"]["min_mm"]
+        if wa != wb:
+            lines.append(f"min wall {wa} -> {wb} mm")
+        if pa["shells"] != pb["shells"]:
+            lines.append(f"shells {pa['shells']} -> {pb['shells']}")
+        va = pa.get("internal_voids", {}).get("count", 0)
+        vb = pb.get("internal_voids", {}).get("count", 0)
+        if va != vb:
+            lines.append(f"internal cavities {va} -> {vb}")
+        if lines:
+            _say(f"  part '{name}': " + "; ".join(lines))
+        else:
+            _say(f"  part '{name}': unchanged")
+
+    def keyed(checks):
+        return {(c["id"], c.get("part"), c["message"]): c for c in checks}
+    ka, kb = keyed(a["checks"]), keyed(b["checks"])
+    for k in sorted(kb.keys() - ka.keys(), key=str):
+        c = kb[k]
+        _say(f"  NEW  [{c['level'].upper()}] {c['message']}")
+    for k in sorted(ka.keys() - kb.keys(), key=str):
+        c = ka[k]
+        _say(f"  GONE [{c['level'].upper()}] {c['message']}")
+    if not (kb.keys() - ka.keys()) and not (ka.keys() - kb.keys()):
+        _say("  checks: no differences")
+    return 0
 
 
 def _catalog(name: str | None) -> int:

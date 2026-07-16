@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.3.0 — 2026-07-16
+
+Close the last inspection gaps.
+
+- Detail mode now RESEARCHES: when the user picks detailed mode without
+  giving specifications, the skill instructs the agent to research the
+  object on the web first (anatomy, dimensions, feature counts, standards)
+  and tag every spec line `[researched]` / `[standard]` / `[assumed]` —
+  assumptions are never presented as research.
+- `--focus X,Y,Z,R`: zoom every view onto a sphere around one feature —
+  inspect a single hole/boss/clip up close on a large part (pick a view
+  facing the feature).
+- `solidsight diff old_out new_out`: exact change accounting between two
+  builds — per-part volume/size/min-wall/shell/cavity deltas plus checks
+  that appeared or disappeared. Confirms an edit did what was meant and
+  nothing else.
+
 ## v0.2.1 — 2026-07-16
 
 Self-hosting skill.

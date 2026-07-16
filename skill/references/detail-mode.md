@@ -17,6 +17,31 @@ Do not ask for decorative/simple requests. If the user already said
 **Detailed mode means: every feature a domain expert would name must exist
 in the geometry.** Not textures, not branding — functional geometry.
 
+## Research before the spec (when the user gives no specifications)
+
+If detailed mode is chosen and the user provided no drawings, dimensions or
+feature list, DO NOT fill the gap with guesses — research the object first
+with your web tools (WebSearch / WebFetch), then write the spec from what
+you found:
+
+1. Search for the object's anatomy, not just pictures:
+   `"<object> cross section"`, `"<object> engineering drawing"`,
+   `"<object> dimensions site:manufacturer"`, `"<object> teardown"`,
+   `"how a <object> works"`. 3-6 focused searches, feature INVENTORY first
+   (what does a real one have), exact dimensions second — proportions and
+   completeness matter more than the third decimal.
+2. Extract: overall dimensions, every functional feature a domain expert
+   would name, counts and patterns (how many head bolts? what fastener
+   sizes?), standard values (ISO/DIN/JIS parts, typical wall thicknesses).
+3. Tag every line of the Feature Specification with its provenance:
+   `[researched]`, `[standard]` (known norm), or `[assumed]`. Never present
+   an assumption as research.
+4. Tell the user in one line what you researched and what you assumed, and
+   ask ONLY if a truly blocking unknown remains (e.g. which specific engine
+   family). Otherwise proceed.
+5. No web access available? Proceed from domain knowledge, mark everything
+   `[assumed]`, and say so explicitly.
+
 ## The method: Feature Specification before code
 
 A detailed object is too much to hold in your head while coding. Write the

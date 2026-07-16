@@ -24,6 +24,7 @@ solidsight build model.py --slice z=5 --slice x=0   # cross-section renders (rep
 solidsight build model.py --part lid             # build/validate only one named part
 solidsight build model.py --stl                  # export binary STL per part + combined
 solidsight build model.py --exploded             # exploded view render of multi-part scenes
+solidsight build model.py --focus 70,43,24,25    # zoom all views onto a sphere (X,Y,Z,R) — inspect one feature up close
 solidsight build model.py --min-wall 0.8 --max-overhang 45 --allow-multiple-shells
 solidsight build model.py --json                 # full report JSON on stdout
 
@@ -33,6 +34,8 @@ solidsight query model.py section z=4            # ASCII material grid at a cut 
 solidsight query model.py voxels --res 1         # voxel grid + sealed-cavity detection
 solidsight query model.py voxels --layer 5       # one Z layer as ASCII
    (all query ops accept --part NAME and --json)
+
+solidsight diff old_out/ new_out/                # what did my change actually change? (volumes, walls, checks)
 
 solidsight catalog                               # list parametric parts (gears, threads, hinges, clips...)
 solidsight catalog spur_gear                     # full docs for one part
@@ -79,7 +82,10 @@ say how faithful it must be, ask ONE question: *representative model, or
 detailed functional model (every bolt pattern, port, gallery, rib)?*
 For detailed mode, load `references/detail-mode.md` and replace the short
 bill of parts with a per-region **Feature Specification**, then build and
-verify region by region. Detail lives in features (holes, bosses, flanges,
+verify region by region. If the user gives no further specifications,
+**research the object on the web yourself first** (anatomy, dimensions,
+feature counts, standards) and tag every spec line `[researched]`,
+`[standard]` or `[assumed]` — detail-mode.md defines the research step. Detail lives in features (holes, bosses, flanges,
 tunnels, pockets), and the catalog has first-class tools for them:
 `parts.hole` (counterbore/countersink/chamfer/drill-point), `.aim()` for
 drilling into any face, `parts.bolt_circle`, patterns.
@@ -129,6 +135,13 @@ Then, non-negotiable:
 
 `--slice z=H` renders a filled cross-section — use it whenever inner walls,
 pockets or fits are involved; outside views cannot show them.
+`--focus X,Y,Z,R` zooms every view onto one feature — use it when a detail
+(a hole, a clip, a boss) is too small to judge in the full-part frame.
+Pick a view that FACES the feature (a +Y feature needs iso_back/back/left,
+not the default iso) or you will zoom onto the part's far side.
+After changing a model, `solidsight diff old_out new_out` lists exactly
+what moved: per-part volume/size/wall deltas and checks that appeared or
+disappeared — confirm your change did what you meant and nothing else.
 
 ### Step 5 - Use exact queries when looking is not enough
 
