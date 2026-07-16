@@ -86,6 +86,12 @@ match the spec?) -> per-part numbers.
   `--layer N` prints one Z slice; `--layer all` the whole stack. Cavities
   smaller than ~2 voxels can hide — lower --res to hunt small ones.
 
+Known limitation: shallow ribs BETWEEN engraved strokes (e.g. the material
+between two letter grooves) are flagged by `thin-wall` even though they sit
+on bulk material and usually print fine. Keep engraving strokes and gaps at
+or above your minimum wall (size >= 7 mm text for the default 1.2 mm), or
+consciously accept the finding.
+
 ## When to trust what
 
 - Exact numbers (volume, bbox, clearance, overlap): kernel-exact — trust.
