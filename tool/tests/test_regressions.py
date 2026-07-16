@@ -574,3 +574,80 @@ def test_cap_screw_single_shell():
     s = parts.cap_screw(4, 16)
     shells = [p for p in s.manifold.decompose() if p.volume() > 1e-9]
     assert len(shells) == 1
+
+
+# --- technical drawings ---------------------------------------------------------
+
+def test_drawing_circle_detection_and_pdf(tmp_path):
+    from solidsight.drawings import draw_sheet, find_circles, hole_table
+    sc = make_scene()
+    plate = box(40, 30, 6)
+    plate = plate - parts.hole(5, 8).translate(10, 5, 6) \
+                  - parts.hole(5, 8).translate(-10, -5, 6)
+    tm = plate.to_trimesh()
+    circles = find_circles(tm)
+    fives = [c for c in circles if abs(c["d"] - 5) < 0.2]
+    assert len(fives) >= 2                     # both drilled rims found
+    # the rectangular outline must NOT be reported as a circle
+    assert not any(c["d"] > 30 for c in circles)
+    holes = hole_table(circles, tm.extents)
+    thru = [h for h in holes if abs(h["d"] - 5) < 0.2 and h["thru"]]
+    assert len(thru) == 2                      # paired rims -> THRU holes
+    info = draw_sheet("plate", tm, tmp_path / "plate.pdf", "m.py", "test")
+    pdf = (tmp_path / "plate.pdf").read_bytes()
+    assert pdf.startswith(b"%PDF") and len(pdf) > 5000
+    assert b"CreationDate" not in pdf          # deterministic sheet
+
+
+def test_drawing_hidden_lines(tmp_path):
+    from solidsight.drawings import view_edges
+    # a block with a lug BEHIND it (as seen from the front): the lug's
+    # edges must classify as hidden
+    sc = make_scene()
+    solid = box(30, 10, 20) + box(10, 10, 10).translate(0, 10, 5)
+    d = view_edges(solid.to_trimesh(), "front", res=500)
+    assert len(d["visible"]) > 0 and len(d["hidden"]) > 0
+
+
+# --- robotics export -------------------------------------------------------------
+
+def test_urdf_export_masses_and_tree(tmp_path):
+    import xml.etree.ElementTree as ET
+    from solidsight.robot import export_urdf, joint
+    sc = make_scene()
+    sc.emit(box(60, 60, 10), name="base")
+    sc.emit(box(10, 40, 8).translate(0, 15, 10), name="arm")
+    joint("base", "arm", type="revolute", axis=(0, 0, 1),
+          origin=(0, 0, 10), limits=(-90, 90))
+    export_urdf(sc, tmp_path, "bot.py", density=1.24,
+                say=lambda *a, **k: None)
+    root = ET.parse(tmp_path / "robot" / "bot.urdf").getroot()
+    links = {l.get("name"): l for l in root.findall("link")}
+    assert set(links) == {"base", "arm"}
+    # analytic check: 60x60x10 mm PLA plate = 44.64 g
+    m = float(links["base"].find("inertial/mass").get("value"))
+    assert m == pytest.approx(0.04464, rel=1e-3)
+    # analytic inertia of a solid cuboid about COM: m(b^2+c^2)/12 (SI)
+    ixx = float(links["base"].find("inertial/inertia").get("ixx"))
+    expected = m * (0.060 ** 2 + 0.010 ** 2) / 12
+    assert ixx == pytest.approx(expected, rel=1e-3)
+    j = root.find("joint")
+    assert j.get("type") == "revolute"
+    import math as _m
+    assert float(j.find("limit").get("lower")) == pytest.approx(
+        _m.radians(-90))
+    assert (tmp_path / "robot" / "meshes" / "arm_collision.stl").exists()
+
+
+def test_urdf_tree_validation_errors(tmp_path):
+    from solidsight.errors import SolidsightError
+    from solidsight.robot import export_urdf, joint
+    sc = make_scene()
+    sc.emit(box(10, 10, 10), name="a")
+    sc.emit(box(10, 10, 10).translate(20, 0, 0), name="b")
+    sc.emit(box(10, 10, 10).translate(40, 0, 0), name="c")
+    joint("a", "b")                       # c left floating -> second root
+    with pytest.raises(SolidsightError, match="ONE root"):
+        export_urdf(sc, tmp_path, "bot.py", say=lambda *a, **k: None)
+    joint("a", "c")
+    export_urdf(sc, tmp_path, "bot.py", say=lambda *a, **k: None)  # now ok

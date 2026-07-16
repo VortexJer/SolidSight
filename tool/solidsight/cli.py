@@ -87,6 +87,25 @@ def main(argv: list[str] | None = None) -> int:
                    help="remove the Claude Code skill AND the solidsight "
                         "package")
 
+    rb = sub.add_parser("robot",
+                        help="export declared joint()s as URDF (+SDF) with "
+                             "real inertials and collision meshes")
+    rb.add_argument("model", help="path to the .py model file")
+    rb.add_argument("--out", default=None,
+                    help="output directory (default: <model dir>/out)")
+    rb.add_argument("--sdf", action="store_true", help="also write SDF 1.7")
+    rb.add_argument("--density", type=float, default=1.24,
+                    help="material density g/cm3 for mass/inertia "
+                         "(default 1.24 = solid PLA)")
+
+    dr = sub.add_parser("drawing",
+                        help="technical drawing: dimensioned third-angle "
+                             "multi-view PDF per part")
+    dr.add_argument("model", help="path to the .py model file")
+    dr.add_argument("--part", default=None, help="one named part only")
+    dr.add_argument("--out", default=None,
+                    help="output directory (default: <model dir>/out)")
+
     cv = sub.add_parser("convert",
                         help="convert between mesh formats "
                              "(stl/obj/ply/3mf/glb/off)")
@@ -216,6 +235,31 @@ def _dispatch(parser, args) -> int:
         return _diff(Path(args.report_a), Path(args.report_b))
     if args.command == "convert":
         return _convert(Path(args.src), Path(args.dst))
+    if args.command == "robot":
+        from .robot import export_urdf
+        from .runner import run_model
+        model = Path(args.model)
+        try:
+            scene = run_model(model)
+            export_urdf(scene,
+                        Path(args.out) if args.out else model.parent / "out",
+                        model.name, density=args.density, sdf=args.sdf,
+                        say=_say)
+            return 0
+        except SolidsightError as e:
+            _say(f"ROBOT EXPORT FAILED\n{e.render()}", err=True)
+            return 1
+    if args.command == "drawing":
+        from .drawings import run_drawing
+        model = Path(args.model)
+        try:
+            return run_drawing(model,
+                               Path(args.out) if args.out
+                               else model.parent / "out",
+                               args.part, say=_say)
+        except SolidsightError as e:
+            _say(f"DRAWING FAILED\n{e.render()}", err=True)
+            return 1
     if args.command == "catalog":
         return _catalog(args.name)
     if args.command == "components":

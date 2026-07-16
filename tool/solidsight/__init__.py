@@ -15,6 +15,7 @@ from .geom import (DEFAULT_SEGMENTS, Sketch, Solid, box, circle, cone,
                    union, wedge)
 from .scene import Scene, emit
 from .assembly import expect, from_mesh, from_model, from_stl, place
+from .robot import joint
 from . import parts
 
 __all__ = [
@@ -28,7 +29,7 @@ __all__ = [
     # classes / registry
     "Solid", "Sketch", "Scene", "emit", "parts",
     # assembly
-    "place", "from_model", "from_stl", "from_mesh", "expect",
+    "place", "from_model", "from_stl", "from_mesh", "expect", "joint",
     # errors
     "SolidsightError", "EmptyGeometryError", "BadArgumentError",
     "SceneError", "ModelRuntimeError",
