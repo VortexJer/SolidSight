@@ -13,7 +13,6 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from PIL import Image
 
 HERE = Path(__file__).parent
 sys.path.insert(0, str(HERE.parents[0] / "robot"))
