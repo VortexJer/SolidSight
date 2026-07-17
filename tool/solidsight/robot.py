@@ -30,11 +30,16 @@ JOINT_TYPES = ("fixed", "revolute", "continuous", "prismatic")
 
 def joint(parent: str, child: str, type: str = "fixed",
           axis: tuple = (0, 0, 1), origin: tuple = (0, 0, 0),
-          limits: tuple | None = None, damping: float = 0.0) -> None:
+          limits: tuple | None = None, damping: float = 0.0,
+          name: str | None = None) -> None:
     """Declare a robot joint between two emitted parts (they become URDF
     links). origin: the joint anchor point in scene mm coordinates,
     relative to the scene origin — the child's frame attaches there.
-    limits: (lo, hi) in degrees for revolute, mm for prismatic."""
+    limits: (lo, hi) in degrees for revolute, mm for prismatic.
+
+    name: the joint's name in the URDF/SDF and in `solidsight motion
+    --joint NAME`. Defaults to "<parent>_to_<child>"; give a real one
+    ("shoulder_pan") when a robotics consumer will read it."""
     from . import scene as scene_mod
     sc = scene_mod.current()
     if sc is None:
@@ -57,7 +62,14 @@ def joint(parent: str, child: str, type: str = "fixed",
     if abs(a[0]) + abs(a[1]) + abs(a[2]) < 1e-9:
         raise BadArgumentError("joint() axis must be a non-zero vector",
                                suggestion="e.g. axis=(0, 0, 1) for Z")
+    jname = str(name) if name else f"{parent}_to_{child}"
+    if any(j["name"] == jname for j in sc.joints):
+        raise BadArgumentError(
+            f"joint name {jname!r} is already used",
+            suggestion="joint names must be unique: pass name= to "
+                       "distinguish two joints between the same parts")
     sc.joints.append({
+        "name": jname,
         "parent": parent, "child": child, "type": type, "axis": a,
         "origin": tuple(float(v) for v in origin),
         "limits": (tuple(float(v) for v in limits) if limits else None),
@@ -176,7 +188,8 @@ def export_urdf(scene, out_dir: Path, model_name: str,
 
     for j in sorted(scene.joints, key=lambda x: x["child"]):
         je = ET.SubElement(root, "joint",
-                           name=f"{j['parent']}_to_{j['child']}",
+                           name=j.get("name") or
+                           f"{j['parent']}_to_{j['child']}",
                            type=j["type"])
         ET.SubElement(je, "parent", link=j["parent"])
         ET.SubElement(je, "child", link=j["child"])

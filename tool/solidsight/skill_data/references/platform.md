@@ -65,9 +65,11 @@ solidsight motion model.py [--joint base_to_arm] [--steps 24]
   dims, center marks, hole table from detected circular rims, title
   block. Deterministic PDF.
 - robot: `joint(parent, child, type=fixed|revolute|continuous|prismatic,
-  axis, origin, limits, damping)` declared in the model -> URDF with
-  exact per-link mass + inertia tensor (density g/cm3), visual +
-  simplified collision meshes, tree validation with actionable errors.
+  axis, origin, limits, damping, name=None)` declared in the model ->
+  URDF with exact per-link mass + inertia tensor (density g/cm3), visual
+  + simplified collision meshes, tree validation with actionable errors.
+  `name=` is the joint's identity in the URDF/SDF and in `motion
+  --joint NAME`; it defaults to `<parent>_to_<child>`.
 - motion: sweeps each moving joint through its limits; per sampled
   position the child link is intersected against every other part —
   exact collision map + free range. v1 needs principal joint axes.

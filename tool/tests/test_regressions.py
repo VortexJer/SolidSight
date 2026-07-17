@@ -2,6 +2,7 @@
 dogfooding. Run with: pytest tool/tests"""
 
 import math
+import time
 
 import numpy as np
 import pytest
@@ -925,3 +926,87 @@ def test_bom_item_is_a_label_not_a_construction_tree():
     # catalog provenance survives as the item label
     assert rows["brg"]["item"].startswith("bearing")
     assert "(" in rows["brg"]["item"]
+
+
+# --- joints carry a real name (URDF/SDF + motion --joint) -----------------
+# joints were identified only as "<parent>_to_<child>": a ROS consumer
+# wants "shoulder_pan", and `motion --joint` had no other handle.
+
+def test_joint_name_defaults_and_overrides():
+    from solidsight.motion import _jname
+    sc = make_scene()
+    sc.emit(box(20, 20, 5), name="base")
+    sc.emit(box(10, 10, 40), name="link1")
+    sc.emit(box(8, 8, 30), name="link2")
+
+    from solidsight.robot import joint
+    joint("base", "link1", type="revolute", axis=(0, 0, 1),
+          origin=(0, 0, 5), limits=(-90, 90))                 # default name
+    joint("link1", "link2", type="revolute", axis=(0, 1, 0),
+          origin=(0, 0, 45), limits=(0, 120), name="elbow")   # declared
+
+    assert _jname(sc.joints[0]) == "base_to_link1"
+    assert _jname(sc.joints[1]) == "elbow"
+
+
+def test_duplicate_joint_names_are_rejected():
+    from solidsight.errors import BadArgumentError
+    from solidsight.robot import joint
+    sc = make_scene()
+    sc.emit(box(20, 20, 5), name="base")
+    sc.emit(box(10, 10, 40), name="link1")
+    joint("base", "link1", type="revolute", axis=(0, 0, 1),
+          origin=(0, 0, 5), limits=(-90, 90), name="j")
+    with pytest.raises(BadArgumentError):
+        joint("base", "link1", type="revolute", axis=(0, 1, 0),
+              origin=(0, 0, 5), limits=(-90, 90), name="j")
+
+
+def test_urdf_and_sdf_use_the_declared_joint_name(tmp_path):
+    import xml.etree.ElementTree as ET
+
+    from solidsight.robot import export_urdf, joint
+    sc = make_scene()
+    sc.emit(box(20, 20, 5), name="base")
+    sc.emit(box(10, 10, 40).translate(0, 0, 5), name="link1")
+    joint("base", "link1", type="revolute", axis=(0, 0, 1),
+          origin=(0, 0, 5), limits=(-90, 90), name="shoulder_pan")
+    export_urdf(sc, tmp_path, "arm.py", sdf=True, say=lambda *_a, **_k: None)
+
+    urdf = ET.parse(tmp_path / "robot" / "arm.urdf").getroot()
+    assert [j.get("name") for j in urdf.findall("joint")] == ["shoulder_pan"]
+    sdf = ET.parse(tmp_path / "robot" / "arm.sdf").getroot()
+    assert [j.get("name") for j in sdf.iter("joint")] == ["shoulder_pan"]
+
+
+# --- CLI output must not sit in a buffer when redirected ------------------
+# Agents run `watch`/`view` redirected to a log, never on a tty. Python
+# block-buffers a non-tty stdout, so the log stayed EMPTY while the loop
+# ran (i.e. forever) until _say() started flushing.
+
+def test_cli_output_flushes_when_not_a_tty(tmp_path):
+    import subprocess
+    import sys
+    model = tmp_path / "m.py"
+    model.write_text("from solidsight import *\n"
+                     "emit(box(10, 10, 10), name='cube')\n", encoding="utf-8")
+    log = tmp_path / "out.log"
+    # a build that never exits on its own: watch. Kill it, then read the
+    # log — anything written before the kill must already be on disk.
+    with open(log, "w", encoding="utf-8") as fh:
+        p = subprocess.Popen(
+            [sys.executable, "-m", "solidsight.cli", "watch", str(model),
+             "--views", "iso", "--out", str(tmp_path / "out")],
+            stdout=fh, stderr=subprocess.STDOUT)
+        try:
+            deadline = time.time() + 90
+            while time.time() < deadline:
+                if "watching" in log.read_text(encoding="utf-8", errors="replace"):
+                    break
+                time.sleep(0.5)
+        finally:
+            p.kill()
+            p.wait(timeout=30)
+    text = log.read_text(encoding="utf-8", errors="replace")
+    assert "build #1" in text, f"nothing flushed before the kill: {text!r}"
+    assert "watching" in text

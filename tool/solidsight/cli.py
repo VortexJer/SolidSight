@@ -22,8 +22,14 @@ _ASCII_FOLD = str.maketrans({"—": "-", "–": "-", "°": " deg", "·": "|",
 
 def _say(text: str, err: bool = False) -> None:
     """Print with non-ASCII punctuation folded away so output survives any
-    Windows console codepage an agent might read it through."""
-    print(text.translate(_ASCII_FOLD), file=sys.stderr if err else sys.stdout)
+    Windows console codepage an agent might read it through.
+
+    flush=True is load-bearing: agents run long commands (watch, view)
+    redirected to a log rather than a tty, and Python block-buffers a
+    non-tty stdout — the log would stay empty until the process ends,
+    which for a watch loop is never."""
+    print(text.translate(_ASCII_FOLD), file=sys.stderr if err else sys.stdout,
+          flush=True)
 
 
 def main(argv: list[str] | None = None) -> int:

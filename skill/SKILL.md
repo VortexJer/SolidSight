@@ -255,7 +255,7 @@ see engagement. Example of the full loop: `examples/05-assembly/`.
 and a suggested bottom-up assembly sequence. When a printed part mates a
 MACHINED one (bearing seat, shaft, dowel), get the real numbers from
 `solidsight fit 8 H7 g6` (ISO 286). For mechanisms, declare
-`joint(parent, child, type="revolute", axis=..., origin=..., limits=...)`
+`joint(parent, child, type="revolute", axis=..., origin=..., limits=..., name="shoulder_pan")`
 in the model: `solidsight robot` exports URDF/SDF with true masses and
 inertia, and `solidsight motion` sweeps each joint through its limits and
 reports the exact collision map (which angles hit what).

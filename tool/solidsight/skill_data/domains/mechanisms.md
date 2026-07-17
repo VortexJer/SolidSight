@@ -64,15 +64,19 @@ expect("brg", "housing", clearance=(0.0, 0.05))   # press fit, declared
 ## Robot joints: declare them, do not fake them
 
 ```python
-joint("shoulder", type="revolute", parent="base", child="upper_arm",
+joint("base", "upper_arm", type="revolute", name="shoulder_pan",
       origin=(0, 0, 120), axis=(0, 0, 1), limits=(-90, 90))
 ```
+Parent and child come first (they are the emitted part names). `name=`
+is what the URDF/SDF and `motion --joint` use — give real robotics
+names; the default is `parent_to_child`.
 Then:
 - `solidsight robot model.py --sdf` -> URDF/SDF with EXACT masses and
   inertia tensors computed from the geometry (not guessed slabs).
 - `solidsight motion model.py --steps 24` sweeps every joint through its
   limits and reports the exact collision map per sampled position. This
   is the answer to "does the arm hit itself": a table, not an opinion.
+  `--joint shoulder_pan` sweeps one.
 
 Fix a collision found at, say, step 17 of 24 by reading which parts
 collided and by how much — then either change the geometry or tighten

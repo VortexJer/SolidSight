@@ -43,20 +43,24 @@ def _pose(solid, joint: dict, value: float):
     return solid.translate(-ox, -oy, -oz).rotate(*rot).translate(ox, oy, oz)
 
 
+def _jname(j: dict) -> str:
+    """A joint's name: as declared, else the parent_to_child default."""
+    return j.get("name") or f"{j['parent']}_to_{j['child']}"
+
+
 def inspect_motion(scene, joint_name: str | None = None,
                    steps: int = 12) -> list[dict]:
     moving = [j for j in scene.joints
               if j["type"] in ("revolute", "prismatic", "continuous")]
     if joint_name:
-        moving = [j for j in moving
-                  if f"{j['parent']}_to_{j['child']}" == joint_name]
+        moving = [j for j in moving if _jname(j) == joint_name]
         if not moving:
-            names = ", ".join(f"{j['parent']}_to_{j['child']}"
-                              for j in scene.joints) or "(none)"
+            names = ", ".join(_jname(j) for j in scene.joints) or "(none)"
             raise BadArgumentError(
                 f"no moving joint named {joint_name!r}",
                 where=f"declared joints: {names}",
-                suggestion="use the parent_to_child name from the list")
+                suggestion="use a name from that list (joints are named by "
+                           "joint(..., name=...), else parent_to_child)")
     if not moving:
         raise BadArgumentError(
             "the model declares no moving joints",
@@ -86,7 +90,7 @@ def inspect_motion(scene, joint_name: str | None = None,
         blocked = [s for s in samples if s["hits"]]
         unit = "deg" if j["type"] != "prismatic" else "mm"
         reports.append({
-            "joint": f"{j['parent']}_to_{j['child']}",
+            "joint": _jname(j),
             "type": j["type"], "unit": unit,
             "range": [lo, hi], "steps": steps,
             "free_positions": free,
