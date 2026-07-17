@@ -127,3 +127,7 @@ not assumed from the code.
 - Key distances/angles verified with `query`, not assumed.
 - Printed: `--print-safe`, material named if it matters (autoclave, food
   contact), thin members thickened deliberately and disclosed.
+- Lab fixtures that a human will machine or review: `solidsight drawing`
+  for the dimensioned PDF. Racks for standard vessels: check
+  `solidsight components search` before measuring — SBS plates and
+  common tubes have exact published dimensions.

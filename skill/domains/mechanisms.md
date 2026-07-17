@@ -8,6 +8,12 @@ A mechanism is not a shape, it is a set of RELATIONS. Model the
 relations as declared specs (`expect()`), and the build fails the moment
 a fit drifts — you stop re-judging numbers by eye every iteration.
 
+Gearboxes and drivetrains are classic DETAIL-MODE territory — and detail
+mode is opt-in: ask *representative or detailed functional?* and enter
+it only on an explicit yes. A representative reducer still gets real
+involutes and declared fits; detailed adds every bearing seat, circlip
+groove and fastener.
+
 ## Gear math you must not re-derive
 
 `parts.spur_gear(module, teeth, thickness, bore=0, pressure_angle=20,
@@ -54,7 +60,9 @@ micrometre fits are a machining concept. Use the ISO table when your
 printed part mates with a BOUGHT part (608 bearing, 8 mm rod), and use
 the printed column for printed-to-printed.
 
-Bought parts enter as ghosts, always:
+Bought parts come from the database (exact standard dimensions, no
+hand-copying): `solidsight components search "608"` gives
+`parts.component("bearing_608")`. They enter as ghosts, always:
 ```python
 place(parts.component("bearing_608"), name="brg", at=(0, 0, 10),
       ghost=True)
@@ -121,5 +129,7 @@ already — use them):
 - `solidsight motion --steps 24`: zero collisions inside the limits, or
   the limits were tightened and you said so.
 - `--print-safe` clean per part; gears exported flat (`.on_ground()`).
+- Every fix proven with `solidsight diff old_out new_out` — a centre
+  distance you "fixed" without a diff is a claim, not a fact.
 - For robots: `solidsight robot --sdf` runs, and you state the masses —
   they are computed from geometry and density, not invented.

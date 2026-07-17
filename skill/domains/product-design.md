@@ -4,6 +4,16 @@ Load for: handheld devices, remotes, speakers, appliances, tool bodies,
 grips, anything a HAND holds or a room sees. The judge is a person, but
 the failures are still geometric.
 
+## Working from reference images
+
+Product work usually starts from photos of competitors or sketches.
+That is the `from-image.md` workflow: LOOK at the reference, estimate
+real dimensions with named anchors, and build with `--ref photo.png` so
+every build writes a reference-vs-render sheet — the form comparison
+happens against the actual reference, not your memory of it. For flat
+faceplates, logos and button layouts, `image_outline()` traces the
+artwork exactly instead of redrawing it by eye.
+
 ## The two-surface discipline
 
 A product shell is an outer surface people touch and an inner cavity
@@ -102,5 +112,7 @@ fix is usually mass low and a wider foot, not a bigger base.
   uniform (state min and where).
 - Turntable render (`--turntable 8`) looked at, not just iso — form
   reads differently from every angle, and that is the whole point here.
+  For live form work, `solidsight view model.py` orbits the real model
+  with hot reload on every save.
 - Grip/reach numbers quoted from queries, not adjectives.
 - Halves `expect()`-ed at the seam clearance you chose.

@@ -117,6 +117,9 @@ once and deal with what it says.
 ## Done means
 
 - `--turntable 8` looked at, all frames. Form is a 360 deg claim.
+  While sculpting, `solidsight view model.py` gives a live orbit with
+  hot reload; with a reference image, build with `--ref` and compare
+  the sheet, not your memory.
 - Min wall and stability quoted (even in `--free` — especially in free).
 - `shells == 1`, no internal voids, or a stated reason.
 - Every generator function is pure; the seed, if any, is written down.

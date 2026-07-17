@@ -30,7 +30,11 @@ FDM, 0.4 mm nozzle, PLA/PETG. Quote these to the user when you use them.
 
 Anything the user's real hardware decides — PCB size, connector
 positions, mounting-hole pitch — is a QUESTION, not an assumption. Ask
-once, up front, in the same message as the detail-level question.
+once, up front. For NAMED hardware, the offline database has the exact
+standard dimensions: `solidsight components search "nema17"` /
+`"bearing 608"` / `"iso4762 m3"` — use it before measuring by hand.
+(Detail mode is opt-in and rarely wanted for enclosures; do not enter
+it without an explicit yes.)
 
 ## The build order that works
 
@@ -60,6 +64,12 @@ still cheap to fix:
    and the build gets slow).
 4. `--print-safe --slice z=<through the bosses>` and LOOK. Internal
    geometry is invisible from outside; the slice is not optional.
+
+While iterating, `solidsight watch model.py` rebuilds on every save
+(and proves when an edit changed nothing), and after each fix
+`solidsight diff old_out new_out` shows exactly what moved. When the
+case is done, `solidsight drawing model.py` produces the dimensioned
+PDF a human machinist or reviewer will actually want.
 
 ## The five ways enclosures actually fail
 
@@ -120,6 +130,7 @@ the window open all the way through, and nothing else.
 - Every `expect()` MET, including ghost clearances.
 - A `--slice` render through the bosses and one through the connectors,
   looked at.
-- `solidsight cost model.py --process fdm` quoted if they will print it.
+- `solidsight cost model.py --process fdm` quoted if they will print it,
+  and `solidsight critique model.py` run once as a final review.
 - Parts exported `--stl` in PRINT orientation (`.on_ground()`), not in
   assembly position.

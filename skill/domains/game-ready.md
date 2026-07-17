@@ -65,7 +65,7 @@ Be honest about the boundary:
 | part names + colors into GLB | yes | |
 | triangle count, per part | yes (report) | |
 | segment/LOD control | yes (manual: rebuild coarser) | automatic decimation |
-| UV unwrapping | NO | Blender/xatlas |
+| UV unwrapping | NO | Blender/xatlas — then audit the result with the sibling tool **texturesight** (density, stretch, seams, packing) |
 | texture baking, normal maps | NO | Blender/Substance |
 | rigging, skinning | NO (see AnimationSight for motion ANALYSIS) | Blender |
 | PBR material graphs | NO | the engine |
@@ -123,3 +123,7 @@ lower budget, reproducible. That beats decimating a mesh and hoping.
 - Units and up-axis stated for the import.
 - Mode `--free`. Walls/cavities/overhangs are noise here — say that you
   are ignoring them and why, rather than silently ignoring them.
+- If the pipeline continues (unwrap, textures, materials), hand off to
+  the siblings and say so: `texturesight` audits the UVs and maps,
+  `shadersight` audits the material physics. Same philosophy, same
+  loop.

@@ -2,17 +2,25 @@
 
 ## When this applies, and the ONE question to ask
 
+Detail mode is **opt-in**. It is never the default, because it costs
+real time (research, per-region builds) the user may not want to pay.
+
 When the user asks for a model of a real technical object (an engine block,
 a gearbox housing, a camera body, a pump...) and did not say how faithful it
 must be, ask ONE question before modeling:
 
 > Representative model (recognizable shape, main features only) or detailed
 > functional model (every functional feature: bolt patterns, ports,
-> galleries, ribs, bosses)?
+> galleries, ribs, bosses)? The detailed one takes notably longer.
 
-Do not ask for decorative/simple requests. If the user already said
-"detailed", "functional", "faithful", "replica" (or "quick", "rough",
-"iconic") — don't ask, act.
+The gate, precisely:
+
+- Enter this mode only on an explicit yes, or when the user's own words
+  already chose it ("detailed", "functional", "faithful", "replica").
+- Silence, ambiguity, or no answer = REPRESENTATIVE. Say which mode you
+  are building in when you start.
+- Do not ask at all for decorative/simple requests, or when the user
+  already said "quick", "rough", "iconic" — build representative.
 
 **Detailed mode means: every feature a domain expert would name must exist
 in the geometry.** Not textures, not branding — functional geometry.

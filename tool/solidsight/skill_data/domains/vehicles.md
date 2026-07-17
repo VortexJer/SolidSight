@@ -7,6 +7,14 @@ The shared method: **a spine, stations along it, a section at each
 station, lofted**. That is literally how real hulls and fuselages are
 drawn, and it maps exactly onto `parts.loft`.
 
+Vehicles are where reference images earn their keep: blueprints and
+side/top photos. Build with `--ref blueprint.png` — every build then
+writes the render beside the blueprint, and silhouette errors that hide
+in numbers are obvious in the pair. A faithful REAL vehicle (a specific
+car, a specific aircraft) is detail-mode territory: ask
+*representative or detailed?* first, and enter detailed only on an
+explicit yes.
+
 ## The station method
 
 ```python

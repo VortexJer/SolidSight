@@ -99,6 +99,11 @@ Terrain is `--free` normally. For printing: `--print-safe`, and expect
 overhang findings on cliffs — a vertical cliff IS an overhang. Either
 accept supports (say so) or soften the function.
 
+After any tweak to the height function, `solidsight diff old_out
+new_out` gives the per-part volume/size deltas and the render pixel
+difference — the honest answer to "did that octave change anything
+visible".
+
 ## The five ways terrain fails
 
 1. **Warped a coarse mesh** — polygonal "landscape". `refine()` first.

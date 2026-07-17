@@ -42,6 +42,15 @@ it is a deliberate distortion.
 | kitchen counter depth | 600 |
 | parking bay | 2500 x 5000 |
 
+## Starting from a drawn plan
+
+When the user has a floor plan as an IMAGE (a scan, a sketch, a PDF
+screenshot), do not redraw it by eye: `image_outline("plan.png",
+width=<real building width in mm>)` traces the walls exactly, and the
+traced sketch extrudes into massing directly. Declare the real width —
+pixels carry no millimetres — and build with `--ref plan.png` so every
+build shows the model beside the drawing it came from.
+
 ## Method: plan -> massing -> openings
 
 1. **The plan is a Sketch.** Draw the footprint once, in mm:

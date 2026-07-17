@@ -96,19 +96,26 @@ Every part name here becomes an `emit(solid, name="...")` at the end of the
 file. If you cannot write this list, you do not understand the request yet —
 ask the user, do not guess geometry.
 
-**Technical objects — ask the detail level.** If the request is a real
-technical object (engine, gearbox, housing, pump...) and the user did not
-say how faithful it must be, ask ONE question: *representative model, or
-detailed functional model (every bolt pattern, port, gallery, rib)?*
-For detailed mode, load `references/detail-mode.md` and replace the short
-bill of parts with a per-region **Feature Specification**, then build and
-verify region by region. If the user gives no further specifications,
-**research the object on the web yourself first** (anatomy, dimensions,
-feature counts, standards) and tag every spec line `[researched]`,
-`[standard]` or `[assumed]` — detail-mode.md defines the research step. Detail lives in features (holes, bosses, flanges,
-tunnels, pockets), and the catalog has first-class tools for them:
-`parts.hole` (counterbore/countersink/chamfer/drill-point), `.aim()` for
-drilling into any face, `parts.bolt_circle`, patterns.
+**Detail mode is OPT-IN — always ask first, never assume.** If the
+request is a real technical object (engine, gearbox, housing, pump...)
+and the user did not already say how faithful it must be, ask ONE
+question before modeling: *representative model, or detailed functional
+model (every bolt pattern, port, gallery, rib — takes notably longer)?*
+The rules:
+
+- Enter detailed mode ONLY on the user's explicit yes (or if they
+  already used words like "detailed", "functional", "faithful",
+  "replica"). Their silence, an ambiguous answer, or no reply =
+  **representative**. Detailed mode costs real time and research;
+  spending it uninvited is a bug, not diligence.
+- Once confirmed: load `references/detail-mode.md`, replace the short
+  bill of parts with a per-region **Feature Specification**, build and
+  verify region by region. If the user gives no further specifications,
+  research the object on the web yourself first and tag every spec line
+  `[researched]`, `[standard]` or `[assumed]`.
+- Detail lives in features (holes, bosses, flanges, tunnels, pockets):
+  `parts.hole` (counterbore/countersink/chamfer/drill-point), `.aim()`
+  for drilling into any face, `parts.bolt_circle`, patterns.
 
 **If the user supplied a photo or drawing**, load `references/from-image.md`
 first: LOOK at the image, estimate real dimensions with named anchors,

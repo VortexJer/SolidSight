@@ -12,7 +12,7 @@ material and deciding how they meet. Model it that way.
 
 | material | real sizes |
 |---|---|
-| aluminium T-slot | 20x20, 20x40, 30x30, 40x40 (`parts.extrusion_profile(length, size=20)`) |
+| aluminium T-slot | 20x20, 20x40, 30x30, 40x40 (`parts.extrusion_profile(length, size=20)`; exact profiles also in `solidsight components search "extrusion"`) |
 | pine/softwood (nominal -> actual) | 2x4 -> 38 x 89 mm; 1x4 -> 19 x 89; 2x2 -> 38 x 38 |
 | plywood | 12, 15, 18, 21 mm |
 | MDF | 12, 16, 18, 22 mm |
@@ -105,6 +105,8 @@ expect("rail", "leg", status="touching")
 
 - BOM = a real cut list (`solidsight assembly`): every member, its size,
   quantity. Group identical members (the BOM does this by geometry).
+- `solidsight drawing model.py` — the dimensioned PDF is what gets taken
+  to the workshop; a screenshot is not a drawing.
 - Every joint is a MET `expect()`.
 - Human dimensions quoted against the table above.
 - Stability read from the report; wall-fixing stated if `barely-stable`.

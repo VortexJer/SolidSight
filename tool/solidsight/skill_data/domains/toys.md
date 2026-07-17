@@ -110,3 +110,6 @@ Rules that make inserts good rather than merely tight:
 - Inserts: every compartment has a scoop; `expect()` on every component
   ghost; total height under the lid verified.
 - Moving parts: clearances declared, `solidsight motion` if they rotate.
+- `solidsight cost model.py` for the print estimate — toy commissions
+  are usually batches, and per-piece cost times 20 party favours is a
+  number the user wants BEFORE printing.

@@ -72,6 +72,14 @@ At miniature scale, detail must be EXAGGERATED to survive: a 2 mm real
 seam at 1:35 is 0.06 mm and disappears. Deepen engravings to at least
 0.3 mm and say you exaggerated them.
 
+## Artwork from the client's image
+
+Pendants, signet rings and charms usually start from artwork the user
+supplies. `image_outline("emblem.png", width=<size on the piece>)`
+traces it exactly (holes preserved) — never redraw a logo by eye at
+jewelry scale. Engrave >= 0.3 mm deep or it vanishes; build with
+`--ref emblem.png` and compare the sheet.
+
 ## Text and engraving at small scale
 
 `text()` and `parts.wrapped_text(string, d, size, depth, outward)` for
