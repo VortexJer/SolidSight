@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pcbsight"
+version = "0.1.0"
+description = "PCB review built exclusively for AI agents: a .kicad_pcb in, exact connectivity/clearance/current findings out."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+authors = [{ name = "solidsight contributors" }]
+keywords = ["pcb", "kicad", "drc", "ai-agent", "electronics"]
+dependencies = ["pillow>=10.0"]
+
+[project.scripts]
+pcbsight = "pcbsight.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["pcbsight*"]
+
+[tool.setuptools.package-data]
+pcbsight = ["skill_data/SKILL.md"]
