@@ -242,6 +242,10 @@ def _add_build_flags(b) -> None:
     b.add_argument("--events", default=None, metavar="PATH",
                    help="stream structured NDJSON build events to a file "
                         "(one JSON object per line, written live)")
+    b.add_argument("--ref", default=None, metavar="IMAGE",
+                   help="reference photo/drawing the model is based on: "
+                        "writes renders/00_reference_vs_render.png (the "
+                        "reference beside the first render, to compare)")
 
 
 def _add_query_parser(sub) -> None:
@@ -565,10 +569,25 @@ def _build(args) -> int:
         if ndjson is not None:
             ndjson.close()
 
+    if getattr(args, "ref", None) and report["files"]["renders"]:
+        from .vision import comparison_sheet
+        ref = Path(args.ref)
+        if not ref.exists():
+            _say(f"  [WARN] --ref image not found: {ref} (sheet skipped)",
+                 err=True)
+        else:
+            sheet = Path(report["files"]["renders"][0]).parent \
+                / "00_reference_vs_render.png"
+            comparison_sheet(ref, report["files"]["renders"][0], sheet)
+            report["files"]["renders"].insert(0, str(sheet))
+
     if args.json:
         print(json.dumps(report, indent=2))
     else:
         _print_summary(report)
+        if getattr(args, "ref", None):
+            _say("  NEXT: LOOK at 00_reference_vs_render.png — does the "
+                 "model match the reference? Iterate on what differs.")
 
     if report["status"] == "failed" and mode == "print-safe":
         return 2

@@ -106,6 +106,42 @@ def test_crease_split_cube_normals_axis_aligned():
     assert np.abs(normals).max(axis=1).min() > 1 - 1e-6
 
 
+# --- render: sliver triangles must not fake edges on flat faces ------------
+# A disc with a complex engraving retriangulates its top face into long
+# slivers; their normals tilt on float noise and drew phantom stripes
+# across the flat top (found on examples/08-from-image).
+
+def test_slivers_do_not_fake_edges_on_a_flat_face():
+    from solidsight.render import _sound_faces
+    disc = cylinder(h=4, d=90)
+    star = polygon([(30 * math.cos(a), 30 * math.sin(a)) if i % 2 == 0 else
+                    (12 * math.cos(a), 12 * math.sin(a))
+                    for i, a in enumerate(
+                        [j * math.pi / 10 for j in range(20)])])
+    part = disc - star.extrude(2).translate(0, 0, 2.8)
+    tm = part.to_trimesh()
+
+    ok = _sound_faces(tm)
+    normals = np.asarray(tm.face_normals, float)
+    up = normals[:, 2] > 0.999                       # faces on the flat top
+    # every sound top face agrees with +Z; the ones that do not are slivers
+    tilted_sound = ok & (np.abs(normals[:, 2]) < 0.999) & \
+        (np.asarray(tm.triangles, float)[:, :, 2].min(axis=1) > 3.99)
+    assert up.sum() > 0
+    assert tilted_sound.sum() == 0
+
+    # and the filter must not reject honest geometry wholesale
+    assert ok.mean() > 0.5
+    assert _sound_faces(box(10, 10, 10).to_trimesh()).all()
+
+
+def test_sound_face_filter_keeps_real_edges():
+    # a gear's tooth flanks are real sharp edges and must survive
+    from solidsight.render import _sound_faces
+    g = parts.spur_gear(teeth=12, module=2, thickness=6)
+    assert _sound_faces(g.to_trimesh()).mean() > 0.8
+
+
 # --- polygon: silent self-intersection must warn --------------------------
 
 def test_self_intersecting_polygon_warns():

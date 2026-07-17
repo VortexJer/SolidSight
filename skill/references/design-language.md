@@ -163,6 +163,22 @@ place(part, name="bracket", at=(0, 0, 8), rotate=(0, 0, 90))
 one shared coordinate space; report.json `pairs[]` then gives collisions
 (exact overlap bbox + volume + move suggestion) or min clearance per pair.
 
+## Images as input (photos, drawings, logos, heightmaps)
+
+```python
+logo = image_outline("logo.png", width=60)        # dark shapes -> Sketch,
+                                                  # holes kept; give the REAL
+                                                  # size via width= OR height=
+relief = image_heightfield("map.png", width=90,   # brightness -> solid relief
+                           relief=6, base=1)      # (invert=True: lithophane)
+```
+
+`image_outline` is for faithful FLAT shapes only (logos, gaskets,
+stencils); never trace a photo of a 3D object and call it the object.
+Build with `--ref photo.png` to get `renders/00_reference_vs_render.png`
+(reference beside render) after every build. Full workflow, size-anchor
+estimation rules and honesty rules: `references/from-image.md`.
+
 **Declare the intent** with `expect()` so the build FAILS when a fit drifts,
 instead of you re-judging numbers every iteration:
 

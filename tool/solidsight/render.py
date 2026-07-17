@@ -187,6 +187,22 @@ def _rasterize(color: np.ndarray, zbuf: np.ndarray, cam: _Camera, tm,
         color[ymin:ymax + 1, xmin:xmax + 1][upd] = rgb[None, :] * si[:, None]
 
 
+def _sound_faces(tm, min_altitude: float = 5e-3) -> np.ndarray:
+    """True per face when the triangle is geometrically sound: its smallest
+    altitude (2*area / longest edge) exceeds min_altitude mm. Boolean ops
+    triangulate faces with complex outlines into long slivers, and rim ops
+    add sub-micron z-noise; a sliver's normal then tilts arbitrarily, so
+    nothing about creases or silhouettes may be concluded from it."""
+    tri = np.asarray(tm.triangles, float)
+    e0 = tri[:, 1] - tri[:, 0]
+    e1 = tri[:, 2] - tri[:, 1]
+    e2 = tri[:, 0] - tri[:, 2]
+    lmax = np.sqrt(np.maximum.reduce([(e0 ** 2).sum(1), (e1 ** 2).sum(1),
+                                      (e2 ** 2).sum(1)]))
+    area2 = np.linalg.norm(np.cross(e0, -e2), axis=1)
+    return area2 / np.maximum(lmax, 1e-12) > min_altitude
+
+
 def _crease_split(tm, crease_angle: float):
     """Duplicate vertices along sharp edges so per-vertex normals never
     average across a crease. Faces are grouped into smoothing regions
@@ -212,6 +228,11 @@ def _crease_split(tm, crease_angle: float):
     adj = np.asarray(tm.face_adjacency)
     if len(adj):
         smooth = np.asarray(tm.face_adjacency_angles) < crease_angle
+        # dihedral angles measured against slivers are noise: force-smooth
+        # those edges so slivers join their flat neighbours' group instead
+        # of fracturing the shading
+        ok = _sound_faces(tm)
+        smooth |= ~(ok[adj[:, 0]] & ok[adj[:, 1]])
         for (a, b) in adj[smooth]:
             ra, rb = find(int(a)), find(int(b))
             if ra != rb:
@@ -261,7 +282,10 @@ def _draw_edges(color: np.ndarray, zbuf: np.ndarray, cam: _Camera, tm,
     facing = normals @ cam.dir > 0
     silhouette = facing[adj[:, 0]] != facing[adj[:, 1]]
     sharp = angles > math.radians(28)
-    keep = silhouette | sharp
+    # an edge is only trusted when both its faces are sound (see
+    # _sound_faces): sliver normals fake both creases and silhouettes
+    ok = _sound_faces(tm)
+    keep = (silhouette | sharp) & ok[adj[:, 0]] & ok[adj[:, 1]]
 
     edge_rgb = (rgb * 0.42).clip(0, 255)
     sil_rgb = (rgb * 0.28).clip(0, 255)

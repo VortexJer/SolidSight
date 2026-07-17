@@ -110,6 +110,12 @@ tunnels, pockets), and the catalog has first-class tools for them:
 `parts.hole` (counterbore/countersink/chamfer/drill-point), `.aim()` for
 drilling into any face, `parts.bolt_circle`, patterns.
 
+**If the user supplied a photo or drawing**, load `references/from-image.md`
+first: LOOK at the image, estimate real dimensions with named anchors,
+trace faithful flat shapes with `image_outline()`, reliefs with
+`image_heightfield()`, and build with `--ref photo.png` so every build
+writes a reference-vs-render comparison sheet to look at.
+
 ### Step 2 - Check the catalog before deriving geometry
 
 Run `solidsight catalog`. Gears, threads, bolts, cap screws, washers, nuts,
@@ -288,12 +294,16 @@ Do not report the task complete until ALL of these hold for the final code:
 - `references/domains.md` — choosing a modeling strategy per domain
   (enclosures, mechanisms, furniture, architecture, organic/artistic,
   terrain, jewelry, miniatures) and which validation mode fits each.
+- `references/from-image.md` — modeling from a photo or drawing:
+  size estimation with anchors, `image_outline()` / `image_heightfield()`,
+  and the `--ref` comparison-sheet loop.
 
 Worked examples with real reports and renders: `examples/01-mounting-bracket`
 (simple), `02-snap-box` (booleans + snap fit), `03-gear-train` (catalog),
 `04-vase` (organic, --free), `05-assembly` (collision found -> fixed),
 `06-hidden-cavity` (cavity invisible in renders, caught by report + queries),
-`07-engine-block` (detail mode: inline-4 from a feature specification).
+`07-engine-block` (detail mode: inline-4 from a feature specification),
+`08-from-image` (a user's artwork traced with image_outline + --ref sheet).
 
 ## Honesty Rules
 

@@ -1,7 +1,7 @@
 {
-  "tool": "solidsight 0.5.0",
+  "tool": "solidsight 0.6.0",
   "model": "model.py",
-  "mode": "print-safe",
+  "mode": "free",
   "units": "mm",
   "status": "ok",
   "scene": {
@@ -163,18 +163,33 @@
     }
   ],
   "checks": [],
+  "bom": [
+    {
+      "item": "difference(spur_gear(module=2, teeth=20, thickness=8) minus union of 5 solids)",
+      "count": 1,
+      "names": [
+        "gear"
+      ],
+      "ghost": false,
+      "volume_mm3": 7499.48,
+      "grams_pla_each": 9.3
+    },
+    {
+      "item": "spur_gear(module=2, teeth=12, thickness=8)",
+      "count": 1,
+      "names": [
+        "pinion"
+      ],
+      "ghost": false,
+      "volume_mm3": 3217.105,
+      "grams_pla_each": 4.0
+    }
+  ],
   "files": {
     "report": "report.json",
     "renders": [
-      "renders/01_iso.png",
-      "renders/02_front.png",
-      "renders/03_right.png",
-      "renders/04_top.png"
+      "renders/01_iso.png"
     ],
-    "exports": [
-      "stl/gear.stl",
-      "stl/pinion.stl",
-      "stl/combined.stl"
-    ]
+    "exports": []
   }
 }

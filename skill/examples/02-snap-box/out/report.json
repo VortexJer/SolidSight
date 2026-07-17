@@ -1,9 +1,9 @@
 {
-  "tool": "solidsight 0.5.0",
+  "tool": "solidsight 0.6.0",
   "model": "model.py",
-  "mode": "print-safe",
+  "mode": "free",
   "units": "mm",
-  "status": "warnings",
+  "status": "ok",
   "scene": {
     "part_count": 2,
     "bbox": {
@@ -166,29 +166,34 @@
       "suggestion": null
     }
   ],
-  "checks": [
+  "checks": [],
+  "bom": [
     {
-      "id": "overhang",
-      "level": "warn",
-      "part": "box",
-      "message": "part \"box\" has 17 mm2 of faces steeper than 50 deg overhang (worst: 90 deg)",
-      "where": "worst face near (23.167, -1.417, 16.05)",
-      "suggestion": "reorient the part, chamfer the underside (45 deg cones under bosses), or accept support material. Flat roofs spanning an opening wall-to-wall (port slots, windows) are BRIDGES and usually print fine despite this warning. Inspect: solidsight build <model> --views iso,iso_back --focus 23.2,-1.4,16.1,12.0 --slice z=16.1 --out out_focus"
+      "item": "difference(difference(difference(rounded_box(50x34x24, r=3) minus rounded_box(... minus snap_slot(w=8))",
+      "count": 1,
+      "names": [
+        "box"
+      ],
+      "ghost": false,
+      "volume_mm3": 12535.459,
+      "grams_pla_each": 15.5
+    },
+    {
+      "item": "union(union(union(rounded_box(50x34x2.5, r=3), difference(rounded_box(44...., snap_clip(l=10, w=8, hook=1.2))",
+      "count": 1,
+      "names": [
+        "lid"
+      ],
+      "ghost": false,
+      "volume_mm3": 5579.625,
+      "grams_pla_each": 6.9
     }
   ],
   "files": {
     "report": "report.json",
     "renders": [
-      "renders/01_iso.png",
-      "renders/02_front.png",
-      "renders/03_right.png",
-      "renders/04_top.png",
-      "renders/slice_z_12.png"
+      "renders/01_iso.png"
     ],
-    "exports": [
-      "stl/box.stl",
-      "stl/lid.stl",
-      "stl/combined.stl"
-    ]
+    "exports": []
   }
 }

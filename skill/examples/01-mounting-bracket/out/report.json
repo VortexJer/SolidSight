@@ -1,9 +1,9 @@
 {
-  "tool": "solidsight 0.5.0",
+  "tool": "solidsight 0.6.0",
   "model": "model.py",
-  "mode": "print-safe",
+  "mode": "free",
   "units": "mm",
-  "status": "warnings",
+  "status": "ok",
   "scene": {
     "part_count": 1,
     "bbox": {
@@ -94,26 +94,24 @@
     }
   },
   "pairs": [],
-  "checks": [
+  "checks": [],
+  "bom": [
     {
-      "id": "overhang",
-      "level": "warn",
-      "part": "bracket",
-      "message": "part \"bracket\" has 30.91 mm2 of faces steeper than 50 deg overhang (worst: 87.2 deg)",
-      "where": "worst face near (-18.147, 16.667, 30.243)",
-      "suggestion": "reorient the part, chamfer the underside (45 deg cones under bosses), or accept support material. Flat roofs spanning an opening wall-to-wall (port slots, windows) are BRIDGES and usually print fine despite this warning. Inspect: solidsight build <model> --views iso,iso_back --focus -18.1,16.7,30.2,12.0 --slice z=30.2 --out out_focus"
+      "item": "union(union(difference(extrude(round_corners(rect(60x40), r=4), h=5) minu..., wedge(5x24x25))",
+      "count": 1,
+      "names": [
+        "bracket"
+      ],
+      "ghost": false,
+      "volume_mm3": 21653.237,
+      "grams_pla_each": 26.9
     }
   ],
   "files": {
     "report": "report.json",
     "renders": [
-      "renders/01_iso.png",
-      "renders/02_front.png",
-      "renders/03_right.png",
-      "renders/04_top.png"
+      "renders/01_iso.png"
     ],
-    "exports": [
-      "stl/bracket.stl"
-    ]
+    "exports": []
   }
 }
