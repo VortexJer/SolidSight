@@ -49,7 +49,6 @@ def render_sphere(mat, path: Path, size: int = 420,
     img = np.zeros((size, size, 3))
     pts = np.nonzero(inside)
     n = N[pts]                                       # (M, 3), world = shade
-    ndl = np.clip(n @ L, 0.0, 1.0)
     # evaluate the BRDF in the shading frame: rotate so this pixel's N is
     # +Z is overkill for a preview; the sphere IS the frame here since we
     # shade in world with N as the axis. Use the material's eval with
