@@ -22,9 +22,10 @@ clip.bvh  ->  animationsight inspect  ->  report.json + flagged frames  ->  fix 
 | **contacts** | plant/lift events per foot, with frames and times |
 | **foot sliding** | drift while planted: total slip, peak speed, worst frame — the classic defect |
 | **balance** | COM (real segment masses) vs the support base, per frame, with airborne frames separated |
+| **ballistics** | effective gravity per airborne span from a parabola fit — floaty/heavy flights, quantified |
 | **penetration** | any joint through the floor, with depth and frames |
-| **smoothness** | jerk RMS per joint; pops via robust z-score on acceleration |
-| **loops** | seam gap judged against the clip's own per-frame motion, convention-aware |
+| **smoothness** | discontinuity events, clustered: "pose snap" (many joints, one frame) vs "joint pop" (one bad key) |
+| **loops** | seam gap judged against the clip's own per-frame motion, convention-aware; `--kind oneshot` declares the intent |
 
 Findings carry `where` (frame, joint, magnitude) and a `try:`. Renders
 mark the offending joint and draw the COM, the floor and the support.
@@ -66,7 +67,39 @@ with three injected defects of exact magnitude.
 And the clean reference reports **OK**, exit 0 — no findings. Both
 directions are asserted in `tests/`.
 
-## Two bugs this found in itself
+<p align="center">
+  <img src="examples/01-walk/out_broken/frames/frame_0022.png" width="44%">
+  <img src="examples/01-walk/out_broken/track_foot_speed.png" width="54%">
+</p>
+<p align="center"><em>real committed output: frame 22 with the penetrating foot circled below the floor line · the foot-speed track with the sliding frames marked</em></p>
+
+## Before / after: one turn of the loop
+
+[`examples/02-jump`](examples/02-jump) is the defect nobody can see and
+everybody can feel: a jump whose flight falls at **0.552x gravity**.
+Every still frame looks fine; the parabola fit does not care.
+
+```
+flight: frames 17..39 (0.7667s, apex +374.2 mm) -> 0.552x gravity
+[WARN] ... at 1 g that apex takes 0.55s of airtime
+       try:   T = 2*sqrt(2h/g): shorten the airtime or raise the apex
+```
+
+Apply the `try:` line, re-inspect, and prove it:
+
+```
+animationsight diff jump_floaty.bvh jump_fixed.bvh
+  flight 0: 0.552x gravity (0.7667s) -> 1.005x gravity (0.5667s)
+  GONE [floaty-flight] flight at frames [17, 39] falls at 0.55x gravity ...
+```
+
+<p align="center">
+  <img src="examples/02-jump/out_floaty/frames/frame_0022.png" width="44%">
+  <img src="examples/02-jump/out_floaty/track_com_height.png" width="54%">
+</p>
+<p align="center"><em>mid-flight with the COM drawn, and the COM-height track: the parabola under measurement</em></p>
+
+## Three bugs this found in itself
 
 Worth stating plainly, because they are the same class of bug the tool
 exists to catch:
@@ -81,6 +114,10 @@ exists to catch:
    Now it is the 10th percentile of the per-frame lowest point: a defect
    is rare by nature and stays below it.
    (`test_a_penetration_cannot_define_the_floor`)
+3. **The author's own jump was floaty.** While dogfooding, the ballistics
+   metric measured the freshly-authored demo jump at 0.68 g — written as
+   an "arbitrary nice parabola" and shipped without a second look. It is
+   now `examples/02-jump`, defect preserved, with the fix beside it.
 
 ## Scope, honestly
 

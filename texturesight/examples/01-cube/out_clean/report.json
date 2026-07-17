@@ -60,7 +60,105 @@
         0.1024,
         0.1024
       ],
-      "note": "an island is a UV-connected face set; a seam is a 3D edge whose two faces land in different islands - so seams are counted, not guessed"
+      "note": "an island is a UV-connected face set; a seam is a 3D edge whose two faces land in different islands - so seams are counted, not guessed",
+      "detail": [
+        {
+          "island": 0,
+          "faces": [
+            0,
+            1
+          ],
+          "face_count": 2,
+          "uv_bbox": [
+            0.01,
+            0.01,
+            0.33,
+            0.33
+          ],
+          "mean_density_px_per_unit": 327.68,
+          "surface_mm2": 1.0
+        },
+        {
+          "island": 1,
+          "faces": [
+            2,
+            3
+          ],
+          "face_count": 2,
+          "uv_bbox": [
+            0.34,
+            0.01,
+            0.66,
+            0.33
+          ],
+          "mean_density_px_per_unit": 327.68,
+          "surface_mm2": 1.0
+        },
+        {
+          "island": 2,
+          "faces": [
+            4,
+            5
+          ],
+          "face_count": 2,
+          "uv_bbox": [
+            0.67,
+            0.01,
+            0.99,
+            0.33
+          ],
+          "mean_density_px_per_unit": 327.68,
+          "surface_mm2": 1.0
+        },
+        {
+          "island": 3,
+          "faces": [
+            6,
+            7
+          ],
+          "face_count": 2,
+          "uv_bbox": [
+            0.01,
+            0.34,
+            0.33,
+            0.66
+          ],
+          "mean_density_px_per_unit": 327.68,
+          "surface_mm2": 1.0
+        },
+        {
+          "island": 4,
+          "faces": [
+            8,
+            9
+          ],
+          "face_count": 2,
+          "uv_bbox": [
+            0.34,
+            0.34,
+            0.66,
+            0.66
+          ],
+          "mean_density_px_per_unit": 327.68,
+          "surface_mm2": 1.0
+        },
+        {
+          "island": 5,
+          "faces": [
+            10,
+            11
+          ],
+          "face_count": 2,
+          "uv_bbox": [
+            0.67,
+            0.34,
+            0.99,
+            0.66
+          ],
+          "mean_density_px_per_unit": 327.68,
+          "surface_mm2": 1.0
+        }
+      ]
     },
     "packing": {
       "uv_bbox": [

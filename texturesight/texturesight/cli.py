@@ -131,6 +131,19 @@ def _inspect(args) -> int:
         _say(f"  layout: {i_['uv_islands']} island(s) over "
              f"{i_['mesh_shells']} mesh shell(s), {i_['seam_edges']} seam "
              f"edge(s) ({i_['seam_length_3d']} of 3D length)")
+        detail = [d for d in i_.get("detail", [])
+                  if d["mean_density_px_per_unit"] is not None]
+        if len(detail) > 1:
+            lo = min(detail, key=lambda d: d["mean_density_px_per_unit"])
+            hi = max(detail, key=lambda d: d["mean_density_px_per_unit"])
+            if hi["mean_density_px_per_unit"] > 0 and \
+                    lo["mean_density_px_per_unit"] < \
+                    0.9 * hi["mean_density_px_per_unit"]:
+                _say(f"  islands: #{lo['island']} is the sparsest "
+                     f"({lo['mean_density_px_per_unit']} px/unit, "
+                     f"{lo['face_count']} face(s)) vs #{hi['island']} "
+                     f"({hi['mean_density_px_per_unit']}) - ids match the "
+                     f"labels in uv_layout.png")
         _say(f"  packing: {pk['utilization'] * 100:.0f}% of the UV square "
              f"used, {pk['overlap_cells']} overlap cell(s)")
 

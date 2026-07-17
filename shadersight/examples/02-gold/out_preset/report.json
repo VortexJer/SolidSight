@@ -1,0 +1,183 @@
+{
+  "status": "ok",
+  "material": {
+    "name": "gold",
+    "base_color": [
+      1.0,
+      0.766,
+      0.336
+    ],
+    "roughness": 0.35,
+    "metallic": 1.0,
+    "specular": 0.5,
+    "f0": [
+      1.0,
+      0.766,
+      0.336
+    ],
+    "alpha_ggx": 0.1225
+  },
+  "energy_conservation": {
+    "per_view": [
+      {
+        "theta_deg": 0.0,
+        "albedo_rgb": [
+          0.98768,
+          0.75657,
+          0.33187
+        ],
+        "max_channel": 0.98768
+      },
+      {
+        "theta_deg": 7.73,
+        "albedo_rgb": [
+          0.98748,
+          0.75641,
+          0.3318
+        ],
+        "max_channel": 0.98748
+      },
+      {
+        "theta_deg": 15.45,
+        "albedo_rgb": [
+          0.98668,
+          0.75581,
+          0.33155
+        ],
+        "max_channel": 0.98668
+      },
+      {
+        "theta_deg": 23.18,
+        "albedo_rgb": [
+          0.98584,
+          0.75518,
+          0.33131
+        ],
+        "max_channel": 0.98584
+      },
+      {
+        "theta_deg": 30.91,
+        "albedo_rgb": [
+          0.98438,
+          0.75412,
+          0.331
+        ],
+        "max_channel": 0.98438
+      },
+      {
+        "theta_deg": 38.64,
+        "albedo_rgb": [
+          0.98174,
+          0.75233,
+          0.33076
+        ],
+        "max_channel": 0.98174
+      },
+      {
+        "theta_deg": 46.36,
+        "albedo_rgb": [
+          0.97781,
+          0.7501,
+          0.33166
+        ],
+        "max_channel": 0.97781
+      },
+      {
+        "theta_deg": 54.09,
+        "albedo_rgb": [
+          0.9713,
+          0.74742,
+          0.33601
+        ],
+        "max_channel": 0.9713
+      },
+      {
+        "theta_deg": 61.82,
+        "albedo_rgb": [
+          0.9586,
+          0.74339,
+          0.34793
+        ],
+        "max_channel": 0.9586
+      },
+      {
+        "theta_deg": 69.55,
+        "albedo_rgb": [
+          0.93565,
+          0.7376,
+          0.37367
+        ],
+        "max_channel": 0.93565
+      },
+      {
+        "theta_deg": 77.27,
+        "albedo_rgb": [
+          0.90139,
+          0.73074,
+          0.41714
+        ],
+        "max_channel": 0.90139
+      },
+      {
+        "theta_deg": 85.0,
+        "albedo_rgb": [
+          0.9023,
+          0.75598,
+          0.4871
+        ],
+        "max_channel": 0.9023
+      }
+    ],
+    "max_albedo": 0.98768,
+    "max_at_theta_deg": 0.0,
+    "conserves_energy": true,
+    "grid": {
+      "n_theta": 64,
+      "n_phi": 128,
+      "n_views": 12
+    },
+    "note": "directional albedo = integral of f*cos over the hemisphere; >1 means the surface emits energy it never received. Values slightly under 1 at grazing angles are expected: single-scattering GGX loses energy there"
+  },
+  "reciprocity": {
+    "max_relative_error": 0.0,
+    "mean_relative_error": 0.0,
+    "worst_pair": {
+      "wi": [
+        -0.933,
+        0.3599,
+        0.0008
+      ],
+      "wo": [
+        0.9347,
+        -0.3548,
+        0.0206
+      ]
+    },
+    "samples": 4096,
+    "seed": 7,
+    "reciprocal": true,
+    "note": "f(wi,wo) == f(wo,wi) is a physical law, not a style"
+  },
+  "positivity": {
+    "min_value": 0.0,
+    "negative_samples": 0,
+    "non_negative": true
+  },
+  "furnace": {
+    "normal_incidence_albedo": [
+      0.98768,
+      0.75657,
+      0.33187
+    ],
+    "energy_lost": 0.01232,
+    "note": "energy below 1 at high roughness is the known single-scattering GGX deficit, not a defect: add a multi-scatter term if it matters"
+  },
+  "checks": [],
+  "files": {
+    "report": "report.json",
+    "renders": [
+      "preview.png",
+      "albedo_curve.png"
+    ]
+  }
+}

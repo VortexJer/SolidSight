@@ -35,6 +35,44 @@ Everything is deterministic (fixed-seed sampling; the resolution is in
 the report, because a physics claim without its resolution is not a
 claim).
 
+## What it generates
+
+Real committed output from [`examples/01-graphs`](examples/01-graphs)
+(a bronze at roughness 0.35) and [`examples/02-gold`](examples/02-gold):
+
+<p align="center">
+  <img src="examples/01-graphs/out_material/preview.png" width="34%">
+  <img src="examples/01-graphs/out_material/albedo_curve.png" width="63%">
+</p>
+<p align="center"><em>preview.png (the human-facing sphere) and albedo_curve.png (the verdict: directional albedo vs the red 1.0 energy ceiling)</em></p>
+
+## Before / after: one turn of the loop
+
+[`examples/02-gold`](examples/02-gold): a "gold-ish" base colour written
+from memory, against the measured preset. Both pass the physics — being
+physical and being *right* are different questions.
+
+```
+shadersight diff out_memory out_preset
+  base_color: [1.0, 0.86, 0.57] -> [1.0, 0.766, 0.336]
+  compare: out_preset/compare.png  (before | after - LOOK at it)
+```
+
+<p align="center">
+  <img src="examples/02-gold/out_preset/compare.png" width="80%">
+</p>
+<p align="center"><em>left: the guess (reads as pewter) · right: measured gold</em></p>
+
+And on the graph side, the broken example graph against the clean one is
+the whole review loop in four lines:
+
+```
+shadersight graph broken_graph.json   ->  FAILED (cycle: mul, add; dangling
+                                          'missing'; 2 dead nodes)
+# fix the graph in the DCC tool, re-export, then:
+shadersight graph clean_graph.json    ->  OK  (~340 ALU-equiv, 3 fetches)
+```
+
 ## Proof it works
 
 The tests hold the tool to the laws, in both directions:

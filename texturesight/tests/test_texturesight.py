@@ -321,3 +321,17 @@ def test_diff_proves_a_layout_fix(tmp_path):
     text = "\n".join(diff_reports(a, b))
     assert "GONE [uv-flipped-faces]" in text
     assert "spread 3.0x -> 1.0x" in text
+
+
+def test_cli_names_the_sparsest_island(tmp_path):
+    """The summary itself must say WHICH island is starved — sending the
+    agent into report.json for the one number it always needs is
+    friction (found on examples/02-crate)."""
+    crate = Path(__file__).parents[1] / "examples" / "02-crate"
+    r = subprocess.run(
+        [sys.executable, "-m", "texturesight.cli", "inspect",
+         "--mesh", str(crate / "crate_starved.obj"),
+         "--out", str(tmp_path / "o")],
+        capture_output=True, text=True)
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "islands: #4 is the sparsest" in r.stdout

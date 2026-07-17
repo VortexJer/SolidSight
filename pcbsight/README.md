@@ -61,6 +61,29 @@ tests, both directions.
 </p>
 <p align="center"><em>the broken board: the neck in the top trace, the blue GND run stopping short, the 0.08 mm findings circled</em></p>
 
+## Before / after: one turn of the loop
+
+The repair of the broken board, told entirely by `diff` — no
+re-inspection choreography, one command against both files:
+
+```
+pcbsight diff board_broken.kicad_pcb board_clean.kicad_pcb
+  net 'GND': 2 island(s) -> 1
+  clearance findings: 2 -> 0
+  current '+5V': 0.745 A -> 2.392 A (min width 0.2 -> 1.0 mm)
+  pair USB_P / USB_N: skew 3.0 -> 0.0 mm
+  GONE [net-open]        net 'GND' is 2 separate island(s) ... unconnected pad(s): J1.2
+  GONE [clearance]       track-track: '+5V' to 'SIG' at 0.08 mm (required 0.2)
+  GONE [diff-pair-skew]  pair USB_P / USB_N is skewed 3.0 mm (~19.8 ps on FR4)
+  GONE [diff-pair-width] pair USB_P / USB_N mixes widths [0.25, 0.3] mm
+```
+
+<p align="center">
+  <img src="examples/01-board/out_broken/board.png" width="49%">
+  <img src="examples/01-board/out_clean/board.png" width="49%">
+</p>
+<p align="center"><em>before: the GND run (blue) stops short, the neck in the +5V trace, the 0.08 mm findings circled · after: routed, clean, matched</em></p>
+
 ## Two of its own defects the example caught
 
 1. The first "clean" board routed +5V straight through the GND and SIG

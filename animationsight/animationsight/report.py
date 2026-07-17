@@ -241,7 +241,7 @@ def inspect_clip(path: str | Path, out_dir: Path | None = None,
     k, (h1, h2) = M._axis_indices(up)
     tracks = []
     render_track(com[:, k] - arrays["floor"], out / "track_com_height.png",
-                 f"{clip.source} — COM height above floor", "mm",
+                 f"{clip.source} - COM height above floor", "mm",
                  clip.frame_time)
     tracks.append("track_com_height.png")
 
@@ -253,7 +253,7 @@ def inspect_clip(path: str | Path, out_dir: Path | None = None,
         slide_frames = [f for s in rep["contacts"]["sliding"]
                         if s["joint"] == feet[0] for f in s["frames"]]
         render_track(hs, out / "track_foot_speed.png",
-                     f"{feet[0]} — horizontal speed (slides marked)",
+                     f"{feet[0]} - horizontal speed (slides marked)",
                      "mm/s", clip.frame_time, marks=slide_frames)
         tracks.append("track_foot_speed.png")
 
@@ -285,13 +285,37 @@ def diff_reports(a: dict, b: dict) -> list[str]:
         if na - nb:
             lines.append(f"  joints GONE:  {', '.join(sorted(na - nb))}")
 
+    # flights first: gravity is the headline of a jump edit, and burying
+    # it under 22 near-identical peak-speed lines hid it completely
+    fa = a.get("ballistics", {}).get("flights", [])
+    fb = b.get("ballistics", {}).get("flights", [])
+    for i in range(max(len(fa), len(fb))):
+        ga = fa[i]["gravity_ratio"] if i < len(fa) else None
+        gb = fb[i]["gravity_ratio"] if i < len(fb) else None
+        if ga != gb:
+            da = f"{fa[i]['duration_s']}s" if i < len(fa) else "-"
+            db = f"{fb[i]['duration_s']}s" if i < len(fb) else "-"
+            lines.append(f"  flight {i}: {ga}x gravity ({da}) -> "
+                         f"{gb}x gravity ({db})")
+
+    # peak speeds: whole-body edits move every joint by a similar amount
+    # (rigid motion), so show the largest few and fold the rest
+    deltas = []
     for name in sorted(na & nb):
         pa, pb = a["peaks"][name], b["peaks"][name]
         d = pb["peak_speed_mm_s"] - pa["peak_speed_mm_s"]
         if abs(d) > max(1.0, 0.05 * max(pa["peak_speed_mm_s"], 1.0)):
-            lines.append(
-                f"  '{name}': peak speed {pa['peak_speed_mm_s']} -> "
-                f"{pb['peak_speed_mm_s']} mm/s ({d:+.1f})")
+            deltas.append((abs(d), name, pa["peak_speed_mm_s"],
+                           pb["peak_speed_mm_s"], d))
+    deltas.sort(reverse=True)
+    for _mag, name, va, vb, d in deltas[:5]:
+        lines.append(f"  '{name}': peak speed {va} -> {vb} mm/s ({d:+.1f})")
+    if len(deltas) > 5:
+        rest = len(deltas) - 5
+        lo = min(x[4] for x in deltas[5:])
+        hi = max(x[4] for x in deltas[5:])
+        lines.append(f"  ... and {rest} more joint(s) with peak-speed "
+                     f"changes between {lo:+.1f} and {hi:+.1f} mm/s")
 
     ida = {(c["id"], c["message"]) for c in a["checks"]}
     idb = {(c["id"], c["message"]) for c in b["checks"]}

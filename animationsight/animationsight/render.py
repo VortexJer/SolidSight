@@ -25,6 +25,16 @@ COM_C = (46, 110, 88)
 GRID = (219, 219, 214)
 
 
+_FOLD = {ord(a): b for a, b in [("—", "-"), ("–", "-"),
+                                  ("·", "-"), ("…", "...")]}
+
+
+def _ascii(text: str) -> str:
+    """PIL's default bitmap font has no em-dash: fold to ASCII so burned
+    labels can never show tofu boxes (found on the first track render)."""
+    return str(text).translate(_FOLD)
+
+
 def _font(size: int = 13):
     try:
         return ImageFont.load_default(size=size)
@@ -108,8 +118,9 @@ def render_frames(clip, pos: np.ndarray, com: np.ndarray, out_dir: Path,
             d.text((x + 12, y - 7), clip.joints[i].name, fill=ACCENT,
                    font=f11)
 
-        d.text((10, 8), f"{clip.source}  frame {f}/{clip.n_frames - 1}"
-                        f"   t={f * clip.frame_time:.3f}s",
+        d.text((10, 8), _ascii(f"{clip.source}  frame "
+                               f"{f}/{clip.n_frames - 1}   "
+                               f"t={f * clip.frame_time:.3f}s"),
                fill=INK, font=f13)
         d.text((10, 24), f"{view} view  ·  COM (green)  ·  mm  ·  "
                          f"{clip.fps:.1f} fps", fill=BONE, font=f11)
@@ -153,7 +164,7 @@ def render_track(values: np.ndarray, out_path: Path, title: str,
             d.line([(x, pad_t), (x, pad_t + plot_h)], fill=ACCENT)
             d.ellipse([x - 4, y - 4, x + 4, y + 4], outline=ACCENT, width=2)
 
-    d.text((pad_l, 6), title, fill=INK, font=_font(13))
+    d.text((pad_l, 6), _ascii(title), fill=INK, font=_font(13))
     d.text((pad_l + plot_w - 110, pad_t + plot_h + 8),
            f"frames 0..{n - 1}  ({n * dt:.2f}s)", fill=BONE, font=_font(11))
     d.text((6, pad_t + plot_h + 8), ylabel, fill=BONE, font=_font(11))

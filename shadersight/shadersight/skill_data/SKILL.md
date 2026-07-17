@@ -20,6 +20,7 @@ shadersight material --base-color 0.8,0.2,0.1 --roughness 0.4 --metallic 1
 shadersight material ... --quality fast|normal|high   # integration effort
 shadersight material ... --out DIR --json
 shadersight diff out_v1 out_v2               # what the tweak changed (proof)
+                                             # (also writes compare.png: both spheres side by side)
 
 shadersight graph shader_graph.json          # cycles, dead nodes, cost
 shadersight version

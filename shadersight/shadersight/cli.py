@@ -105,6 +105,16 @@ def _diff(args) -> int:
         reps.append(_json.loads(p.read_text(encoding="utf-8")))
     for line in diff_reports(*reps):
         _say(line)
+
+    # two material runs -> also a side-by-side sphere sheet: the numbers
+    # are the verdict, but "which of these is the real gold" is a
+    # question a pair of images answers in one look
+    pa, pb = Path(args.a) / "preview.png", Path(args.b) / "preview.png"
+    if pa.exists() and pb.exists():
+        from .render import compare_sheet
+        out = Path(args.b) / "compare.png"
+        compare_sheet(pa, pb, out, label_a=str(args.a), label_b=str(args.b))
+        _say(f"  compare: {out}  (before | after - LOOK at it)")
     return 0
 
 

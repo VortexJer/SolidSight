@@ -12,7 +12,7 @@ whose two faces land in different UV islands. A normal map is either
 unit-length vectors or it is broken.
 
 ```
-model.obj + maps  ->  texturesight inspect  ->  report.json + uv_layout.png  ->  fix  ->  again
+model.obj + maps  ->  texturesight inspect  ->  report.json + uv_layout.png  ->  fix  ->  diff
 ```
 
 ## What it measures
@@ -92,6 +92,34 @@ not by a user:
 
 False positives are how a tool loses the right to be believed, so they
 are treated as bugs of the same severity as false negatives.
+
+## Before / after: one turn of the loop
+
+[`examples/02-crate`](examples/02-crate) is the classic layout edit gone
+wrong: the lid's island packed at 1/3 scale. Invisible on the model
+until the texture is painted — then the lid is blurry forever. The
+finding names the island, its place, and the factor:
+
+```
+islands: #4 is the sparsest (2.05 px/unit, 2 face(s)) vs #0 (6.14)
+[WARN] texel density varies 3.0x across the mesh
+       where: island #4 at uv (0.35, 0.35)-(0.45, 0.45): 2.05 px/unit vs 5.46 mesh mean
+       try:   scale island #4 up ~2.7x in the UV editor
+```
+
+Apply the `try:` line, re-inspect into a new out dir, and prove it:
+
+```
+texturesight diff out_starved out_fixed
+  density: mean 5.46 -> 6.14 px/unit; spread 3.0x -> 1.0x
+  GONE [texel-density-uneven] texel density varies 3.0x across the mesh
+```
+
+<p align="center">
+  <img src="examples/02-crate/out_starved/uv_density.png" width="49%">
+  <img src="examples/02-crate/out_fixed/uv_density.png" width="49%">
+</p>
+<p align="center"><em>before: island #4 dark (starved) · after: uniform density</em></p>
 
 ## Reading the results honestly
 

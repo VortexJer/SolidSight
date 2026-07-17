@@ -277,3 +277,22 @@ def test_diff_reports_the_tweak():
                                   roughness=0.35), quality="fast")
     text = "\n".join(diff_reports(a, b))
     assert "base_color" in text
+
+
+def test_cli_diff_writes_the_compare_sheet(tmp_path):
+    """Material tweaks are judged pairwise; diff of two material runs
+    must leave compare.png (both spheres side by side)."""
+    for name, color in (("a", "0.9,0.5,0.2"), ("b", "0.5,0.7,0.9")):
+        r = subprocess.run(
+            [sys.executable, "-m", "shadersight.cli", "material",
+             "--base-color", color, "--quality", "fast",
+             "--out", str(tmp_path / name)],
+            capture_output=True, text=True)
+        assert r.returncode == 0, r.stdout + r.stderr
+    r = subprocess.run(
+        [sys.executable, "-m", "shadersight.cli", "diff",
+         str(tmp_path / "a"), str(tmp_path / "b")],
+        capture_output=True, text=True)
+    assert r.returncode == 0
+    assert "compare" in r.stdout
+    assert (tmp_path / "b" / "compare.png").exists()

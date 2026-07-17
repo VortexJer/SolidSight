@@ -81,6 +81,25 @@ def _to_local(n, L, V):
     return M @ L, M @ V
 
 
+def compare_sheet(path_a: Path, path_b: Path, out: Path,
+                  label_a: str = "before", label_b: str = "after") -> None:
+    """Two previews side by side, labelled. Written by `diff` when both
+    out dirs carry a preview: material tweaks are judged pairwise."""
+    with Image.open(path_a) as a, Image.open(path_b) as b:
+        a, b = a.convert("RGB"), b.convert("RGB")
+        h = max(a.height, b.height)
+        band, pad = 26, 10
+        sheet = Image.new("RGB", (a.width + b.width + 3 * pad,
+                                  h + band + 2 * pad), BG)
+        d = ImageDraw.Draw(sheet)
+        sheet.paste(a, (pad, band + pad))
+        sheet.paste(b, (a.width + 2 * pad, band + pad))
+        d.text((pad + 2, 6), str(label_a), fill=INK, font=_font(13))
+        d.text((a.width + 2 * pad + 2, 6), str(label_b), fill=INK,
+               font=_font(13))
+    sheet.save(out)
+
+
 def render_albedo_curve(energy: dict, path: Path,
                         size=(760, 300)) -> None:
     """Directional albedo vs view angle, with the physical ceiling drawn.

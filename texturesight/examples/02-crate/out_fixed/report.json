@@ -1,0 +1,180 @@
+{
+  "status": "ok",
+  "checks": [],
+  "files": {
+    "report": "report.json",
+    "renders": [
+      "uv_layout.png",
+      "uv_density.png"
+    ]
+  },
+  "uv": {
+    "mesh": {
+      "source": "crate_fixed.obj",
+      "faces": 12,
+      "vertices": 24,
+      "uv_coords": 24,
+      "materials": [
+        "crate"
+      ]
+    },
+    "assumed_texture_px": 1024,
+    "texel_density": {
+      "px_per_unit": {
+        "area_weighted_mean": 6.14,
+        "p2": 6.14,
+        "p98": 6.14,
+        "min": 6.14,
+        "max": 6.14
+      },
+      "spread_ratio": 1.0,
+      "worst_face": 4,
+      "note": "texels per world unit at the given texture size; the mean is area-weighted, and spread_ratio is p98/p2 (robust to a few stray faces)"
+    },
+    "distortion": {
+      "anisotropy": {
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0,
+        "worst_face": 3
+      },
+      "stretched_faces": [],
+      "stretched_face_count": 0,
+      "stretched_area_fraction": 0.0,
+      "flipped_faces": [],
+      "flipped_face_count": 0,
+      "note": "anisotropy = sigma_max/sigma_min of the per-face UV Jacobian: 1.0 is conformal, >2 is visibly smeared. Flipped = UV winding opposite to the mesh majority"
+    },
+    "islands": {
+      "uv_islands": 6,
+      "mesh_shells": 6,
+      "seam_edges": 0,
+      "seam_length_3d": 0.0,
+      "largest_island_uv_area": 0.09,
+      "smallest_island_uv_area": 0.09,
+      "island_uv_areas": [
+        0.09,
+        0.09,
+        0.09,
+        0.09,
+        0.09,
+        0.09
+      ],
+      "note": "an island is a UV-connected face set; a seam is a 3D edge whose two faces land in different islands - so seams are counted, not guessed",
+      "detail": [
+        {
+          "island": 0,
+          "faces": [
+            0,
+            1
+          ],
+          "face_count": 2,
+          "uv_bbox": [
+            0.02,
+            0.02,
+            0.32,
+            0.32
+          ],
+          "mean_density_px_per_unit": 6.14,
+          "surface_mm2": 2500.0
+        },
+        {
+          "island": 1,
+          "faces": [
+            2,
+            3
+          ],
+          "face_count": 2,
+          "uv_bbox": [
+            0.35,
+            0.02,
+            0.65,
+            0.32
+          ],
+          "mean_density_px_per_unit": 6.14,
+          "surface_mm2": 2500.0
+        },
+        {
+          "island": 2,
+          "faces": [
+            4,
+            5
+          ],
+          "face_count": 2,
+          "uv_bbox": [
+            0.68,
+            0.02,
+            0.98,
+            0.32
+          ],
+          "mean_density_px_per_unit": 6.14,
+          "surface_mm2": 2500.0
+        },
+        {
+          "island": 3,
+          "faces": [
+            6,
+            7
+          ],
+          "face_count": 2,
+          "uv_bbox": [
+            0.02,
+            0.35,
+            0.32,
+            0.65
+          ],
+          "mean_density_px_per_unit": 6.14,
+          "surface_mm2": 2500.0
+        },
+        {
+          "island": 4,
+          "faces": [
+            8,
+            9
+          ],
+          "face_count": 2,
+          "uv_bbox": [
+            0.35,
+            0.35,
+            0.65,
+            0.65
+          ],
+          "mean_density_px_per_unit": 6.14,
+          "surface_mm2": 2500.0
+        },
+        {
+          "island": 5,
+          "faces": [
+            10,
+            11
+          ],
+          "face_count": 2,
+          "uv_bbox": [
+            0.68,
+            0.35,
+            0.98,
+            0.65
+          ],
+          "mean_density_px_per_unit": 6.14,
+          "surface_mm2": 2500.0
+        }
+      ]
+    },
+    "packing": {
+      "uv_bbox": [
+        0.02,
+        0.02,
+        0.98,
+        0.65
+      ],
+      "used_uv_area": 0.54,
+      "utilization": 0.54,
+      "faces_outside_0_1": 0,
+      "overlap_cells": 0,
+      "overlap_grid": 256,
+      "note": "utilization is the summed UV area of all faces (1.0 = the whole square, wasted space excluded); overlap is measured on a 256x256 grid, so it finds stacked islands, not sub-texel touching"
+    },
+    "checks": []
+  },
+  "textures": []
+}

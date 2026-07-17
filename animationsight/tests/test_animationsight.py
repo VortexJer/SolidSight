@@ -311,3 +311,25 @@ def test_packaged_skill_matches_repo_copy():
     if not src.exists():
         pytest.skip("repo layout not present")
     assert src.read_text(encoding="utf-8") == pkg.read_text(encoding="utf-8")
+
+
+# --- diff: the headline first, the spam folded ----------------------------
+
+def test_diff_leads_with_gravity_and_folds_peak_spam():
+    """A whole-body edit changes every joint's peak by a similar amount;
+    22 near-identical lines buried the one that mattered (the flight
+    going 0.55x -> 1.005x gravity). Found dogfooding examples/02-jump."""
+    jump = Path(__file__).parents[1] / "examples" / "02-jump"
+    a = analyze(parse_bvh(jump / "jump_floaty.bvh", unit="cm"),
+                up="y", kind="oneshot")
+    b = analyze(parse_bvh(jump / "jump_fixed.bvh", unit="cm"),
+                up="y", kind="oneshot")
+    a.pop("_arrays"), b.pop("_arrays")
+    from animationsight.report import diff_reports
+    text = diff_reports(a, b)
+    joined = "\n".join(text)
+    assert "flight 0: 0.552x gravity" in joined
+    assert "1.005x gravity" in joined
+    assert "more joint(s) with peak-speed changes" in joined
+    per_joint = [ln for ln in text if "peak speed" in ln]
+    assert len(per_joint) <= 5
