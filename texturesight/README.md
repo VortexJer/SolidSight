@@ -112,7 +112,7 @@ Does **not** do: unwrapping, packing, baking, painting, or fixing
 anything — it audits; you fix it in the tool that made it. It does not
 judge whether a texture is beautiful, only whether it is correct.
 
-Siblings, same philosophy: [solidsight](../README.md) (3D geometry),
+Siblings, same philosophy: [solidsight](../solidsight/README.md) (3D geometry),
 [animationsight](../animationsight/README.md) (motion clips).
 
 ## License

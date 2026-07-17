@@ -22,18 +22,16 @@ jobs:
       - name: Install
         run: |
           python -m pip install --upgrade pip
-          pip install ./tool ./animationsight ./texturesight ./shadersight ./pcbsight pytest ruff
+          pip install ./solidsight ./animationsight ./texturesight ./shadersight ./pcbsight pytest ruff
       - name: Lint (errors only)
-        run: ruff check tool animationsight texturesight shadersight pcbsight --select E9,F
-      - name: Tests (solidsight)
-        run: pytest tool/tests -q
-      - name: Tests (the Sight family)
+        run: ruff check solidsight animationsight texturesight shadersight pcbsight --select E9,F
+      - name: Tests (all five tools)
         shell: bash
         # each suite runs from its own directory: from the repo root the
         # outer package folders shadow the installed packages as empty
         # namespace packages and every import breaks
         run: |
-          for pkg in animationsight texturesight shadersight pcbsight; do
+          for pkg in solidsight animationsight texturesight shadersight pcbsight; do
             (cd "$pkg" && python -m pytest tests -q)
           done
       - name: CLI smoke (quickstart model)

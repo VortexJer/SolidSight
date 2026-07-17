@@ -16,8 +16,8 @@ machine-checkable `expectations.json`.
 
 Self-test all references:
 
-    solidsight bench run --dir benchmarks
+    solidsight bench run --dir solidsight/benchmarks
 
 Grade an agent solution against one benchmark:
 
-    solidsight bench run 03-gear-pair --dir benchmarks --solution my.py
+    solidsight bench run 03-gear-pair --dir solidsight/benchmarks --solution my.py

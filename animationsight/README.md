@@ -91,7 +91,7 @@ retargeting, physics simulation, or editing clips. It reviews; you fix
 the clip in the tool that made it.
 
 For 3D geometry — parts, assemblies, robot URDF, collision sweeps —
-see [solidsight](../README.md), the sibling tool this shares its
+see [solidsight](../solidsight/README.md), the sibling tool this shares its
 philosophy with.
 
 ## The Claude Code skill

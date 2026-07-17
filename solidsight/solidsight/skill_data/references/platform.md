@@ -88,8 +88,8 @@ solidsight assembly model.py                 # BOM + axis play + sequence
 ## Benchmarks and plugins
 
 ```
-solidsight bench run --dir benchmarks                      # self-test references
-solidsight bench run 03-gear-pair --dir benchmarks --solution my.py
+solidsight bench run --dir solidsight/benchmarks                      # self-test references
+solidsight bench run 03-gear-pair --dir solidsight/benchmarks --solution my.py
 solidsight plugins
 ```
 Benchmarks: six graded commissions (washer -> engine-lite) with

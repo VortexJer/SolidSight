@@ -1,0 +1,12 @@
+# Lint the engines, not the artifacts:
+# - skill/examples and benchmarks are MODEL FILES: `from solidsight
+#   import *` is their documented style (the design language), so F403/
+#   F405 there is the feature working, not an error.
+# - build/ and egg-info are packaging debris.
+extend-exclude = [
+    "solidsight/skill/examples",
+    "solidsight/benchmarks",
+    "docs/plugins",
+    "**/build",
+    "**/*.egg-info",
+]

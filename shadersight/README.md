@@ -77,7 +77,7 @@ That defect ships in real engines. Now there is a number for it.
   over live nodes only. It compares graphs; it does not predict frame
   time on hardware it has never seen.
 
-Siblings, same philosophy: [solidsight](../README.md) (geometry),
+Siblings, same philosophy: [solidsight](../solidsight/README.md) (geometry),
 [animationsight](../animationsight/README.md) (motion),
 [texturesight](../texturesight/README.md) (UVs/textures).
 

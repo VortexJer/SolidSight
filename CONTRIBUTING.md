@@ -13,14 +13,14 @@ actionable feedback**. Keep both intact:
 ## Setup
 
 ```bash
-pip install -e ./tool
+pip install -e ./solidsight
 pip install pytest ruff
-pytest tool/tests
+pytest solidsight/tests
 ```
 
 ## Pull requests
 
-1. Bug fixes come with a regression test in `tool/tests/` that fails
+1. Bug fixes come with a regression test in `solidsight/tests/` that fails
    before the fix.
 2. New catalog parts need: docstring with pairing rules/conventions,
    an entry in `skill/references/parts-catalog.md`, and at least one test.

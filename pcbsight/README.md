@@ -82,7 +82,7 @@ tests, both directions.
   needs the fab's field-solved stackup.
 - Arcs, curved traces, keepouts and mask/paste layers are not parsed.
 
-Siblings, same philosophy: [solidsight](../README.md) (geometry — export
+Siblings, same philosophy: [solidsight](../solidsight/README.md) (geometry — export
 the board outline there to check the enclosure fit),
 [animationsight](../animationsight/README.md),
 [texturesight](../texturesight/README.md),

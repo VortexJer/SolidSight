@@ -57,7 +57,7 @@ solidsight assembly model.py                     # BOM, per-axis play, suggested
 solidsight drawing model.py                      # dimensioned third-angle PDF per part
 solidsight robot model.py --sdf                  # joint() declarations -> URDF/SDF with real inertials
 solidsight motion model.py --steps 24            # sweep joints through limits: exact collision map
-solidsight bench run --dir benchmarks            # graded benchmark suite (grade solutions with --solution)
+solidsight bench run --dir solidsight/benchmarks            # graded benchmark suite (grade solutions with --solution)
 solidsight plugins                               # installed extensions (entry-point group solidsight.plugins)
 solidsight version
 ```
@@ -72,10 +72,10 @@ Follow these steps in order. Do not skip steps.
 ### Step 0 - Ensure solidsight is installed
 
 ```bash
-solidsight version || pip install "git+https://github.com/VortexJer/AISight#subdirectory=tool"
+solidsight version || pip install "git+https://github.com/VortexJer/AISight#subdirectory=solidsight"
 ```
 
-If the user gave you a checkout of the repo instead: `pip install ./tool`.
+If the user gave you a checkout of the repo instead: `pip install ./solidsight`.
 The first run self-installs this skill into `~/.claude/skills/solidsight`
 and keeps it updated; `solidsight uninstall` removes the skill and the
 package together.

@@ -362,8 +362,8 @@ def test_packaged_skill_matches_repo_copy():
     # the wheel ships tool/solidsight/skill_data as a copy of /skill —
     # this guards against the two drifting apart
     from pathlib import Path
-    repo = Path(__file__).parents[2]          # tool/tests -> repo root
-    skill, pkg = repo / "skill", repo / "tool" / "solidsight" / "skill_data"
+    base = Path(__file__).parents[1]          # tests -> solidsight/
+    skill, pkg = base / "skill", base / "solidsight" / "skill_data"
     if not (skill / "SKILL.md").exists():
         pytest.skip("repo layout not present (installed package only)")
     rels = ["SKILL.md"]
@@ -818,7 +818,7 @@ def test_bench_fast_references(tmp_path):
     # via `solidsight bench run` (see benchmarks/README.md)
     from pathlib import Path
     from solidsight.bench import run_benchmark
-    root = Path(__file__).parents[2] / "benchmarks"
+    root = Path(__file__).parents[1] / "benchmarks"
     if not root.is_dir():
         pytest.skip("benchmarks live in the repo, not the wheel")
     for name in ("01-washer", "05-cavity-trap"):
