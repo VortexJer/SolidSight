@@ -16,6 +16,7 @@ problems are graph theory: cycles, dead nodes, per-pixel cost.
 
 ```
 shadersight material --preset gold --roughness 0.35   # MEASURED F0, not memory
+shadersight material --preset copper --boost 1.8      # measure the engine's "intensity" slider
 shadersight material --base-color 0.8,0.2,0.1 --roughness 0.4 --metallic 1
 shadersight material ... --quality fast|normal|high   # integration effort
 shadersight material ... --out DIR --json
@@ -59,7 +60,7 @@ material (Lambert-coupled diffuse + GGX/Smith specular) and reports:
 
 | check | level | law |
 |---|---|---|
-| `energy-not-conserved` | FAIL | directional albedo > 1 somewhere: the surface emits energy it never received. Most often a non-normalised D term. |
+| `energy-not-conserved` | FAIL | directional albedo > 1 somewhere: the surface emits energy it never received. With `--boost` > 1 the finding names the multiplier itself; otherwise suspect a non-normalised D term. |
 | `not-reciprocal` | FAIL | f(wi,wo) != f(wo,wi): a term treats view and light asymmetrically (the classic "fake fresnel" bug). Wrong from half of all angles. |
 | `negative-brdf` | FAIL | a negative lobe subtracts light: sign slip or over-eager compensation term. |
 | `high-energy-loss` | warn | >15 % lost at this roughness. EXPECTED single-scatter GGX behaviour, not a bug — say so instead of "fixing" it. |
