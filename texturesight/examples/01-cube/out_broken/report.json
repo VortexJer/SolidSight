@@ -1,0 +1,160 @@
+{
+  "status": "failed",
+  "checks": [
+    {
+      "id": "uv-flipped-faces",
+      "level": "fail",
+      "message": "2 face(s) have inverted UV winding",
+      "where": "first at face 4",
+      "try": "mirror those UV islands back: a flipped face samples normal maps mirrored, so lighting is wrong in a way no texture edit can fix"
+    },
+    {
+      "id": "uv-out-of-bounds",
+      "level": "warn",
+      "message": "2 face(s) fall outside the 0..1 UV square",
+      "where": "uv bbox [0.01, 0.01, 1.99, 0.66]",
+      "try": "intentional for tiling/UDIMs; a mistake for a single atlased asset - say which"
+    },
+    {
+      "id": "uv-stretch",
+      "level": "warn",
+      "message": "2 face(s) stretched more than 2.0:1 (16.7% of the surface); worst 4.0:1",
+      "where": "worst at face 8",
+      "try": "add a seam through the stretched region and re-unwrap it; stretch cannot be painted out"
+    },
+    {
+      "id": "texel-density-uneven",
+      "level": "warn",
+      "message": "texel density varies 3.0x across the mesh (109.23..327.68 px/unit)",
+      "where": "lowest at face 6",
+      "try": "scale the sparse islands up in the UV layout; uneven density reads as some parts being blurry"
+    },
+    {
+      "id": "uv-packing-loose",
+      "level": "warn",
+      "message": "the UV layout uses 45% of the square",
+      "where": "6 island(s)",
+      "try": "tighter packing = more texels per asset at the same memory; below ~50% you are paying for empty pixels"
+    }
+  ],
+  "files": {
+    "report": "report.json",
+    "renders": [
+      "uv_layout.png",
+      "uv_density.png"
+    ]
+  },
+  "uv": {
+    "mesh": {
+      "source": "cube_broken.obj",
+      "faces": 12,
+      "vertices": 24,
+      "uv_coords": 24,
+      "materials": [
+        "cube"
+      ]
+    },
+    "assumed_texture_px": 1024,
+    "texel_density": {
+      "px_per_unit": {
+        "area_weighted_mean": 263.96,
+        "p2": 109.23,
+        "p98": 327.68,
+        "min": 109.23,
+        "max": 327.68
+      },
+      "spread_ratio": 3.0,
+      "worst_face": 6,
+      "note": "texels per world unit at the given texture size; the mean is area-weighted, and spread_ratio is p98/p2 (robust to a few stray faces)"
+    },
+    "distortion": {
+      "anisotropy": {
+        "median": 1.0,
+        "p95": 4.0,
+        "max": 4.0,
+        "worst_face": 8
+      },
+      "stretched_faces": [
+        8,
+        9
+      ],
+      "stretched_face_count": 2,
+      "stretched_area_fraction": 0.1667,
+      "flipped_faces": [
+        4,
+        5
+      ],
+      "flipped_face_count": 2,
+      "note": "anisotropy = sigma_max/sigma_min of the per-face UV Jacobian: 1.0 is conformal, >2 is visibly smeared. Flipped = UV winding opposite to the mesh majority"
+    },
+    "islands": {
+      "uv_islands": 6,
+      "mesh_shells": 6,
+      "seam_edges": 0,
+      "seam_length_3d": 0.0,
+      "largest_island_uv_area": 0.1024,
+      "smallest_island_uv_area": 0.011378,
+      "island_uv_areas": [
+        0.1024,
+        0.1024,
+        0.1024,
+        0.1024,
+        0.0256,
+        0.011378
+      ],
+      "note": "an island is a UV-connected face set; a seam is a 3D edge whose two faces land in different islands - so seams are counted, not guessed"
+    },
+    "packing": {
+      "uv_bbox": [
+        0.01,
+        0.01,
+        1.99,
+        0.66
+      ],
+      "used_uv_area": 0.446578,
+      "utilization": 0.4466,
+      "faces_outside_0_1": 2,
+      "overlap_cells": 0,
+      "overlap_grid": 256,
+      "note": "utilization is the summed UV area of all faces (1.0 = the whole square, wasted space excluded); overlap is measured on a 256x256 grid, so it finds stacked islands, not sub-texel touching"
+    },
+    "checks": [
+      {
+        "id": "uv-flipped-faces",
+        "level": "fail",
+        "message": "2 face(s) have inverted UV winding",
+        "where": "first at face 4",
+        "try": "mirror those UV islands back: a flipped face samples normal maps mirrored, so lighting is wrong in a way no texture edit can fix"
+      },
+      {
+        "id": "uv-out-of-bounds",
+        "level": "warn",
+        "message": "2 face(s) fall outside the 0..1 UV square",
+        "where": "uv bbox [0.01, 0.01, 1.99, 0.66]",
+        "try": "intentional for tiling/UDIMs; a mistake for a single atlased asset - say which"
+      },
+      {
+        "id": "uv-stretch",
+        "level": "warn",
+        "message": "2 face(s) stretched more than 2.0:1 (16.7% of the surface); worst 4.0:1",
+        "where": "worst at face 8",
+        "try": "add a seam through the stretched region and re-unwrap it; stretch cannot be painted out"
+      },
+      {
+        "id": "texel-density-uneven",
+        "level": "warn",
+        "message": "texel density varies 3.0x across the mesh (109.23..327.68 px/unit)",
+        "where": "lowest at face 6",
+        "try": "scale the sparse islands up in the UV layout; uneven density reads as some parts being blurry"
+      },
+      {
+        "id": "uv-packing-loose",
+        "level": "warn",
+        "message": "the UV layout uses 45% of the square",
+        "where": "6 island(s)",
+        "try": "tighter packing = more texels per asset at the same memory; below ~50% you are paying for empty pixels"
+      }
+    ]
+  },
+  "textures": []
+}
