@@ -35,18 +35,32 @@ def via(x, y, net, size=0.6, drill=0.3):
             f"(layers \"F.Cu\" \"B.Cu\") (net {net}))")
 
 
-def footprint(ref, x, y, rot, pads):
-    out = [f"  (footprint \"generic:{ref}\" (at {x} {y} {rot})",
-           f"    (property \"Reference\" \"{ref}\" (at 0 -2))"]
+def footprint(ref, x, y, rot, pads, value="", body=(6.0, 4.0)):
+    bw, bh = body
+    out = [f'  (footprint "generic:{ref}" (at {x} {y} {rot}) (layer "F.Cu")',
+           f'    (property "Reference" "{ref}" (at 0 {-bh / 2 - 1.2}))',
+           f'    (property "Value" "{value}" (at 0 {bh / 2 + 1.2}))']
+    hw, hh = bw / 2, bh / 2
+    corners = [(-hw, -hh), (hw, -hh), (hw, hh), (-hw, hh), (-hw, -hh)]
+    for (ax, ay), (bx, by) in zip(corners, corners[1:]):
+        out.append(f'    (fp_line (start {ax} {ay}) (end {bx} {by}) '
+                   f'(layer "F.SilkS") (width 0.12))')
     for name, px, py, sx, sy, shape, net, netname, ptype in pads:
         layers = '"*.Cu" "*.Mask"' if ptype == "thru_hole" \
             else '"F.Cu" "F.Mask"'
         out.append(
-            f"    (pad \"{name}\" {ptype} {shape} (at {px} {py}) "
-            f"(size {sx} {sy}) (layers {layers}) "
-            f"(net {net} \"{netname}\"))")
+            f'    (pad "{name}" {ptype} {shape} (at {px} {py}) '
+            f'(size {sx} {sy}) (layers {layers}) '
+            f'(net {net} "{netname}"))')
     out.append("  )")
     return "\n".join(out)
+
+
+def edge_rect(x1, y1, x2, y2):
+    c = [(x1, y1), (x2, y1), (x2, y2), (x1, y2), (x1, y1)]
+    return [f'  (gr_line (start {ax} {ay}) (end {bx} {by}) '
+            f'(layer "Edge.Cuts") (width 0.15))'
+            for (ax, ay), (bx, by) in zip(c, c[1:])]
 
 
 NETS = {1: "+5V", 2: "GND", 3: "USB_P", 4: "USB_N", 5: "SIG"}
@@ -56,22 +70,23 @@ def build(broken: bool) -> str:
     L: list[str] = ["(kicad_pcb (version 20240108) (generator pcbsight)"]
     for nid, name in NETS.items():
         L.append(f"  (net {nid} \"{name}\")")
+    L += edge_rect(13, 10, 67, 53)      # the substrate
 
     # U1: a 3-pad regulator at (20, 20); J1: a 2-pad connector at (60, 20)
     L.append(footprint("U1", 20, 20, 0, [
         ("1", -2.5, 0, 1.5, 1.5, "rect", 1, "+5V", "smd"),
         ("2", 0, 0, 1.5, 1.5, "rect", 2, "GND", "smd"),
         ("3", 2.5, 0, 1.5, 1.5, "rect", 5, "SIG", "smd"),
-    ]))
+    ], value="AP2112", body=(7.0, 4.0)))
     L.append(footprint("J1", 60, 20, 180, [
         ("1", -1.5, 0, 1.7, 1.7, "circle", 1, "+5V", "thru_hole"),
         ("2", 1.5, 0, 1.7, 1.7, "circle", 2, "GND", "thru_hole"),
-    ]))
+    ], value="PWR", body=(6.0, 5.0)))
     # J2: USB pads at (40, 40)
     L.append(footprint("J2", 40, 40, 0, [
         ("1", -1.0, 0, 0.8, 1.2, "rect", 3, "USB_P", "smd"),
         ("2", 1.0, 0, 0.8, 1.2, "rect", 4, "USB_N", "smd"),
-    ]))
+    ], value="USB", body=(6.0, 4.0)))
 
     # +5V: U1.1 (17.5,20) -> J1.1 (61.5,20), routed via y=16 — NOT along
     # y=20, where the first version of this generator drove it straight

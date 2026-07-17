@@ -199,3 +199,37 @@ def test_diff_tells_the_story_of_the_fix(clean, broken):
     assert "GONE [net-open]" in text
     assert "clearance findings: 2 -> 0" in text
     assert "0.745 A -> 2.392 A" in text
+
+
+# --- the board is a substrate with named parts, not loose wires --------
+
+def test_parses_footprints_outline_and_values(clean):
+    # references, values and a body for every component
+    refs = {fp.ref for fp in clean.footprints}
+    assert {"U1", "J1", "J2"} <= refs
+    u1 = next(fp for fp in clean.footprints if fp.ref == "U1")
+    assert u1.value == "AP2112"
+    assert len(u1.body) == 4                      # 4 silk fp_lines
+    assert not u1.body_inferred                  # it came from F.SilkS
+    # Edge.Cuts gives a real substrate rectangle
+    x1, y1, x2, y2 = clean.outline_rect()
+    assert (x2 - x1) == pytest.approx(54.0, abs=0.1)
+    assert (y2 - y1) == pytest.approx(43.0, abs=0.1)
+
+
+def test_body_is_inferred_when_no_silk(tmp_path):
+    """A footprint with pads but no silk graphics must still get a body
+    (the pad bbox), flagged as inferred so nothing is ever invisible."""
+    from pcbsight.board import parse_board
+    p = tmp_path / "b.kicad_pcb"
+    p.write_text(
+        '(kicad_pcb (net 1 "N")\n'
+        '  (footprint "x:R1" (at 10 10 0)\n'
+        '    (property "Reference" "R1" (at 0 -2))\n'
+        '    (pad "1" smd rect (at -1 0) (size 1 1) (layers "F.Cu")'
+        ' (net 1 "N"))\n'
+        '    (pad "2" smd rect (at 1 0) (size 1 1) (layers "F.Cu")'
+        ' (net 1 "N"))))\n', encoding="utf-8")
+    b = parse_board(p)
+    r1 = b.footprints[0]
+    assert r1.body and r1.body_inferred

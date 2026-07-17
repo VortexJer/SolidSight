@@ -1,20 +1,34 @@
-"""Deterministic board render — copper as drawn, findings marked."""
+"""Deterministic board render — it should look like a board.
+
+Substrate (soldermask green), copper traces (gold, front bright / back
+dim), pads and vias, silkscreen component bodies with their reference
+designators and values, and every clearance finding circled in red at
+its coordinates. Software rasterizer via Pillow: no GPU, byte-identical.
+"""
 
 from __future__ import annotations
 
+import math
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
-from .board import Board, pad_on_layer
+from .board import Board
 
-BG = (247, 247, 245)
-INK = (46, 48, 51)
-GRID = (225, 225, 220)
-LAYER_C = {"F.Cu": (94, 122, 106), "B.Cu": (108, 116, 148)}
-PAD_C = (140, 112, 76)
-VIA_C = (100, 100, 104)
-MARK = (183, 62, 62)
+# a board-shop palette
+BG = (238, 238, 234)
+MASK = (26, 74, 58)          # soldermask green substrate
+MASK_EDGE = (14, 44, 34)
+F_CU = (208, 158, 92)        # front copper (gold)
+B_CU = (150, 120, 92)        # back copper (dimmer)
+PAD = (222, 196, 128)        # tin-plated pad
+PAD_TH = (208, 176, 108)     # through-hole annulus
+DRILL = (30, 42, 38)
+SILK = (232, 232, 226)       # silkscreen white
+SILK_DIM = (150, 168, 160)   # inferred body (we are guessing its size)
+VIA_C = (196, 176, 120)
+MARK = (240, 84, 84)
+INK = (40, 44, 42)
 
 
 def _font(sz=12):
@@ -25,85 +39,103 @@ def _font(sz=12):
 
 
 def render_board(board: Board, path: Path, marks: list[dict] | None = None,
-                 size: int = 900) -> None:
-    """Top-down view, both copper layers (back dashed-ish by colour),
-    pads, vias, and a red circle at every clearance finding."""
-    xs, ys = [], []
-    for t in board.tracks:
-        xs += [t.start[0], t.end[0]]
-        ys += [t.start[1], t.end[1]]
-    for p in board.pads:
-        xs.append(p.at[0])
-        ys.append(p.at[1])
-    for v in board.vias:
-        xs.append(v.at[0])
-        ys.append(v.at[1])
-    if not xs:
-        xs, ys = [0, 10], [0, 10]
-    lo = (min(xs), min(ys))
-    hi = (max(xs), max(ys))
-    span = max(hi[0] - lo[0], hi[1] - lo[1], 1.0) * 1.12
-    cx, cy = (lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2
-    top = 40
-    s = (size - 30) / span
+                 size: int = 1000) -> None:
+    ox1, oy1, ox2, oy2 = board.outline_rect()
+    bw, bh = ox2 - ox1, oy2 - oy1
+    span = max(bw, bh, 1.0)
+    top = 46
+    pad_px = 30
+    s = (size - 2 * pad_px) / (span * 1.06)
+    cx, cy = (ox1 + ox2) / 2, (oy1 + oy2) / 2
+    plot = size - 2 * pad_px
 
     def px(pt):
-        # KiCad y grows DOWN the sheet; keep that so the render matches
-        # the editor the user sees
-        return (size / 2 + (pt[0] - cx) * s, top + (size - 30) / 2
-                + (pt[1] - cy) * s)
+        # KiCad y grows DOWN; keep it so the render matches the editor
+        return (size / 2 + (pt[0] - cx) * s,
+                top + plot / 2 + (pt[1] - cy) * s)
 
     img = Image.new("RGB", (size, size + top), BG)
     d = ImageDraw.Draw(img)
-    d.text((10, 8), f"{board.source} - top view - grid 10 mm",
-           fill=INK, font=_font(13))
+    f_ref, f_val, f_pad = _font(13), _font(11), _font(10)
 
-    # 10 mm grid
-    gx = lo[0] - (lo[0] % 10)
-    while gx < hi[0] + 10:
-        d.line([px((gx, lo[1] - 20)), px((gx, hi[1] + 20))], fill=GRID)
+    # --- substrate -------------------------------------------------------
+    a, b = px((ox1, oy1)), px((ox2, oy2))
+    d.rounded_rectangle([min(a[0], b[0]), min(a[1], b[1]),
+                         max(a[0], b[0]), max(a[1], b[1])],
+                        radius=max(6, 2 * s), fill=MASK, outline=MASK_EDGE,
+                        width=3)
+
+    # a faint 10 mm grid on the mask, for scale
+    gx = math.ceil(ox1 / 10) * 10
+    grid_c = (34, 84, 66)
+    while gx < ox2:
+        x = px((gx, 0))[0]
+        d.line([(x, min(a[1], b[1])), (x, max(a[1], b[1]))], fill=grid_c)
         gx += 10
-    gy = lo[1] - (lo[1] % 10)
-    while gy < hi[1] + 10:
-        d.line([px((lo[0] - 20, gy)), px((hi[0] + 20, gy))], fill=GRID)
+    gy = math.ceil(oy1 / 10) * 10
+    while gy < oy2:
+        y = px((0, gy))[1]
+        d.line([(min(a[0], b[0]), y), (max(a[0], b[0]), y)], fill=grid_c)
         gy += 10
 
-    for layer in ("B.Cu", "F.Cu"):            # back first, front on top
-        col = LAYER_C.get(layer, INK)
+    # --- copper (back first, front on top) -------------------------------
+    for layer, col in (("B.Cu", B_CU), ("F.Cu", F_CU)):
         for t in board.tracks:
             if t.layer != layer:
                 continue
             d.line([px(t.start), px(t.end)], fill=col,
                    width=max(1, int(t.width * s)))
-        for p in board.pads:
-            if not pad_on_layer(p, layer) or layer == "B.Cu" and \
-                    pad_on_layer(p, "F.Cu"):
-                continue
-            w, h = p.size[0] * s / 2, p.size[1] * s / 2
-            X, Y = px(p.at)
-            if p.shape in ("circle", "oval"):
-                d.ellipse([X - w, Y - h, X + w, Y + h], fill=PAD_C)
-            else:
-                d.rectangle([X - w, Y - h, X + w, Y + h], fill=PAD_C)
 
+    # --- pads ------------------------------------------------------------
+    for p in board.pads:
+        X, Y = px(p.at)
+        w = max(1.5, p.size[0] * s / 2)
+        h = max(1.5, p.size[1] * s / 2)
+        col = PAD_TH if p.through else PAD
+        if p.shape in ("circle", "oval"):
+            d.ellipse([X - w, Y - h, X + w, Y + h], fill=col)
+        else:
+            d.rectangle([X - w, Y - h, X + w, Y + h], fill=col)
+        if p.through:                        # drill
+            r = min(w, h) * 0.45
+            d.ellipse([X - r, Y - r, X + r, Y + r], fill=DRILL)
+
+    # --- vias ------------------------------------------------------------
     for v in board.vias:
         X, Y = px(v.at)
-        r = v.size * s / 2
+        r = max(1.5, v.size * s / 2)
         d.ellipse([X - r, Y - r, X + r, Y + r], fill=VIA_C)
-        rd = v.drill * s / 2
-        d.ellipse([X - rd, Y - rd, X + rd, Y + rd], fill=BG)
+        rd = max(0.8, v.drill * s / 2)
+        d.ellipse([X - rd, Y - rd, X + rd, Y + rd], fill=DRILL)
 
+    # --- silkscreen: component bodies + references -----------------------
+    for fp in board.footprints:
+        col = SILK_DIM if fp.body_inferred else SILK
+        for poly in fp.body:
+            if len(poly) >= 2:
+                d.line([px(q) for q in poly], fill=col, width=2)
+        # reference designator + value at the footprint centre
+        cxp, cyp = px(fp.at)
+        label = fp.ref
+        d.text((cxp, cyp), label, fill=SILK, font=f_ref, anchor="mm")
+        if fp.value and fp.value not in ("", "~", fp.ref):
+            d.text((cxp, cyp + 12), fp.value[:14], fill=SILK_DIM,
+                   font=f_val, anchor="mm")
+
+    # --- findings --------------------------------------------------------
     for m in (marks or []):
         X, Y = px(tuple(m["near"]))
-        d.ellipse([X - 12, Y - 12, X + 12, Y + 12], outline=MARK, width=2)
-        d.text((X + 14, Y - 8),
-               f"{m['clearance_mm']}mm", fill=MARK, font=_font(11))
+        d.ellipse([X - 13, Y - 13, X + 13, Y + 13], outline=MARK, width=3)
+        d.text((X + 15, Y - 8), f"{m['clearance_mm']}mm", fill=MARK,
+               font=f_pad)
 
-    # legend
-    lx = 10
-    for name, col in (("F.Cu", LAYER_C["F.Cu"]), ("B.Cu", LAYER_C["B.Cu"]),
-                      ("pad", PAD_C), ("via", VIA_C), ("finding", MARK)):
-        d.rectangle([lx, size + top - 18, lx + 10, size + top - 8], fill=col)
-        d.text((lx + 14, size + top - 20), name, fill=INK, font=_font(11))
-        lx += 60 + 10 * len(name)
+    # --- title + legend --------------------------------------------------
+    d.text((12, 8), f"{board.source}  -  {bw:.0f} x {bh:.0f} mm  -  "
+                    f"{len(board.footprints)} components, "
+                    f"{len([n for n in board.nets if n])} nets",
+           fill=INK, font=_font(14))
+    d.text((12, 27), "soldermask green substrate  -  gold = F.Cu, "
+                     "dim = B.Cu  -  white silk = component outlines + "
+                     "refs  -  red = finding",
+           fill=(110, 114, 112), font=_font(11))
     img.save(path)
