@@ -1,0 +1,155 @@
+{
+  "status": "ok",
+  "clip": {
+    "source": "gesture_eased.bvh",
+    "frames": 199,
+    "fps": 30.0003,
+    "duration_s": 6.6333,
+    "joints": 7,
+    "unit": "cm",
+    "up_axis": "y",
+    "floor_mm": 42.0,
+    "floor_inferred": true,
+    "floor_estimate": {
+      "method": "10th percentile of the per-frame lowest point",
+      "clip_min_mm": 42.0,
+      "frames_below_floor": 0,
+      "spread_mm": 0.0
+    }
+  },
+  "skeleton": {
+    "root": "Body",
+    "joint_names": [
+      "Body",
+      "Head",
+      "Head_end",
+      "ArmL",
+      "ArmL_end",
+      "ArmR",
+      "ArmR_end"
+    ]
+  },
+  "com": {
+    "anthropometric_weights": true,
+    "trajectory_file": "com_trajectory.csv",
+    "height_mm": {
+      "min": 84.11,
+      "max": 88.4,
+      "mean": 87.18
+    }
+  },
+  "ballistics": {
+    "flights": [],
+    "note": "effective gravity from a parabola fit to the COM height over each airborne span; 1.0 = physical, <0.75 reads floaty, >1.3 reads heavy. ~0.1 or ~10 usually means --unit is wrong"
+  },
+  "kind": "oneshot",
+  "peaks": {
+    "Body": {
+      "peak_speed_mm_s": 0.0,
+      "peak_speed_frame": 0,
+      "peak_accel_mm_s2": 0.0,
+      "peak_angular_deg_s": 0.0
+    },
+    "Head": {
+      "peak_speed_mm_s": 0.0,
+      "peak_speed_frame": 0,
+      "peak_accel_mm_s2": 0.0,
+      "peak_angular_deg_s": 298.8
+    },
+    "Head_end": {
+      "peak_speed_mm_s": 150.5,
+      "peak_speed_frame": 60,
+      "peak_accel_mm_s2": 792.0,
+      "peak_angular_deg_s": 298.8
+    },
+    "ArmL": {
+      "peak_speed_mm_s": 0.0,
+      "peak_speed_frame": 0,
+      "peak_accel_mm_s2": 0.0,
+      "peak_angular_deg_s": 284.6
+    },
+    "ArmL_end": {
+      "peak_speed_mm_s": 127.4,
+      "peak_speed_frame": 110,
+      "peak_accel_mm_s2": 841.3,
+      "peak_angular_deg_s": 284.6
+    },
+    "ArmR": {
+      "peak_speed_mm_s": 0.0,
+      "peak_speed_frame": 0,
+      "peak_accel_mm_s2": 0.0,
+      "peak_angular_deg_s": 0.0
+    },
+    "ArmR_end": {
+      "peak_speed_mm_s": 0.0,
+      "peak_speed_frame": 0,
+      "peak_accel_mm_s2": 0.0,
+      "peak_angular_deg_s": 0.0
+    }
+  },
+  "contacts": {
+    "foot_joints": [],
+    "events": [],
+    "sliding": [],
+    "note": "no foot/toe/ankle joints found by name: contact and balance analysis was skipped"
+  },
+  "balance": {
+    "note": "no contacts: balance not evaluated",
+    "frames_outside_support": []
+  },
+  "penetration": [],
+  "smoothness": {
+    "jerk_rms_mm_s3": {
+      "Body": 0.0,
+      "Head": 0.0,
+      "Head_end": 2946.9,
+      "ArmL": 0.0,
+      "ArmL_end": 2950.9,
+      "ArmR": 0.0,
+      "ArmR_end": 0.0
+    },
+    "roughest_joint": "ArmL_end",
+    "roughest_jerk_rms_mm_s3": 2950.9,
+    "pops": [],
+    "pop_count": 0,
+    "raw_spike_count": 0,
+    "note": "a pop is a single-frame acceleration spike (robust z > 12, MAD floored at 10% of the clip's own scale), clustered by frame: a 'pose snap' hits many joints at once (blocking pass or splice), a 'joint pop' is one bad key"
+  },
+  "loop": {
+    "pose_gap_mm": {
+      "max": 0.0,
+      "mean": 0.0,
+      "worst_joint": "Body"
+    },
+    "typical_frame_motion_mm": 1.09,
+    "velocity_gap_mm_frame": {
+      "max": 0.0,
+      "worst_joint": "Body"
+    },
+    "root_travel_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "convention": "overlap (last frame duplicates the first)",
+    "loops_cleanly": true,
+    "note": "the seam gap is judged against this clip's own median per-frame motion, because a full loop is SUPPOSED to differ from frame 0 by one step; root travel is removed"
+  },
+  "checks": [],
+  "files": {
+    "report": "report.json",
+    "frames": [
+      "frames/frame_0000.png",
+      "frames/frame_0039.png",
+      "frames/frame_0079.png",
+      "frames/frame_0118.png",
+      "frames/frame_0158.png",
+      "frames/frame_0198.png"
+    ],
+    "tracks": [
+      "track_com_height.png"
+    ],
+    "flight_arcs": [],
+    "gif": "playback.gif"
+  }
+}

@@ -18,10 +18,10 @@ proves it. Five tools, one loop.
 <p align="center"><em>the assembly (PCB and servos as X-ray ghosts: measured, never printed) and its exploded view</em></p>
 
 <p align="center">
-  <img src="robot/out/renders/turntable.gif" width="46%">
-  <img src="motion/out_floaty/playback.gif" width="34%">
+  <img src="robot/out/renders/turntable.gif" width="42%">
+  <img src="motion/gesture_eased.gif" width="42%">
 </p>
-<p align="center"><em>Vigia spinning (solidsight <code>--turntable --gif</code>) and its floaty idle hop, animated (animationsight <code>--gif</code>) - an animation cannot be read from a still</em></p>
+<p align="center"><em>Vigia spinning (solidsight <code>--turntable --gif</code>) and performing its greeting gesture — the real robot posed by the same servo profile animationsight reviews. An animation cannot be read from a still.</em></p>
 
 ## Stage 1 — the board (pcbsight)
 
@@ -119,21 +119,35 @@ shadersight diff out_accent_v1 out_accent
 
 <p align="center"><img src="materials/out_accent/compare.png" width="70%"></p>
 
-## Stage 5 — the hop (animationsight)
+## Stage 5 — the gesture (animationsight)
 
-Vigía's idle animation: crouch on its base pads, spring, fly, land.
-The first take stretched the flight 1.4x "for cuteness":
+Vigía does not jump — it has three servos. Its greeting (look left,
+look right, wave the left arm twice) is authored as servo keyframes on
+**the same joint tree the URDF declares** (head_pan, arm_l_pitch,
+arm_r_pitch), and written twice:
+
+- `gesture_stepped.bvh` — what naive servo code does: write the target
+  angle and wait. Every keyframe is an instant step.
+- `gesture_eased.bvh` — the same keyframes through a smoothstep motion
+  profile.
+
+animationsight measures what the clip *asks of the hardware*:
 
 ```
-hop_floaty: flight 25..40 (0.53s, apex +148 mm) -> 0.496x gravity  [WARN floaty]
-hop_fixed:  flight 25..36 (0.40s, apex +147 mm) -> 0.93x gravity
+stepped: 18 discontinuity events; head peak 3600 deg/s   [WARN pops]
+eased:    0 discontinuity events; head peak  299 deg/s   OK
 ```
+
+An SG90-class servo tops out near **600 deg/s** — the stepped profile
+demands six times that, so the physical robot would lag, slam and buzz.
+The eased profile stays comfortably inside spec. That is a servo review
+with numbers, not vibes.
 
 <p align="center">
-  <img src="motion/out_floaty/flight_0_arc.png" width="49%">
-  <img src="motion/out_fixed/flight_0_arc.png" width="49%">
+  <img src="motion/gesture_stepped.gif" width="42%">
+  <img src="motion/gesture_eased.gif" width="42%">
 </p>
-<p align="center"><em>the measured COM arc (red, one dot per frame) vs the 1 g reference (green dashed): the floaty hop overshoots by a third; the fix coincides</em></p>
+<p align="center"><em>the real robot driven by both profiles (rendered by solidsight at the swept angles): stepped snaps between poses; eased moves like a machine that respects its motors</em></p>
 
 ## The scoreboard
 
@@ -144,7 +158,7 @@ hop_fixed:  flight 25..36 (0.40s, apex +147 mm) -> 0.93x gravity
 | robot | solidsight | a 4-root joint forest (fixed joints added) | URDF 7 links; all sweeps FREE |
 | UVs | texturesight | flipped bezel island, starved packing | diff: flipped 2 → 0 |
 | materials | shadersight | boost 1.6 = albedo 1.53 (energy from nothing) | diff: GONE, conserves at 0.958 |
-| animation | animationsight | 0.496x gravity hop | arc sheets; fixed at 0.93x |
+| gesture | animationsight | stepped servo profile: 18 pops, 3600 deg/s demanded of a 600 deg/s servo | eased: 0 pops, 299 deg/s |
 
 Every one of those defects is invisible in a still image and exact in a
 report. That is the family's whole thesis, demonstrated on one object.
@@ -157,5 +171,6 @@ cd ../robot        && solidsight build model.py --exploded --stl --glb
                      solidsight robot model.py --sdf && solidsight motion model.py
 cd ../asset        && python make_faceplate.py && texturesight inspect --mesh faceplate_fixed.obj
 cd ../materials    && shadersight material --preset copper --roughness 0.25
-cd ../motion       && python make_hop.py && animationsight inspect hop_fixed.bvh --kind oneshot
+cd ../motion       && python make_gesture.py && animationsight inspect gesture_eased.bvh --kind oneshot
+                     python render_gesture.py   # the robot performing it, as GIFs
 ```

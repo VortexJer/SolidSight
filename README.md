@@ -77,7 +77,7 @@ Every stage caught real defects the agent could not see — 31 board
 findings (both USB nets open with swapped ends), five enclosure
 iterations (servos placed where the servo *headers* are, a neck ring
 floating over the open shell), a flipped UV island, a boosted copper
-emitting 53% more light than it receives, a hop at 0.496x gravity —
+emitting 53% more light than it receives, a stepped servo profile demanding 3600 deg/s of a 600 deg/s servo —
 and every fix ends in a diff that proves it.
 
 <p align="center">
@@ -87,9 +87,9 @@ and every fix ends in a diff that proves it.
 <p align="center">
   <img src="showcase/board/out/board.png" width="30%">
   <img src="showcase/materials/out_accent/compare.png" width="30%">
-  <img src="showcase/motion/out_floaty/playback.gif" width="22%">
+  <img src="showcase/motion/gesture_eased.gif" width="30%">
 </p>
-<p align="center"><em>the assembly with its electronics as X-ray ghosts · the board pcbsight took from 31 findings to 0 · the boosted-vs-physical copper · the idle hop, animated</em></p>
+<p align="center"><em>the assembly with its electronics as X-ray ghosts · the board pcbsight took from 31 findings to 0 · the boosted-vs-physical copper · the robot performing its servo gesture</em></p>
 
 Full narrative and the defect scoreboard: [showcase/README.md](showcase/README.md).
 

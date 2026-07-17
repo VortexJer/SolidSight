@@ -1,5 +1,5 @@
 {
-  "tool": "solidsight 0.7.0",
+  "tool": "solidsight 0.8.0",
   "model": "model.py",
   "mode": "free",
   "units": "mm",
@@ -688,24 +688,7 @@
   "files": {
     "report": "report.json",
     "renders": [
-      "renders/01_iso.png",
-      "renders/turntable_00.png",
-      "renders/turntable_01.png",
-      "renders/turntable_02.png",
-      "renders/turntable_03.png",
-      "renders/turntable_04.png",
-      "renders/turntable_05.png",
-      "renders/turntable_06.png",
-      "renders/turntable_07.png",
-      "renders/turntable_08.png",
-      "renders/turntable_09.png",
-      "renders/turntable_10.png",
-      "renders/turntable_11.png",
-      "renders/turntable_12.png",
-      "renders/turntable_13.png",
-      "renders/turntable_14.png",
-      "renders/turntable_15.png",
-      "renders/turntable.gif"
+      "renders/01_iso.png"
     ],
     "exports": []
   }

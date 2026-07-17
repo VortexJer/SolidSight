@@ -280,18 +280,36 @@ def smoothness(deriv: dict, names: list[str], dt: float) -> dict:
     acc = np.linalg.norm(deriv["acceleration"], axis=2)
     rms = np.sqrt((jerk ** 2).mean(axis=0))
 
+    # A pop is an ISOLATED spike: acceleration that towers over its own
+    # 2-frame neighbourhood. Judging against the clip's overall calm
+    # (robust z alone) flagged every smooth gesture in a hold-heavy clip
+    # as 46 "pops" while the genuinely stepped clip got 18 - found
+    # reviewing a servo gesture. Smooth eased motion has CONTINUOUS
+    # acceleration (neighbourhood ratio ~ 1); a discontinuity does not.
     pops = []
     med = np.median(acc, axis=0)
     mad = np.median(np.abs(acc - med), axis=0)
     clip_scale = float(np.median(np.abs(acc - np.median(acc))))
     mad = np.maximum(mad, max(0.10 * clip_scale, 1e-6))
+    F = acc.shape[0]
     for j in range(acc.shape[1]):
         z = (acc[:, j] - med[j]) / (1.4826 * mad[j])      # robust z-score
-        spikes = np.nonzero(z > 12.0)[0]
-        for f in spikes:
+        a = acc[:, j]
+        floor_a = max(0.02 * float(a.max()), 1e-6)
+        for f in range(F):
+            if z[f] <= 12.0:
+                continue
+            # double np.gradient smears a one-frame step across +-2
+            # frames, so the "neighbourhood" starts beyond that smear
+            lo = a[max(0, f - 6):max(0, f - 3)]
+            hi = a[f + 4:f + 7]
+            neigh = max(float(lo.max()) if lo.size else 0.0,
+                        float(hi.max()) if hi.size else 0.0, floor_a)
+            if a[f] < 4.0 * neigh:
+                continue                          # sustained, not a spike
             pops.append({"frame": int(f), "joint": names[j],
                          "t_s": round(float(f * dt), 4),
-                         "accel_mm_s2": round(float(acc[f, j]), 1),
+                         "accel_mm_s2": round(float(a[f]), 1),
                          "robust_z": round(float(z[f]), 1)})
     pops.sort(key=lambda p: -p["robust_z"])
 
