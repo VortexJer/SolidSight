@@ -1,0 +1,947 @@
+{
+  "status": "ok",
+  "clip": {
+    "source": "walk_clean.bvh",
+    "frames": 120,
+    "fps": 30.0003,
+    "duration_s": 4.0,
+    "joints": 22,
+    "unit": "cm",
+    "up_axis": "y",
+    "floor_mm": -0.0,
+    "floor_inferred": true,
+    "floor_estimate": {
+      "method": "10th percentile of the per-frame lowest point",
+      "clip_min_mm": -0.001,
+      "frames_below_floor": 0,
+      "spread_mm": 0.0
+    }
+  },
+  "skeleton": {
+    "root": "Hips",
+    "joint_names": [
+      "Hips",
+      "Spine",
+      "Chest",
+      "Neck",
+      "Head",
+      "Head_end",
+      "LeftUpperArm",
+      "LeftForearm",
+      "LeftHand",
+      "LeftHand_end",
+      "RightUpperArm",
+      "RightForearm",
+      "RightHand",
+      "RightHand_end",
+      "LeftThigh",
+      "LeftShin",
+      "LeftFoot",
+      "LeftFoot_end",
+      "RightThigh",
+      "RightShin",
+      "RightFoot",
+      "RightFoot_end"
+    ]
+  },
+  "com": {
+    "anthropometric_weights": true,
+    "trajectory_mm": [
+      [
+        0.0,
+        934.55,
+        11.47
+      ],
+      [
+        0.0,
+        934.24,
+        27.55
+      ],
+      [
+        0.0,
+        932.63,
+        43.84
+      ],
+      [
+        0.0,
+        929.92,
+        60.25
+      ],
+      [
+        0.0,
+        926.41,
+        76.71
+      ],
+      [
+        0.0,
+        922.47,
+        93.15
+      ],
+      [
+        0.0,
+        918.52,
+        109.5
+      ],
+      [
+        0.0,
+        914.98,
+        125.71
+      ],
+      [
+        0.0,
+        912.22,
+        141.72
+      ],
+      [
+        0.0,
+        910.53,
+        157.48
+      ],
+      [
+        0.0,
+        910.08,
+        172.97
+      ],
+      [
+        0.0,
+        910.93,
+        188.15
+      ],
+      [
+        0.0,
+        912.98,
+        203.0
+      ],
+      [
+        0.0,
+        916.02,
+        217.54
+      ],
+      [
+        0.0,
+        919.74,
+        231.75
+      ],
+      [
+        0.0,
+        923.76,
+        245.65
+      ],
+      [
+        0.0,
+        927.64,
+        259.26
+      ],
+      [
+        0.0,
+        930.99,
+        272.62
+      ],
+      [
+        0.0,
+        933.43,
+        285.75
+      ],
+      [
+        0.0,
+        934.67,
+        298.68
+      ],
+      [
+        0.0,
+        934.55,
+        311.47
+      ],
+      [
+        0.0,
+        934.25,
+        326.29
+      ],
+      [
+        0.0,
+        932.65,
+        341.34
+      ],
+      [
+        0.0,
+        929.96,
+        356.57
+      ],
+      [
+        0.0,
+        926.46,
+        371.95
+      ],
+      [
+        0.0,
+        922.53,
+        387.41
+      ],
+      [
+        0.0,
+        918.6,
+        402.93
+      ],
+      [
+        0.0,
+        915.07,
+        418.47
+      ],
+      [
+        0.0,
+        912.31,
+        433.98
+      ],
+      [
+        0.0,
+        910.63,
+        449.44
+      ],
+      [
+        0.0,
+        910.18,
+        464.82
+      ],
+      [
+        0.0,
+        911.02,
+        480.1
+      ],
+      [
+        0.0,
+        913.07,
+        495.26
+      ],
+      [
+        0.0,
+        916.1,
+        510.29
+      ],
+      [
+        0.0,
+        919.82,
+        525.17
+      ],
+      [
+        0.0,
+        923.82,
+        539.91
+      ],
+      [
+        0.0,
+        927.69,
+        554.5
+      ],
+      [
+        0.0,
+        931.03,
+        568.94
+      ],
+      [
+        0.0,
+        933.45,
+        583.25
+      ],
+      [
+        0.0,
+        934.69,
+        597.42
+      ],
+      [
+        0.0,
+        934.55,
+        611.47
+      ],
+      [
+        0.0,
+        934.24,
+        627.55
+      ],
+      [
+        0.0,
+        932.63,
+        643.84
+      ],
+      [
+        0.0,
+        929.92,
+        660.25
+      ],
+      [
+        0.0,
+        926.41,
+        676.71
+      ],
+      [
+        0.0,
+        922.47,
+        693.15
+      ],
+      [
+        0.0,
+        918.52,
+        709.5
+      ],
+      [
+        0.0,
+        914.98,
+        725.71
+      ],
+      [
+        0.0,
+        912.22,
+        741.72
+      ],
+      [
+        0.0,
+        910.53,
+        757.48
+      ],
+      [
+        0.0,
+        910.08,
+        772.97
+      ],
+      [
+        0.0,
+        910.93,
+        788.15
+      ],
+      [
+        0.0,
+        912.98,
+        803.0
+      ],
+      [
+        0.0,
+        916.02,
+        817.54
+      ],
+      [
+        0.0,
+        919.74,
+        831.75
+      ],
+      [
+        0.0,
+        923.76,
+        845.65
+      ],
+      [
+        0.0,
+        927.64,
+        859.26
+      ],
+      [
+        0.0,
+        930.99,
+        872.62
+      ],
+      [
+        0.0,
+        933.43,
+        885.75
+      ],
+      [
+        0.0,
+        934.67,
+        898.68
+      ],
+      [
+        0.0,
+        934.55,
+        911.47
+      ],
+      [
+        0.0,
+        934.25,
+        926.29
+      ],
+      [
+        0.0,
+        932.65,
+        941.34
+      ],
+      [
+        0.0,
+        929.96,
+        956.57
+      ],
+      [
+        0.0,
+        926.46,
+        971.95
+      ],
+      [
+        0.0,
+        922.53,
+        987.41
+      ],
+      [
+        0.0,
+        918.6,
+        1002.93
+      ],
+      [
+        0.0,
+        915.07,
+        1018.47
+      ],
+      [
+        0.0,
+        912.31,
+        1033.98
+      ],
+      [
+        0.0,
+        910.63,
+        1049.44
+      ],
+      [
+        0.0,
+        910.18,
+        1064.82
+      ],
+      [
+        0.0,
+        911.02,
+        1080.1
+      ],
+      [
+        0.0,
+        913.07,
+        1095.26
+      ],
+      [
+        0.0,
+        916.1,
+        1110.29
+      ],
+      [
+        0.0,
+        919.82,
+        1125.17
+      ],
+      [
+        0.0,
+        923.82,
+        1139.91
+      ],
+      [
+        0.0,
+        927.69,
+        1154.5
+      ],
+      [
+        0.0,
+        931.03,
+        1168.94
+      ],
+      [
+        0.0,
+        933.45,
+        1183.25
+      ],
+      [
+        0.0,
+        934.69,
+        1197.42
+      ],
+      [
+        0.0,
+        934.55,
+        1211.47
+      ],
+      [
+        0.0,
+        934.24,
+        1227.55
+      ],
+      [
+        0.0,
+        932.63,
+        1243.84
+      ],
+      [
+        0.0,
+        929.92,
+        1260.25
+      ],
+      [
+        0.0,
+        926.41,
+        1276.71
+      ],
+      [
+        0.0,
+        922.47,
+        1293.15
+      ],
+      [
+        0.0,
+        918.52,
+        1309.5
+      ],
+      [
+        0.0,
+        914.98,
+        1325.71
+      ],
+      [
+        0.0,
+        912.22,
+        1341.72
+      ],
+      [
+        0.0,
+        910.53,
+        1357.48
+      ],
+      [
+        0.0,
+        910.08,
+        1372.97
+      ],
+      [
+        0.0,
+        910.93,
+        1388.15
+      ],
+      [
+        0.0,
+        912.98,
+        1403.0
+      ],
+      [
+        0.0,
+        916.02,
+        1417.54
+      ],
+      [
+        0.0,
+        919.74,
+        1431.75
+      ],
+      [
+        0.0,
+        923.76,
+        1445.65
+      ],
+      [
+        0.0,
+        927.64,
+        1459.26
+      ],
+      [
+        0.0,
+        930.99,
+        1472.62
+      ],
+      [
+        0.0,
+        933.43,
+        1485.75
+      ],
+      [
+        0.0,
+        934.67,
+        1498.68
+      ],
+      [
+        0.0,
+        934.55,
+        1511.47
+      ],
+      [
+        0.0,
+        934.25,
+        1526.29
+      ],
+      [
+        0.0,
+        932.65,
+        1541.34
+      ],
+      [
+        0.0,
+        929.96,
+        1556.57
+      ],
+      [
+        0.0,
+        926.46,
+        1571.95
+      ],
+      [
+        0.0,
+        922.53,
+        1587.41
+      ],
+      [
+        0.0,
+        918.6,
+        1602.93
+      ],
+      [
+        0.0,
+        915.07,
+        1618.47
+      ],
+      [
+        0.0,
+        912.31,
+        1633.98
+      ],
+      [
+        0.0,
+        910.63,
+        1649.44
+      ],
+      [
+        0.0,
+        910.18,
+        1664.82
+      ],
+      [
+        0.0,
+        911.02,
+        1680.1
+      ],
+      [
+        0.0,
+        913.07,
+        1695.26
+      ],
+      [
+        0.0,
+        916.1,
+        1710.29
+      ],
+      [
+        0.0,
+        919.82,
+        1725.17
+      ],
+      [
+        0.0,
+        923.82,
+        1739.91
+      ],
+      [
+        0.0,
+        927.69,
+        1754.5
+      ],
+      [
+        0.0,
+        931.03,
+        1768.94
+      ],
+      [
+        0.0,
+        933.45,
+        1783.25
+      ],
+      [
+        0.0,
+        934.69,
+        1797.42
+      ]
+    ],
+    "height_mm": {
+      "min": 910.08,
+      "max": 934.69,
+      "mean": 922.87
+    }
+  },
+  "peaks": {
+    "Hips": {
+      "peak_speed_mm_s": 473.8,
+      "peak_speed_frame": 5,
+      "peak_accel_mm_s2": 1375.2,
+      "peak_angular_deg_s": 0.0
+    },
+    "Spine": {
+      "peak_speed_mm_s": 473.8,
+      "peak_speed_frame": 5,
+      "peak_accel_mm_s2": 1375.2,
+      "peak_angular_deg_s": 9.4
+    },
+    "Chest": {
+      "peak_speed_mm_s": 489.4,
+      "peak_speed_frame": 4,
+      "peak_accel_mm_s2": 1383.1,
+      "peak_angular_deg_s": 9.4
+    },
+    "Neck": {
+      "peak_speed_mm_s": 512.6,
+      "peak_speed_frame": 84,
+      "peak_accel_mm_s2": 1407.6,
+      "peak_angular_deg_s": 9.4
+    },
+    "Head": {
+      "peak_speed_mm_s": 522.9,
+      "peak_speed_frame": 84,
+      "peak_accel_mm_s2": 1422.8,
+      "peak_angular_deg_s": 9.4
+    },
+    "Head_end": {
+      "peak_speed_mm_s": 537.0,
+      "peak_speed_frame": 3,
+      "peak_accel_mm_s2": 1445.1,
+      "peak_angular_deg_s": 9.4
+    },
+    "LeftUpperArm": {
+      "peak_speed_mm_s": 507.4,
+      "peak_speed_frame": 44,
+      "peak_accel_mm_s2": 1401.0,
+      "peak_angular_deg_s": 75.1
+    },
+    "LeftForearm": {
+      "peak_speed_mm_s": 836.9,
+      "peak_speed_frame": 0,
+      "peak_accel_mm_s2": 2017.2,
+      "peak_angular_deg_s": 131.4
+    },
+    "LeftHand": {
+      "peak_speed_mm_s": 1386.8,
+      "peak_speed_frame": 0,
+      "peak_accel_mm_s2": 4081.3,
+      "peak_angular_deg_s": 131.4
+    },
+    "LeftHand_end": {
+      "peak_speed_mm_s": 1570.2,
+      "peak_speed_frame": 0,
+      "peak_accel_mm_s2": 4880.4,
+      "peak_angular_deg_s": 131.4
+    },
+    "RightUpperArm": {
+      "peak_speed_mm_s": 507.4,
+      "peak_speed_frame": 44,
+      "peak_accel_mm_s2": 1401.0,
+      "peak_angular_deg_s": 93.9
+    },
+    "RightForearm": {
+      "peak_speed_mm_s": 829.8,
+      "peak_speed_frame": 100,
+      "peak_accel_mm_s2": 1838.5,
+      "peak_angular_deg_s": 150.2
+    },
+    "RightHand": {
+      "peak_speed_mm_s": 1444.0,
+      "peak_speed_frame": 101,
+      "peak_accel_mm_s2": 4295.6,
+      "peak_angular_deg_s": 150.2
+    },
+    "RightHand_end": {
+      "peak_speed_mm_s": 1650.6,
+      "peak_speed_frame": 101,
+      "peak_accel_mm_s2": 5229.6,
+      "peak_angular_deg_s": 150.2
+    },
+    "LeftThigh": {
+      "peak_speed_mm_s": 473.8,
+      "peak_speed_frame": 5,
+      "peak_accel_mm_s2": 1375.2,
+      "peak_angular_deg_s": 100.4
+    },
+    "LeftShin": {
+      "peak_speed_mm_s": 1141.6,
+      "peak_speed_frame": 24,
+      "peak_accel_mm_s2": 15487.0,
+      "peak_angular_deg_s": 105.2
+    },
+    "LeftFoot": {
+      "peak_speed_mm_s": 1122.8,
+      "peak_speed_frame": 110,
+      "peak_accel_mm_s2": 10668.2,
+      "peak_angular_deg_s": 0.0
+    },
+    "LeftFoot_end": {
+      "peak_speed_mm_s": 1122.8,
+      "peak_speed_frame": 110,
+      "peak_accel_mm_s2": 10668.2,
+      "peak_angular_deg_s": 0.0
+    },
+    "RightThigh": {
+      "peak_speed_mm_s": 473.8,
+      "peak_speed_frame": 5,
+      "peak_accel_mm_s2": 1375.2,
+      "peak_angular_deg_s": 100.4
+    },
+    "RightShin": {
+      "peak_speed_mm_s": 1141.6,
+      "peak_speed_frame": 4,
+      "peak_accel_mm_s2": 15487.0,
+      "peak_angular_deg_s": 105.2
+    },
+    "RightFoot": {
+      "peak_speed_mm_s": 1122.8,
+      "peak_speed_frame": 90,
+      "peak_accel_mm_s2": 10668.2,
+      "peak_angular_deg_s": 0.0
+    },
+    "RightFoot_end": {
+      "peak_speed_mm_s": 1122.8,
+      "peak_speed_frame": 90,
+      "peak_accel_mm_s2": 10668.2,
+      "peak_angular_deg_s": 0.0
+    }
+  },
+  "contacts": {
+    "foot_joints": [
+      "LeftFoot",
+      "LeftFoot_end",
+      "RightFoot",
+      "RightFoot_end"
+    ],
+    "events": [
+      {
+        "frame": 20,
+        "joint": "LeftFoot_end",
+        "event": "lift",
+        "t_s": 0.6667
+      },
+      {
+        "frame": 21,
+        "joint": "RightFoot_end",
+        "event": "plant",
+        "t_s": 0.7
+      },
+      {
+        "frame": 40,
+        "joint": "RightFoot_end",
+        "event": "lift",
+        "t_s": 1.3333
+      },
+      {
+        "frame": 41,
+        "joint": "LeftFoot_end",
+        "event": "plant",
+        "t_s": 1.3667
+      },
+      {
+        "frame": 60,
+        "joint": "LeftFoot_end",
+        "event": "lift",
+        "t_s": 2.0
+      },
+      {
+        "frame": 61,
+        "joint": "RightFoot_end",
+        "event": "plant",
+        "t_s": 2.0333
+      },
+      {
+        "frame": 80,
+        "joint": "RightFoot_end",
+        "event": "lift",
+        "t_s": 2.6666
+      },
+      {
+        "frame": 81,
+        "joint": "LeftFoot_end",
+        "event": "plant",
+        "t_s": 2.7
+      },
+      {
+        "frame": 100,
+        "joint": "LeftFoot_end",
+        "event": "lift",
+        "t_s": 3.3333
+      },
+      {
+        "frame": 101,
+        "joint": "RightFoot_end",
+        "event": "plant",
+        "t_s": 3.3666
+      }
+    ],
+    "sliding": [],
+    "note": null
+  },
+  "balance": {
+    "com_to_support_mm": {
+      "max": 173.8,
+      "mean": 121.32,
+      "at_frame": 99
+    },
+    "airborne_frames": [
+      20,
+      40,
+      60,
+      80,
+      100
+    ],
+    "airborne_ratio": 0.0417,
+    "note": "distance from the COM's ground projection to the support base; large values in flight//dynamic frames are expected - read them with airborne_frames"
+  },
+  "penetration": [],
+  "smoothness": {
+    "jerk_rms_mm_s3": {
+      "Hips": 8991.9,
+      "Spine": 8991.9,
+      "Chest": 9022.8,
+      "Neck": 9082.6,
+      "Head": 9116.4,
+      "Head_end": 9164.7,
+      "LeftUpperArm": 9067.4,
+      "LeftForearm": 8570.5,
+      "LeftHand": 22368.7,
+      "LeftHand_end": 28750.0,
+      "RightUpperArm": 9067.4,
+      "RightForearm": 7415.8,
+      "RightHand": 23270.0,
+      "RightHand_end": 30141.6,
+      "LeftThigh": 8991.9,
+      "LeftShin": 63645.3,
+      "LeftFoot": 49135.1,
+      "LeftFoot_end": 49135.1,
+      "RightThigh": 8991.9,
+      "RightShin": 58155.8,
+      "RightFoot": 49170.0,
+      "RightFoot_end": 49170.0
+    },
+    "roughest_joint": "LeftShin",
+    "roughest_jerk_rms_mm_s3": 63645.3,
+    "pops": [],
+    "pop_count": 0,
+    "note": "a pop is a single-frame acceleration spike (robust z > 12): a bad key, tangent or splice"
+  },
+  "loop": {
+    "pose_gap_mm": {
+      "max": 40.62,
+      "mean": 11.57,
+      "worst_joint": "RightHand_end"
+    },
+    "typical_frame_motion_mm": 37.44,
+    "velocity_gap_mm_frame": {
+      "max": 17.05,
+      "worst_joint": "RightShin"
+    },
+    "root_travel_mm": [
+      0.0,
+      -0.78,
+      1785.0
+    ],
+    "convention": "full (last frame is one step before the first)",
+    "loops_cleanly": true,
+    "note": "the seam gap is judged against this clip's own median per-frame motion, because a full loop is SUPPOSED to differ from frame 0 by one step; root travel is removed"
+  },
+  "checks": [],
+  "files": {
+    "report": "report.json",
+    "frames": [
+      "frames/frame_0000.png",
+      "frames/frame_0023.png",
+      "frames/frame_0047.png",
+      "frames/frame_0071.png",
+      "frames/frame_0095.png",
+      "frames/frame_0119.png"
+    ],
+    "tracks": [
+      "track_com_height.png",
+      "track_foot_speed.png"
+    ]
+  }
+}

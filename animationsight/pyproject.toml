@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "animationsight"
+version = "0.1.0"
+description = "Animation review built exclusively for AI agents: a clip in, exact motion measurements + evidence renders out."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+authors = [{ name = "solidsight contributors" }]
+keywords = ["animation", "mocap", "bvh", "ai-agent", "motion-analysis"]
+dependencies = [
+    "numpy>=1.24",
+    "pillow>=10.0",
+]
+
+[project.scripts]
+animationsight = "animationsight.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["animationsight*"]
+
+[tool.setuptools.package-data]
+animationsight = ["skill_data/SKILL.md"]
