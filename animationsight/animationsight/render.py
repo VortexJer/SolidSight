@@ -132,6 +132,67 @@ def render_frames(clip, pos: np.ndarray, com: np.ndarray, out_dir: Path,
     return written
 
 
+def render_gif(clip, pos: np.ndarray, com: np.ndarray, out_path: Path,
+               up: str, floor_mm: float, view: str = "side",
+               size: int = 480, stride: int = 1,
+               marks: dict[int, list[int]] | None = None) -> None:
+    """The clip as an animated GIF: the skeleton playing back, with the
+    COM and floor drawn. An animation cannot be understood from a still
+    - so for anything a reader must SEE move, produce the movie. Frame
+    timing matches the clip's fps; deterministic (same clip, same bytes).
+
+    Camera tracks the body horizontally (as the frame renders do); scale
+    is fixed across the whole clip so motion is comparable frame to
+    frame."""
+    marks = marks or {}
+    all2d = _project(pos, up, view)
+    per_frame_span = (all2d.max(axis=1) - all2d.min(axis=1)).max()
+    span = float(max(per_frame_span, 1.0)) * 1.30
+    vlo, vhi = float(all2d[..., 1].min()), float(all2d[..., 1].max())
+    cy_fixed = (vlo + vhi) / 2.0
+    pad = size * 0.09
+    bones = [(i, clip.joints.index(j.parent))
+             for i, j in enumerate(clip.joints) if j.parent is not None]
+    f11 = _font(11)
+
+    frames_img = []
+    for f in range(0, clip.n_frames, max(1, stride)):
+        img = Image.new("RGB", (size, size), BG)
+        d = ImageDraw.Draw(img)
+        p2 = _project(pos[f], up, view)
+        cx = float((p2[:, 0].min() + p2[:, 0].max()) / 2.0)
+
+        def to_px(p, cx=cx):
+            s = (size - 2 * pad) / span
+            return (pad + (p[0] - cx) * s + (size - 2 * pad) / 2,
+                    size - (pad + (p[1] - cy_fixed) * s
+                            + (size - 2 * pad) / 2))
+
+        if view in ("front", "side"):
+            y = to_px((cx, floor_mm))[1]
+            d.line([(0, y), (size, y)], fill=GRID, width=2)
+        for a, b in bones:
+            d.line([to_px(p2[a]), to_px(p2[b])], fill=BONE, width=3)
+        for i in range(len(p2)):
+            x, y = to_px(p2[i])
+            d.ellipse([x - 2.5, y - 2.5, x + 2.5, y + 2.5], fill=INK)
+        c2 = _project(com[f:f + 1], up, view)[0]
+        x, y = to_px(c2)
+        d.ellipse([x - 4, y - 4, x + 4, y + 4], outline=COM_C, width=2)
+        for i in marks.get(f, []):
+            x, y = to_px(p2[i])
+            d.ellipse([x - 8, y - 8, x + 8, y + 8], outline=ACCENT, width=2)
+        d.text((8, 8), _ascii(f"{clip.source}  f{f}"), fill=INK, font=f11)
+        frames_img.append(img)
+
+    if not frames_img:
+        return
+    ms = int(1000.0 * clip.frame_time * max(1, stride))
+    frames_img[0].save(out_path, save_all=True,
+                       append_images=frames_img[1:], duration=ms,
+                       loop=0, optimize=True)
+
+
 def render_flight_arc(clip, pos: np.ndarray, com: np.ndarray,
                       flight: dict, out_path: Path, up: str,
                       floor_mm: float, g_mm_s2: float = 9810.0,

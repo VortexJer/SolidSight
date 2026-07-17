@@ -366,3 +366,21 @@ def test_jump_example_ground_truth():
     assert 0.8 < rb < 1.2
     assert any(c["id"] == "floaty-flight" for c in a["checks"])
     assert not any(c["id"] == "floaty-flight" for c in b["checks"])
+
+
+def test_inspect_gif_is_written(tmp_path):
+    """An animation cannot be read from a still: --gif must produce a
+    real animated GIF (multi-frame)."""
+    from PIL import Image
+    jump = Path(__file__).parents[1] / "examples" / "02-jump"
+    r = subprocess.run(
+        [sys.executable, "-m", "animationsight.cli", "inspect",
+         str(jump / "jump_fixed.bvh"), "--kind", "oneshot", "--gif",
+         "--frames", "2", "--out", str(tmp_path / "o")],
+        capture_output=True, text=True)
+    assert r.returncode == 0, r.stdout + r.stderr
+    g = tmp_path / "o" / "playback.gif"
+    assert g.exists()
+    with Image.open(g) as im:
+        assert getattr(im, "is_animated", False)
+        assert im.n_frames > 5

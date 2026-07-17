@@ -1,0 +1,869 @@
+{
+  "status": "failed",
+  "board": {
+    "source": "rover_blind.kicad_pcb",
+    "nets": 14,
+    "tracks": 12,
+    "vias": 0,
+    "pads": 46,
+    "copper_um": 35.0
+  },
+  "rules": {
+    "min_clearance_mm": 0.2,
+    "delta_t_c": 10.0
+  },
+  "connectivity": [
+    {
+      "net": "+3V3",
+      "net_id": 1,
+      "tracks": 2,
+      "vias": 0,
+      "pads": 6,
+      "islands": 3,
+      "routed": false,
+      "unconnected_pads": [
+        "U2.1",
+        "C3.1"
+      ],
+      "total_track_mm": 31.018
+    },
+    {
+      "net": "GND",
+      "net_id": 2,
+      "tracks": 3,
+      "vias": 0,
+      "pads": 9,
+      "islands": 6,
+      "routed": false,
+      "unconnected_pads": [
+        "U1.15",
+        "U2.2",
+        "J6.4",
+        "C2.2",
+        "C3.2"
+      ],
+      "total_track_mm": 84.906
+    },
+    {
+      "net": "VBAT",
+      "net_id": 3,
+      "tracks": 3,
+      "vias": 0,
+      "pads": 7,
+      "islands": 6,
+      "routed": false,
+      "unconnected_pads": [
+        "J2.1",
+        "J3.1",
+        "J4.1",
+        "J5.1",
+        "J6.3"
+      ],
+      "total_track_mm": 52.513
+    },
+    {
+      "net": "M1_A",
+      "net_id": 4,
+      "tracks": 1,
+      "vias": 0,
+      "pads": 2,
+      "islands": 1,
+      "routed": true,
+      "unconnected_pads": [],
+      "total_track_mm": 24.824
+    },
+    {
+      "net": "M1_B",
+      "net_id": 5,
+      "tracks": 1,
+      "vias": 0,
+      "pads": 2,
+      "islands": 1,
+      "routed": true,
+      "unconnected_pads": [],
+      "total_track_mm": 24.552
+    },
+    {
+      "net": "M2_A",
+      "net_id": 6,
+      "tracks": 0,
+      "vias": 0,
+      "pads": 2,
+      "islands": 2,
+      "routed": false,
+      "unconnected_pads": [
+        "U1.5",
+        "J3.2"
+      ],
+      "total_track_mm": 0
+    },
+    {
+      "net": "M2_B",
+      "net_id": 7,
+      "tracks": 0,
+      "vias": 0,
+      "pads": 2,
+      "islands": 2,
+      "routed": false,
+      "unconnected_pads": [
+        "U1.6",
+        "J3.3"
+      ],
+      "total_track_mm": 0
+    },
+    {
+      "net": "M3_A",
+      "net_id": 8,
+      "tracks": 0,
+      "vias": 0,
+      "pads": 2,
+      "islands": 2,
+      "routed": false,
+      "unconnected_pads": [
+        "U1.7",
+        "J4.2"
+      ],
+      "total_track_mm": 0
+    },
+    {
+      "net": "M3_B",
+      "net_id": 9,
+      "tracks": 0,
+      "vias": 0,
+      "pads": 2,
+      "islands": 2,
+      "routed": false,
+      "unconnected_pads": [
+        "U1.8",
+        "J4.3"
+      ],
+      "total_track_mm": 0
+    },
+    {
+      "net": "M4_A",
+      "net_id": 10,
+      "tracks": 0,
+      "vias": 0,
+      "pads": 2,
+      "islands": 2,
+      "routed": false,
+      "unconnected_pads": [
+        "U1.9",
+        "J5.2"
+      ],
+      "total_track_mm": 0
+    },
+    {
+      "net": "M4_B",
+      "net_id": 11,
+      "tracks": 0,
+      "vias": 0,
+      "pads": 2,
+      "islands": 2,
+      "routed": false,
+      "unconnected_pads": [
+        "U1.10",
+        "J5.3"
+      ],
+      "total_track_mm": 0
+    },
+    {
+      "net": "USB_DP",
+      "net_id": 12,
+      "tracks": 1,
+      "vias": 0,
+      "pads": 3,
+      "islands": 4,
+      "routed": false,
+      "unconnected_pads": [
+        "U1.11",
+        "U2.3",
+        "J6.1"
+      ],
+      "total_track_mm": 18.0
+    },
+    {
+      "net": "USB_DM",
+      "net_id": 13,
+      "tracks": 1,
+      "vias": 0,
+      "pads": 3,
+      "islands": 4,
+      "routed": false,
+      "unconnected_pads": [
+        "U1.12",
+        "U2.4",
+        "J6.2"
+      ],
+      "total_track_mm": 24.0
+    },
+    {
+      "net": "LED",
+      "net_id": 14,
+      "tracks": 0,
+      "vias": 0,
+      "pads": 2,
+      "islands": 2,
+      "routed": false,
+      "unconnected_pads": [
+        "U1.13",
+        "D1.1"
+      ],
+      "total_track_mm": 0
+    }
+  ],
+  "clearance_findings": [
+    {
+      "kind": "track-track",
+      "a": "GND",
+      "b": "+3V3",
+      "layer": "F.Cu",
+      "clearance_mm": 0.0,
+      "required_mm": 0.2,
+      "near": [
+        24.0,
+        23.12
+      ]
+    },
+    {
+      "kind": "track-track",
+      "a": "GND",
+      "b": "+3V3",
+      "layer": "F.Cu",
+      "clearance_mm": 0.0,
+      "required_mm": 0.2,
+      "near": [
+        28.25,
+        23.25
+      ]
+    },
+    {
+      "kind": "track-track",
+      "a": "GND",
+      "b": "M1_A",
+      "layer": "F.Cu",
+      "clearance_mm": 0.0,
+      "required_mm": 0.2,
+      "near": [
+        20.25,
+        23.12
+      ]
+    },
+    {
+      "kind": "track-track",
+      "a": "GND",
+      "b": "M1_B",
+      "layer": "F.Cu",
+      "clearance_mm": 0.0,
+      "required_mm": 0.2,
+      "near": [
+        20.25,
+        24.77
+      ]
+    },
+    {
+      "kind": "track-track",
+      "a": "GND",
+      "b": "VBAT",
+      "layer": "F.Cu",
+      "clearance_mm": 0.0,
+      "required_mm": 0.2,
+      "near": [
+        15.75,
+        26.75
+      ]
+    },
+    {
+      "kind": "track-track",
+      "a": "GND",
+      "b": "+3V3",
+      "layer": "F.Cu",
+      "clearance_mm": 0.0,
+      "required_mm": 0.2,
+      "near": [
+        37.35,
+        22.38
+      ]
+    },
+    {
+      "kind": "track-track",
+      "a": "GND",
+      "b": "+3V3",
+      "layer": "F.Cu",
+      "clearance_mm": 0.0,
+      "required_mm": 0.2,
+      "near": [
+        41.6,
+        22.5
+      ]
+    },
+    {
+      "kind": "track-track",
+      "a": "GND",
+      "b": "VBAT",
+      "layer": "F.Cu",
+      "clearance_mm": 0.0,
+      "required_mm": 0.2,
+      "near": [
+        42.1,
+        28.88
+      ]
+    },
+    {
+      "kind": "track-track",
+      "a": "GND",
+      "b": "USB_DM",
+      "layer": "F.Cu",
+      "clearance_mm": 0.0,
+      "required_mm": 0.2,
+      "near": [
+        41.5,
+        21.5
+      ]
+    },
+    {
+      "kind": "track-track",
+      "a": "GND",
+      "b": "USB_DP",
+      "layer": "F.Cu",
+      "clearance_mm": 0.0,
+      "required_mm": 0.2,
+      "near": [
+        42.7,
+        20.0
+      ]
+    },
+    {
+      "kind": "track-track",
+      "a": "GND",
+      "b": "VBAT",
+      "layer": "F.Cu",
+      "clearance_mm": 0.0,
+      "required_mm": 0.2,
+      "near": [
+        43.35,
+        29.5
+      ]
+    },
+    {
+      "kind": "track-track",
+      "a": "GND",
+      "b": "USB_DM",
+      "layer": "F.Cu",
+      "clearance_mm": 0.0,
+      "required_mm": 0.2,
+      "near": [
+        42.75,
+        22.12
+      ]
+    },
+    {
+      "kind": "track-track",
+      "a": "+3V3",
+      "b": "USB_DM",
+      "layer": "F.Cu",
+      "clearance_mm": 0.0,
+      "required_mm": 0.2,
+      "near": [
+        38.9,
+        19.0
+      ]
+    },
+    {
+      "kind": "track-track",
+      "a": "+3V3",
+      "b": "USB_DP",
+      "layer": "F.Cu",
+      "clearance_mm": 0.0,
+      "required_mm": 0.2,
+      "near": [
+        40.1,
+        17.5
+      ]
+    },
+    {
+      "kind": "track-pad",
+      "a": "GND",
+      "b": "VBAT (pad U1.14)",
+      "layer": "F.Cu",
+      "clearance_mm": 0.0,
+      "required_mm": 0.2,
+      "near": [
+        46.0,
+        25.5
+      ]
+    },
+    {
+      "kind": "track-pad",
+      "a": "GND",
+      "b": "LED (pad D1.1)",
+      "layer": "F.Cu",
+      "clearance_mm": 0.0,
+      "required_mm": 0.2,
+      "near": [
+        56.6,
+        30.0
+      ]
+    },
+    {
+      "kind": "track-pad",
+      "a": "GND",
+      "b": "VBAT (pad U1.14)",
+      "layer": "F.Cu",
+      "clearance_mm": 0.0,
+      "required_mm": 0.2,
+      "near": [
+        46.0,
+        25.5
+      ]
+    },
+    {
+      "kind": "track-pad",
+      "a": "GND",
+      "b": "LED (pad D1.1)",
+      "layer": "F.Cu",
+      "clearance_mm": 0.0,
+      "required_mm": 0.2,
+      "near": [
+        56.6,
+        30.0
+      ]
+    },
+    {
+      "kind": "track-pad",
+      "a": "+3V3",
+      "b": "GND (pad C1.2)",
+      "layer": "F.Cu",
+      "clearance_mm": 0.0,
+      "required_mm": 0.2,
+      "near": [
+        29.0,
+        20.0
+      ]
+    },
+    {
+      "kind": "track-pad",
+      "a": "+3V3",
+      "b": "GND (pad C1.2)",
+      "layer": "F.Cu",
+      "clearance_mm": 0.0,
+      "required_mm": 0.2,
+      "near": [
+        29.0,
+        20.0
+      ]
+    },
+    {
+      "kind": "track-pad",
+      "a": "VBAT",
+      "b": "M3_B (pad U1.8)",
+      "layer": "F.Cu",
+      "clearance_mm": 0.0,
+      "required_mm": 0.2,
+      "near": [
+        34.0,
+        40.5
+      ]
+    },
+    {
+      "kind": "track-pad",
+      "a": "VBAT",
+      "b": "M3_B (pad U1.8)",
+      "layer": "F.Cu",
+      "clearance_mm": 0.0,
+      "required_mm": 0.2,
+      "near": [
+        34.0,
+        40.5
+      ]
+    },
+    {
+      "kind": "track-pad",
+      "a": "USB_DM",
+      "b": "USB_DP (pad J6.1)",
+      "layer": "F.Cu",
+      "clearance_mm": 0.0,
+      "required_mm": 0.2,
+      "near": [
+        38.8,
+        6.0
+      ]
+    },
+    {
+      "kind": "track-pad",
+      "a": "USB_DP",
+      "b": "USB_DM (pad J6.2)",
+      "layer": "F.Cu",
+      "clearance_mm": 0.0,
+      "required_mm": 0.2,
+      "near": [
+        41.2,
+        6.0
+      ]
+    },
+    {
+      "kind": "track-pad",
+      "a": "GND",
+      "b": "+3V3 (pad C1.1)",
+      "layer": "F.Cu",
+      "clearance_mm": 0.0341,
+      "required_mm": 0.2,
+      "near": [
+        27.0,
+        20.0
+      ]
+    },
+    {
+      "kind": "track-track",
+      "a": "GND",
+      "b": "USB_DP",
+      "layer": "F.Cu",
+      "clearance_mm": 0.0754,
+      "required_mm": 0.2,
+      "near": [
+        43.95,
+        20.62
+      ]
+    }
+  ],
+  "current_capacity": [
+    {
+      "net": "+3V3",
+      "min_width_mm": 0.4,
+      "copper_um": 35.0,
+      "layer_model": "external",
+      "dt_c": 10.0,
+      "i_max_a": 1.231,
+      "note": "IPC-2221, at the net's narrowest track"
+    },
+    {
+      "net": "GND",
+      "min_width_mm": 0.8,
+      "copper_um": 35.0,
+      "layer_model": "external",
+      "dt_c": 10.0,
+      "i_max_a": 2.034,
+      "note": "IPC-2221, at the net's narrowest track"
+    },
+    {
+      "net": "VBAT",
+      "min_width_mm": 0.25,
+      "copper_um": 35.0,
+      "layer_model": "external",
+      "dt_c": 10.0,
+      "i_max_a": 0.875,
+      "note": "IPC-2221, at the net's narrowest track"
+    },
+    {
+      "net": "M1_A",
+      "min_width_mm": 0.4,
+      "copper_um": 35.0,
+      "layer_model": "external",
+      "dt_c": 10.0,
+      "i_max_a": 1.231,
+      "note": "IPC-2221, at the net's narrowest track"
+    },
+    {
+      "net": "M1_B",
+      "min_width_mm": 0.4,
+      "copper_um": 35.0,
+      "layer_model": "external",
+      "dt_c": 10.0,
+      "i_max_a": 1.231,
+      "note": "IPC-2221, at the net's narrowest track"
+    },
+    {
+      "net": "USB_DP",
+      "min_width_mm": 0.25,
+      "copper_um": 35.0,
+      "layer_model": "external",
+      "dt_c": 10.0,
+      "i_max_a": 0.875,
+      "note": "IPC-2221, at the net's narrowest track"
+    },
+    {
+      "net": "USB_DM",
+      "min_width_mm": 0.3,
+      "copper_um": 35.0,
+      "layer_model": "external",
+      "dt_c": 10.0,
+      "i_max_a": 0.999,
+      "note": "IPC-2221, at the net's narrowest track"
+    }
+  ],
+  "diff_pairs": [],
+  "checks": [
+    {
+      "id": "net-open",
+      "level": "fail",
+      "message": "net '+3V3' is 3 separate island(s) - it is not routed, unconnected pad(s): U2.1, C3.1",
+      "where": "6 pad(s), 2 track(s)",
+      "try": "route the missing connection(s); an open net is a board that does not work, not a style issue"
+    },
+    {
+      "id": "net-open",
+      "level": "fail",
+      "message": "net 'GND' is 6 separate island(s) - it is not routed, unconnected pad(s): U1.15, U2.2, J6.4, C2.2, C3.2",
+      "where": "9 pad(s), 3 track(s)",
+      "try": "route the missing connection(s); an open net is a board that does not work, not a style issue"
+    },
+    {
+      "id": "net-open",
+      "level": "fail",
+      "message": "net 'VBAT' is 6 separate island(s) - it is not routed, unconnected pad(s): J2.1, J3.1, J4.1, J5.1, J6.3",
+      "where": "7 pad(s), 3 track(s)",
+      "try": "route the missing connection(s); an open net is a board that does not work, not a style issue"
+    },
+    {
+      "id": "net-open",
+      "level": "fail",
+      "message": "net 'M2_A' is 2 separate island(s) - it is not routed, unconnected pad(s): U1.5, J3.2",
+      "where": "2 pad(s), 0 track(s)",
+      "try": "route the missing connection(s); an open net is a board that does not work, not a style issue"
+    },
+    {
+      "id": "net-open",
+      "level": "fail",
+      "message": "net 'M2_B' is 2 separate island(s) - it is not routed, unconnected pad(s): U1.6, J3.3",
+      "where": "2 pad(s), 0 track(s)",
+      "try": "route the missing connection(s); an open net is a board that does not work, not a style issue"
+    },
+    {
+      "id": "net-open",
+      "level": "fail",
+      "message": "net 'M3_A' is 2 separate island(s) - it is not routed, unconnected pad(s): U1.7, J4.2",
+      "where": "2 pad(s), 0 track(s)",
+      "try": "route the missing connection(s); an open net is a board that does not work, not a style issue"
+    },
+    {
+      "id": "net-open",
+      "level": "fail",
+      "message": "net 'M3_B' is 2 separate island(s) - it is not routed, unconnected pad(s): U1.8, J4.3",
+      "where": "2 pad(s), 0 track(s)",
+      "try": "route the missing connection(s); an open net is a board that does not work, not a style issue"
+    },
+    {
+      "id": "net-open",
+      "level": "fail",
+      "message": "net 'M4_A' is 2 separate island(s) - it is not routed, unconnected pad(s): U1.9, J5.2",
+      "where": "2 pad(s), 0 track(s)",
+      "try": "route the missing connection(s); an open net is a board that does not work, not a style issue"
+    },
+    {
+      "id": "net-open",
+      "level": "fail",
+      "message": "net 'M4_B' is 2 separate island(s) - it is not routed, unconnected pad(s): U1.10, J5.3",
+      "where": "2 pad(s), 0 track(s)",
+      "try": "route the missing connection(s); an open net is a board that does not work, not a style issue"
+    },
+    {
+      "id": "net-open",
+      "level": "fail",
+      "message": "net 'USB_DP' is 4 separate island(s) - it is not routed, unconnected pad(s): U1.11, U2.3, J6.1",
+      "where": "3 pad(s), 1 track(s)",
+      "try": "route the missing connection(s); an open net is a board that does not work, not a style issue"
+    },
+    {
+      "id": "net-open",
+      "level": "fail",
+      "message": "net 'USB_DM' is 4 separate island(s) - it is not routed, unconnected pad(s): U1.12, U2.4, J6.2",
+      "where": "3 pad(s), 1 track(s)",
+      "try": "route the missing connection(s); an open net is a board that does not work, not a style issue"
+    },
+    {
+      "id": "net-open",
+      "level": "fail",
+      "message": "net 'LED' is 2 separate island(s) - it is not routed, unconnected pad(s): U1.13, D1.1",
+      "where": "2 pad(s), 0 track(s)",
+      "try": "route the missing connection(s); an open net is a board that does not work, not a style issue"
+    },
+    {
+      "id": "clearance",
+      "level": "fail",
+      "message": "track-track: 'GND' to '+3V3' at 0.0 mm (required 0.2)",
+      "where": "F.Cu near (24.0, 23.12)",
+      "try": "move the copper apart or drop the fab's clearance class; below ~50% of spec this risks shorts after etch, hence FAIL"
+    },
+    {
+      "id": "clearance",
+      "level": "fail",
+      "message": "track-track: 'GND' to '+3V3' at 0.0 mm (required 0.2)",
+      "where": "F.Cu near (28.25, 23.25)",
+      "try": "move the copper apart or drop the fab's clearance class; below ~50% of spec this risks shorts after etch, hence FAIL"
+    },
+    {
+      "id": "clearance",
+      "level": "fail",
+      "message": "track-track: 'GND' to 'M1_A' at 0.0 mm (required 0.2)",
+      "where": "F.Cu near (20.25, 23.12)",
+      "try": "move the copper apart or drop the fab's clearance class; below ~50% of spec this risks shorts after etch, hence FAIL"
+    },
+    {
+      "id": "clearance",
+      "level": "fail",
+      "message": "track-track: 'GND' to 'M1_B' at 0.0 mm (required 0.2)",
+      "where": "F.Cu near (20.25, 24.77)",
+      "try": "move the copper apart or drop the fab's clearance class; below ~50% of spec this risks shorts after etch, hence FAIL"
+    },
+    {
+      "id": "clearance",
+      "level": "fail",
+      "message": "track-track: 'GND' to 'VBAT' at 0.0 mm (required 0.2)",
+      "where": "F.Cu near (15.75, 26.75)",
+      "try": "move the copper apart or drop the fab's clearance class; below ~50% of spec this risks shorts after etch, hence FAIL"
+    },
+    {
+      "id": "clearance",
+      "level": "fail",
+      "message": "track-track: 'GND' to '+3V3' at 0.0 mm (required 0.2)",
+      "where": "F.Cu near (37.35, 22.38)",
+      "try": "move the copper apart or drop the fab's clearance class; below ~50% of spec this risks shorts after etch, hence FAIL"
+    },
+    {
+      "id": "clearance",
+      "level": "fail",
+      "message": "track-track: 'GND' to '+3V3' at 0.0 mm (required 0.2)",
+      "where": "F.Cu near (41.6, 22.5)",
+      "try": "move the copper apart or drop the fab's clearance class; below ~50% of spec this risks shorts after etch, hence FAIL"
+    },
+    {
+      "id": "clearance",
+      "level": "fail",
+      "message": "track-track: 'GND' to 'VBAT' at 0.0 mm (required 0.2)",
+      "where": "F.Cu near (42.1, 28.88)",
+      "try": "move the copper apart or drop the fab's clearance class; below ~50% of spec this risks shorts after etch, hence FAIL"
+    },
+    {
+      "id": "clearance",
+      "level": "fail",
+      "message": "track-track: 'GND' to 'USB_DM' at 0.0 mm (required 0.2)",
+      "where": "F.Cu near (41.5, 21.5)",
+      "try": "move the copper apart or drop the fab's clearance class; below ~50% of spec this risks shorts after etch, hence FAIL"
+    },
+    {
+      "id": "clearance",
+      "level": "fail",
+      "message": "track-track: 'GND' to 'USB_DP' at 0.0 mm (required 0.2)",
+      "where": "F.Cu near (42.7, 20.0)",
+      "try": "move the copper apart or drop the fab's clearance class; below ~50% of spec this risks shorts after etch, hence FAIL"
+    },
+    {
+      "id": "clearance",
+      "level": "fail",
+      "message": "track-track: 'GND' to 'VBAT' at 0.0 mm (required 0.2)",
+      "where": "F.Cu near (43.35, 29.5)",
+      "try": "move the copper apart or drop the fab's clearance class; below ~50% of spec this risks shorts after etch, hence FAIL"
+    },
+    {
+      "id": "clearance",
+      "level": "fail",
+      "message": "track-track: 'GND' to 'USB_DM' at 0.0 mm (required 0.2)",
+      "where": "F.Cu near (42.75, 22.12)",
+      "try": "move the copper apart or drop the fab's clearance class; below ~50% of spec this risks shorts after etch, hence FAIL"
+    },
+    {
+      "id": "clearance",
+      "level": "fail",
+      "message": "track-track: '+3V3' to 'USB_DM' at 0.0 mm (required 0.2)",
+      "where": "F.Cu near (38.9, 19.0)",
+      "try": "move the copper apart or drop the fab's clearance class; below ~50% of spec this risks shorts after etch, hence FAIL"
+    },
+    {
+      "id": "clearance",
+      "level": "fail",
+      "message": "track-track: '+3V3' to 'USB_DP' at 0.0 mm (required 0.2)",
+      "where": "F.Cu near (40.1, 17.5)",
+      "try": "move the copper apart or drop the fab's clearance class; below ~50% of spec this risks shorts after etch, hence FAIL"
+    },
+    {
+      "id": "clearance",
+      "level": "fail",
+      "message": "track-pad: 'GND' to 'VBAT (pad U1.14)' at 0.0 mm (required 0.2)",
+      "where": "F.Cu near (46.0, 25.5)",
+      "try": "move the copper apart or drop the fab's clearance class; below ~50% of spec this risks shorts after etch, hence FAIL"
+    },
+    {
+      "id": "clearance",
+      "level": "fail",
+      "message": "track-pad: 'GND' to 'LED (pad D1.1)' at 0.0 mm (required 0.2)",
+      "where": "F.Cu near (56.6, 30.0)",
+      "try": "move the copper apart or drop the fab's clearance class; below ~50% of spec this risks shorts after etch, hence FAIL"
+    },
+    {
+      "id": "clearance",
+      "level": "fail",
+      "message": "track-pad: 'GND' to 'VBAT (pad U1.14)' at 0.0 mm (required 0.2)",
+      "where": "F.Cu near (46.0, 25.5)",
+      "try": "move the copper apart or drop the fab's clearance class; below ~50% of spec this risks shorts after etch, hence FAIL"
+    },
+    {
+      "id": "clearance",
+      "level": "fail",
+      "message": "track-pad: 'GND' to 'LED (pad D1.1)' at 0.0 mm (required 0.2)",
+      "where": "F.Cu near (56.6, 30.0)",
+      "try": "move the copper apart or drop the fab's clearance class; below ~50% of spec this risks shorts after etch, hence FAIL"
+    },
+    {
+      "id": "clearance",
+      "level": "fail",
+      "message": "track-pad: '+3V3' to 'GND (pad C1.2)' at 0.0 mm (required 0.2)",
+      "where": "F.Cu near (29.0, 20.0)",
+      "try": "move the copper apart or drop the fab's clearance class; below ~50% of spec this risks shorts after etch, hence FAIL"
+    },
+    {
+      "id": "clearance",
+      "level": "fail",
+      "message": "track-pad: '+3V3' to 'GND (pad C1.2)' at 0.0 mm (required 0.2)",
+      "where": "F.Cu near (29.0, 20.0)",
+      "try": "move the copper apart or drop the fab's clearance class; below ~50% of spec this risks shorts after etch, hence FAIL"
+    },
+    {
+      "id": "clearance",
+      "level": "fail",
+      "message": "track-pad: 'VBAT' to 'M3_B (pad U1.8)' at 0.0 mm (required 0.2)",
+      "where": "F.Cu near (34.0, 40.5)",
+      "try": "move the copper apart or drop the fab's clearance class; below ~50% of spec this risks shorts after etch, hence FAIL"
+    },
+    {
+      "id": "clearance",
+      "level": "fail",
+      "message": "track-pad: 'VBAT' to 'M3_B (pad U1.8)' at 0.0 mm (required 0.2)",
+      "where": "F.Cu near (34.0, 40.5)",
+      "try": "move the copper apart or drop the fab's clearance class; below ~50% of spec this risks shorts after etch, hence FAIL"
+    },
+    {
+      "id": "clearance",
+      "level": "fail",
+      "message": "track-pad: 'USB_DM' to 'USB_DP (pad J6.1)' at 0.0 mm (required 0.2)",
+      "where": "F.Cu near (38.8, 6.0)",
+      "try": "move the copper apart or drop the fab's clearance class; below ~50% of spec this risks shorts after etch, hence FAIL"
+    },
+    {
+      "id": "clearance",
+      "level": "fail",
+      "message": "track-pad: 'USB_DP' to 'USB_DM (pad J6.2)' at 0.0 mm (required 0.2)",
+      "where": "F.Cu near (41.2, 6.0)",
+      "try": "move the copper apart or drop the fab's clearance class; below ~50% of spec this risks shorts after etch, hence FAIL"
+    },
+    {
+      "id": "clearance",
+      "level": "fail",
+      "message": "track-pad: 'GND' to '+3V3 (pad C1.1)' at 0.0341 mm (required 0.2)",
+      "where": "F.Cu near (27.0, 20.0)",
+      "try": "move the copper apart or drop the fab's clearance class; below ~50% of spec this risks shorts after etch, hence FAIL"
+    },
+    {
+      "id": "clearance",
+      "level": "fail",
+      "message": "track-track: 'GND' to 'USB_DP' at 0.0754 mm (required 0.2)",
+      "where": "F.Cu near (43.95, 20.62)",
+      "try": "move the copper apart or drop the fab's clearance class; below ~50% of spec this risks shorts after etch, hence FAIL"
+    }
+  ],
+  "files": {
+    "report": "report.json",
+    "renders": [
+      "board.png"
+    ]
+  }
+}

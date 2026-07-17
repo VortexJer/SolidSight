@@ -233,3 +233,24 @@ def test_body_is_inferred_when_no_silk(tmp_path):
     b = parse_board(p)
     r1 = b.footprints[0]
     assert r1.body and r1.body_inferred
+
+
+# --- the complex rover example: blind fails, autorouted clean is 0 -----
+
+def test_rover_example_ground_truth():
+    from pcbsight.report import analyze
+    rover = Path(__file__).parents[1] / "examples" / "02-rover"
+    blind = analyze(parse_board(rover / "rover_blind.kicad_pcb"))
+    clean = analyze(parse_board(rover / "rover_clean.kicad_pcb"))
+    # blind: routed without sight -> many open nets and shorts
+    assert blind["status"] == "failed"
+    open_blind = [n for n in blind["connectivity"] if not n["routed"]]
+    assert len(open_blind) >= 8
+    assert len(blind["clearance_findings"]) >= 10
+    # clean: a real 2-layer autoroute -> everything closed, no shorts
+    assert clean["status"] == "ok"
+    assert all(n["routed"] for n in clean["connectivity"])
+    assert clean["clearance_findings"] == []
+    # it is a real board: 13 components with refs
+    assert len({fp.ref for fp in
+                parse_board(rover / "rover_clean.kicad_pcb").footprints}) >= 12

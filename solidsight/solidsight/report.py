@@ -29,6 +29,7 @@ def build_model(model_path: Path, out_dir: Path, mode: str = "free",
                 allow_multiple_shells: bool = False,
                 exploded: bool = False,
                 focus: tuple | None = None,
+                gif: bool = False,
                 scene: Scene | None = None,
                 unchanged_parts: set[str] | None = None,
                 skip_pairs: bool = False) -> dict:
@@ -101,6 +102,7 @@ def build_model(model_path: Path, out_dir: Path, mode: str = "free",
             st.tick("exploded view")
 
         if turntable > 0:
+            tframes = []
             for i, tview in enumerate(turntable_views(turntable)):
                 img = render_view(scene, tview, size=size, title=title,
                                   subtitle=f"{mode} · frame "
@@ -108,7 +110,17 @@ def build_model(model_path: Path, out_dir: Path, mode: str = "free",
                 fname = f"turntable_{i:02d}.png"
                 img.save(renders_dir / fname)
                 render_files.append(f"renders/{fname}")
+                tframes.append(img)
                 st.tick(f"turntable frame {i + 1}")
+            if gif and tframes:
+                # the turntable as one animated GIF: a form is a 360-deg
+                # claim, and a strip of stills does not spin
+                tframes[0].save(renders_dir / "turntable.gif",
+                                save_all=True,
+                                append_images=tframes[1:] + tframes[::-1],
+                                duration=90, loop=0, optimize=True)
+                render_files.append("renders/turntable.gif")
+                st.tick("turntable.gif")
 
     export_files: list[str] = []
     solid_parts = [p for p in scene.parts if not p.ghost]

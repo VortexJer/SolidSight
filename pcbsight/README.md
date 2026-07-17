@@ -61,7 +61,27 @@ tests, both directions.
 </p>
 <p align="center"><em>the broken board: the neck in the top trace, the blue GND run stopping short, the 0.08 mm findings circled</em></p>
 
-## Before / after: one turn of the loop
+## The complex example: a 4-motor rover controller
+
+[`examples/02-rover`](examples/02-rover) is the full thing — MCU, IMU,
+four motor connectors, battery, USB-C, LED, decoupling: **14 nets, 13
+components**, built blind (netlist only, no sight of the copper) against
+the same board taken to zero findings by a real 2-layer maze router.
+
+<p align="center">
+  <img src="examples/02-rover/out_blind/board.png" width="49%">
+  <img src="examples/02-rover/out_clean/board.png" width="49%">
+</p>
+<p align="center"><em>routed blind (12 of 14 nets open, 26 clearance violations, findings circled) vs the clean 2-layer route — same components, same nets</em></p>
+
+```
+pcbsight diff rover_blind.kicad_pcb rover_clean.kicad_pcb
+  tracks: 12 -> 113   vias: 0 -> 27
+  net 'GND': 6 island(s) -> 1 ... every motor pair reached
+  clearance findings: 26 -> 0
+```
+
+## The intro example: before / after in miniature
 
 The repair of the broken board, told entirely by `diff` — no
 re-inspection choreography, one command against both files:

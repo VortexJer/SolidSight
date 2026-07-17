@@ -85,11 +85,11 @@ and every fix ends in a diff that proves it.
   <img src="showcase/robot/out/renders/exploded.png" width="41%">
 </p>
 <p align="center">
-  <img src="showcase/board/out/board.png" width="27%">
-  <img src="showcase/materials/out_accent/compare.png" width="27%">
-  <img src="showcase/motion/out_floaty/flight_0_arc.png" width="27%">
+  <img src="showcase/board/out/board.png" width="30%">
+  <img src="showcase/materials/out_accent/compare.png" width="30%">
+  <img src="showcase/motion/out_floaty/playback.gif" width="22%">
 </p>
-<p align="center"><em>the assembly with its electronics as X-ray ghosts · the board pcbsight took from 31 findings to 0 · the boosted-vs-physical copper · the 0.496x-gravity hop, caught by its arc</em></p>
+<p align="center"><em>the assembly with its electronics as X-ray ghosts · the board pcbsight took from 31 findings to 0 · the boosted-vs-physical copper · the idle hop, animated</em></p>
 
 Full narrative and the defect scoreboard: [showcase/README.md](showcase/README.md).
 

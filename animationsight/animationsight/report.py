@@ -15,7 +15,8 @@ import numpy as np
 from . import metrics as M
 from .bvh import forward_kinematics, parse_bvh
 from .metrics import G_MM_S2 as G
-from .render import render_flight_arc, render_frames, render_track
+from .render import (render_flight_arc, render_frames, render_gif,
+                     render_track)
 
 
 def _check(id_, level, message, where=None, suggestion=None) -> dict:
@@ -196,7 +197,7 @@ def inspect_clip(path: str | Path, out_dir: Path | None = None,
                  unit: str = "cm", up: str = "y",
                  floor_mm: float | None = None, n_frames: int = 6,
                  view: str = "side", size: int = 640,
-                 kind: str = "auto", say=print) -> dict:
+                 kind: str = "auto", gif: bool = False, say=print) -> dict:
     """Parse, measure, render the evidence, write report.json."""
     clip = parse_bvh(path, unit=unit)
     rep = analyze(clip, up=up, floor_mm=floor_mm, kind=kind)
@@ -266,11 +267,20 @@ def inspect_clip(path: str | Path, out_dir: Path | None = None,
                           arrays["floor"], view=view)
         arcs.append(name)
 
+    gif_file = None
+    if gif:
+        # keep the GIF small: cap at ~120 played frames
+        stride = max(1, clip.n_frames // 120)
+        render_gif(clip, pos, com, out / "playback.gif", up,
+                   arrays["floor"], view=view, marks=marks, stride=stride)
+        gif_file = "playback.gif"
+
     rep["files"] = {
         "report": "report.json",
         "frames": [f"frames/{n}" for n in written],
         "tracks": tracks,
         "flight_arcs": arcs,
+        "gif": gif_file,
     }
     (out / "report.json").write_text(json.dumps(rep, indent=2) + "\n",
                                      encoding="utf-8")

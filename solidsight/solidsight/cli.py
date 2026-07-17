@@ -202,6 +202,9 @@ def _add_build_flags(b) -> None:
                         "top,bottom (default: iso,front,right,top)")
     b.add_argument("--turntable", type=int, default=0, metavar="N",
                    help="also render N frames orbiting the model")
+    b.add_argument("--gif", action="store_true",
+                   help="with --turntable, also write renders/turntable.gif "
+                        "(the model spinning - a form is a 360-deg claim)")
     b.add_argument("--slice", action="append", default=[], metavar="AXIS=MM",
                    help="render a cross-section, e.g. --slice z=5 "
                         "(repeatable)")
@@ -557,6 +560,7 @@ def _parse_build_kwargs(args) -> dict | None:
         allow_multiple_shells=args.allow_multiple_shells,
         exploded=args.exploded,
         focus=focus,
+        gif=getattr(args, "gif", False),
         skip_pairs=getattr(args, "skip_pairs", False),
     )
 

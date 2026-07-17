@@ -1,0 +1,308 @@
+{
+  "status": "ok",
+  "board": {
+    "source": "rover_clean.kicad_pcb",
+    "nets": 14,
+    "tracks": 113,
+    "vias": 27,
+    "pads": 46,
+    "copper_um": 35.0
+  },
+  "rules": {
+    "min_clearance_mm": 0.2,
+    "delta_t_c": 10.0
+  },
+  "connectivity": [
+    {
+      "net": "+3V3",
+      "net_id": 1,
+      "tracks": 15,
+      "vias": 4,
+      "pads": 6,
+      "islands": 1,
+      "routed": true,
+      "unconnected_pads": [],
+      "total_track_mm": 77.6
+    },
+    {
+      "net": "GND",
+      "net_id": 2,
+      "tracks": 11,
+      "vias": 7,
+      "pads": 9,
+      "islands": 1,
+      "routed": true,
+      "unconnected_pads": [],
+      "total_track_mm": 134.0
+    },
+    {
+      "net": "VBAT",
+      "net_id": 3,
+      "tracks": 17,
+      "vias": 0,
+      "pads": 7,
+      "islands": 1,
+      "routed": true,
+      "unconnected_pads": [],
+      "total_track_mm": 162.0
+    },
+    {
+      "net": "M1_A",
+      "net_id": 4,
+      "tracks": 5,
+      "vias": 1,
+      "pads": 2,
+      "islands": 1,
+      "routed": true,
+      "unconnected_pads": [],
+      "total_track_mm": 33.6
+    },
+    {
+      "net": "M1_B",
+      "net_id": 5,
+      "tracks": 3,
+      "vias": 1,
+      "pads": 2,
+      "islands": 1,
+      "routed": true,
+      "unconnected_pads": [],
+      "total_track_mm": 32.8
+    },
+    {
+      "net": "M2_A",
+      "net_id": 6,
+      "tracks": 4,
+      "vias": 0,
+      "pads": 2,
+      "islands": 1,
+      "routed": true,
+      "unconnected_pads": [],
+      "total_track_mm": 36.4
+    },
+    {
+      "net": "M2_B",
+      "net_id": 7,
+      "tracks": 6,
+      "vias": 0,
+      "pads": 2,
+      "islands": 1,
+      "routed": true,
+      "unconnected_pads": [],
+      "total_track_mm": 37.2
+    },
+    {
+      "net": "M3_A",
+      "net_id": 8,
+      "tracks": 7,
+      "vias": 3,
+      "pads": 2,
+      "islands": 1,
+      "routed": true,
+      "unconnected_pads": [],
+      "total_track_mm": 58.4
+    },
+    {
+      "net": "M3_B",
+      "net_id": 9,
+      "tracks": 11,
+      "vias": 3,
+      "pads": 2,
+      "islands": 1,
+      "routed": true,
+      "unconnected_pads": [],
+      "total_track_mm": 67.2
+    },
+    {
+      "net": "M4_A",
+      "net_id": 10,
+      "tracks": 2,
+      "vias": 0,
+      "pads": 2,
+      "islands": 1,
+      "routed": true,
+      "unconnected_pads": [],
+      "total_track_mm": 27.6
+    },
+    {
+      "net": "M4_B",
+      "net_id": 11,
+      "tracks": 7,
+      "vias": 0,
+      "pads": 2,
+      "islands": 1,
+      "routed": true,
+      "unconnected_pads": [],
+      "total_track_mm": 37.2
+    },
+    {
+      "net": "USB_DP",
+      "net_id": 12,
+      "tracks": 10,
+      "vias": 2,
+      "pads": 3,
+      "islands": 1,
+      "routed": true,
+      "unconnected_pads": [],
+      "total_track_mm": 58.8
+    },
+    {
+      "net": "USB_DM",
+      "net_id": 13,
+      "tracks": 13,
+      "vias": 6,
+      "pads": 3,
+      "islands": 1,
+      "routed": true,
+      "unconnected_pads": [],
+      "total_track_mm": 54.4
+    },
+    {
+      "net": "LED",
+      "net_id": 14,
+      "tracks": 2,
+      "vias": 0,
+      "pads": 2,
+      "islands": 1,
+      "routed": true,
+      "unconnected_pads": [],
+      "total_track_mm": 12.4
+    }
+  ],
+  "clearance_findings": [],
+  "current_capacity": [
+    {
+      "net": "+3V3",
+      "min_width_mm": 0.4,
+      "copper_um": 35.0,
+      "layer_model": "external",
+      "dt_c": 10.0,
+      "i_max_a": 1.231,
+      "note": "IPC-2221, at the net's narrowest track"
+    },
+    {
+      "net": "GND",
+      "min_width_mm": 0.5,
+      "copper_um": 35.0,
+      "layer_model": "external",
+      "dt_c": 10.0,
+      "i_max_a": 1.447,
+      "note": "IPC-2221, at the net's narrowest track"
+    },
+    {
+      "net": "VBAT",
+      "min_width_mm": 0.6,
+      "copper_um": 35.0,
+      "layer_model": "external",
+      "dt_c": 10.0,
+      "i_max_a": 1.651,
+      "note": "IPC-2221, at the net's narrowest track"
+    },
+    {
+      "net": "M1_A",
+      "min_width_mm": 0.4,
+      "copper_um": 35.0,
+      "layer_model": "external",
+      "dt_c": 10.0,
+      "i_max_a": 1.231,
+      "note": "IPC-2221, at the net's narrowest track"
+    },
+    {
+      "net": "M1_B",
+      "min_width_mm": 0.4,
+      "copper_um": 35.0,
+      "layer_model": "external",
+      "dt_c": 10.0,
+      "i_max_a": 1.231,
+      "note": "IPC-2221, at the net's narrowest track"
+    },
+    {
+      "net": "M2_A",
+      "min_width_mm": 0.4,
+      "copper_um": 35.0,
+      "layer_model": "external",
+      "dt_c": 10.0,
+      "i_max_a": 1.231,
+      "note": "IPC-2221, at the net's narrowest track"
+    },
+    {
+      "net": "M2_B",
+      "min_width_mm": 0.4,
+      "copper_um": 35.0,
+      "layer_model": "external",
+      "dt_c": 10.0,
+      "i_max_a": 1.231,
+      "note": "IPC-2221, at the net's narrowest track"
+    },
+    {
+      "net": "M3_A",
+      "min_width_mm": 0.4,
+      "copper_um": 35.0,
+      "layer_model": "external",
+      "dt_c": 10.0,
+      "i_max_a": 1.231,
+      "note": "IPC-2221, at the net's narrowest track"
+    },
+    {
+      "net": "M3_B",
+      "min_width_mm": 0.4,
+      "copper_um": 35.0,
+      "layer_model": "external",
+      "dt_c": 10.0,
+      "i_max_a": 1.231,
+      "note": "IPC-2221, at the net's narrowest track"
+    },
+    {
+      "net": "M4_A",
+      "min_width_mm": 0.4,
+      "copper_um": 35.0,
+      "layer_model": "external",
+      "dt_c": 10.0,
+      "i_max_a": 1.231,
+      "note": "IPC-2221, at the net's narrowest track"
+    },
+    {
+      "net": "M4_B",
+      "min_width_mm": 0.4,
+      "copper_um": 35.0,
+      "layer_model": "external",
+      "dt_c": 10.0,
+      "i_max_a": 1.231,
+      "note": "IPC-2221, at the net's narrowest track"
+    },
+    {
+      "net": "USB_DP",
+      "min_width_mm": 0.25,
+      "copper_um": 35.0,
+      "layer_model": "external",
+      "dt_c": 10.0,
+      "i_max_a": 0.875,
+      "note": "IPC-2221, at the net's narrowest track"
+    },
+    {
+      "net": "USB_DM",
+      "min_width_mm": 0.25,
+      "copper_um": 35.0,
+      "layer_model": "external",
+      "dt_c": 10.0,
+      "i_max_a": 0.875,
+      "note": "IPC-2221, at the net's narrowest track"
+    },
+    {
+      "net": "LED",
+      "min_width_mm": 0.3,
+      "copper_um": 35.0,
+      "layer_model": "external",
+      "dt_c": 10.0,
+      "i_max_a": 0.999,
+      "note": "IPC-2221, at the net's narrowest track"
+    }
+  ],
+  "diff_pairs": [],
+  "checks": [],
+  "files": {
+    "report": "report.json",
+    "renders": [
+      "board.png"
+    ]
+  }
+}

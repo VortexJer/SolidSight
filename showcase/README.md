@@ -17,6 +17,12 @@ proves it. Five tools, one loop.
 </p>
 <p align="center"><em>the assembly (PCB and servos as X-ray ghosts: measured, never printed) and its exploded view</em></p>
 
+<p align="center">
+  <img src="robot/out/renders/turntable.gif" width="46%">
+  <img src="motion/out_floaty/playback.gif" width="34%">
+</p>
+<p align="center"><em>Vigia spinning (solidsight <code>--turntable --gif</code>) and its floaty idle hop, animated (animationsight <code>--gif</code>) - an animation cannot be read from a still</em></p>
+
 ## Stage 1 — the board (pcbsight)
 
 [`board/make_board.py`](board/make_board.py) writes a 50×40 controller:

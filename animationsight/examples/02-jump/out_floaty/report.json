@@ -527,6 +527,7 @@
     ],
     "flight_arcs": [
       "flight_0_arc.png"
-    ]
+    ],
+    "gif": "playback.gif"
   }
 }

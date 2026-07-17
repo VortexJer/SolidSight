@@ -54,6 +54,9 @@ def main(argv: list[str] | None = None) -> int:
                    help="declare the intent: 'oneshot' (jump, hit, "
                         "gesture) silences the loop-seam check, 'loop' "
                         "keeps it strict, 'auto' reports with a caveat")
+    i.add_argument("--gif", action="store_true",
+                   help="also write playback.gif - the skeleton animated "
+                        "(an animation cannot be read from a still)")
     i.add_argument("--json", action="store_true",
                    help="full report JSON on stdout")
 
@@ -110,7 +113,8 @@ def _inspect(args) -> int:
     rep = inspect_clip(args.clip, out_dir=args.out, unit=args.unit,
                        up=args.up, floor_mm=args.floor,
                        n_frames=args.frames, view=args.view,
-                       size=args.size, kind=args.kind, say=_say)
+                       size=args.size, kind=args.kind, gif=args.gif,
+                       say=_say)
     out = rep.pop("_out_dir")
     if args.json:
         print(json.dumps(rep, indent=2))
@@ -172,6 +176,8 @@ def _inspect(args) -> int:
         _say(f"  track:  {out}/{t}")
     for a_ in rep["files"].get("flight_arcs", []):
         _say(f"  arc:    {out}/{a_}  (ghosted flight + measured arc vs 1 g)")
+    if rep["files"].get("gif"):
+        _say(f"  gif:    {out}/{rep['files']['gif']}  (the clip, animated)")
     _say("  NEXT: LOOK at the flagged frames and the tracks, then read "
          "report.json checks.")
     return 2 if rep["status"] == "failed" else 0

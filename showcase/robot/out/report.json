@@ -689,21 +689,24 @@
     "report": "report.json",
     "renders": [
       "renders/01_iso.png",
-      "renders/02_front.png",
-      "renders/03_right.png",
-      "renders/exploded.png"
+      "renders/turntable_00.png",
+      "renders/turntable_01.png",
+      "renders/turntable_02.png",
+      "renders/turntable_03.png",
+      "renders/turntable_04.png",
+      "renders/turntable_05.png",
+      "renders/turntable_06.png",
+      "renders/turntable_07.png",
+      "renders/turntable_08.png",
+      "renders/turntable_09.png",
+      "renders/turntable_10.png",
+      "renders/turntable_11.png",
+      "renders/turntable_12.png",
+      "renders/turntable_13.png",
+      "renders/turntable_14.png",
+      "renders/turntable_15.png",
+      "renders/turntable.gif"
     ],
-    "exports": [
-      "stl/body.stl",
-      "stl/head.stl",
-      "stl/arm_l.stl",
-      "stl/arm_r.stl",
-      "stl/combined.stl",
-      "glb/body.glb",
-      "glb/head.glb",
-      "glb/arm_l.glb",
-      "glb/arm_r.glb",
-      "glb/combined.glb"
-    ]
+    "exports": []
   }
 }
