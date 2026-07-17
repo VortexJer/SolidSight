@@ -1,82 +1,75 @@
-# The *Sight family: what exists, what does not, and why
+# The *Sight family
 
-A request on the table: build **AnimationSight**, **TextureSight**,
-**ShaderSight** and **PCBSight** — the solidsight philosophy (the agent
-is blind; give it exact numbers instead of pictures) applied to four
-more domains.
+The solidsight philosophy — the agent is blind; give it exact numbers
+instead of pictures, and renders only as evidence for what the numbers
+found — applied to four more domains where software was built for human
+eyes.
 
-This document is the honest scoping. solidsight's credibility rests on
-everything in the repo being real, tested and reproducible; shipping
-four skeleton products would spend that credibility. What follows is
-what actually exists today, and a concrete architecture for each future
-product so the work can start from a plan instead of a slogan.
+This document used to be the honest scoping of tools that did not exist.
+They exist now, each in its own sibling package in this repo, each with
+its own CLI, Claude Code skill (self-installing), synthetic
+known-ground-truth examples and regression tests in both directions
+(every injected defect found, every clean reference clean).
 
-## What exists today (real, tested)
+| tool | replaces | the measurements |
+|---|---|---|
+| [`animationsight/`](../animationsight) | watching a clip | BVH + FK: velocity/accel/jerk, angular rates, contacts, foot sliding, balance vs support, floor penetration, pops, loop seams |
+| [`texturesight/`](../texturesight) | squinting at a checker | texel density, UV-Jacobian stretch, islands/seams counted from topology, packing/overlap, tiling vs the texture's own statistics, normal-map validity, data-map range |
+| [`shadersight/`](../shadersight) | rendering a sphere | energy conservation by MIS over the hemisphere, Helmholtz reciprocity, positivity, node-graph cycles/dead-nodes/cost |
+| [`pcbsight/`](../pcbsight) | eyeballing copper | net connectivity by union-find, exact clearances with coordinates, IPC-2221 current at the narrowest track, diff-pair skew, microstrip Z0 |
 
-The motion/kinematics slice of AnimationSight lives INSIDE solidsight,
-because it shares the geometry kernel:
+Install any of them:
 
-- `joint()` declarations -> URDF/SDF with exact masses and inertia
-  tensors (`solidsight robot`);
-- `solidsight motion` sweeps any declared joint through its limits and
-  returns the exact collision map (which positions hit which parts,
-  with overlap volumes) — rigid-body kinematic validation, measured,
-  not watched;
-- `parts.swept()` for insertion paths and `expect()` for declared
-  clearance specs.
+```bash
+pip install "git+https://github.com/VortexJer/SolidSight#subdirectory=animationsight"   # or texturesight / shadersight / pcbsight
+```
 
-## AnimationSight (skeletal animation as measurable motion)
+## What "built" means here
 
-Not built. Architecture when it is:
+Each tool holds itself to the standard set by solidsight's dogfooding:
 
-- **Input**: glTF/BVH animation clips (trimesh already parses glTF).
-- **Core**: sample joint transforms over time; differentiate for
-  velocity / acceleration / jerk per joint; contact events from mesh
-  proximity per frame (the solidsight pair machinery, batched over
-  time); balance = COM trajectory vs support polygon (the stability
-  check, animated).
-- **Output**: report.json per clip (peaks, discontinuities, contact
-  table, penetration events with exact frames), turntable-style frame
-  renders, and a diff mode between two takes.
-- **Hard part**: none of it is exotic — it is the O(frames x pairs)
-  cost and a good report vocabulary.
+- **Known ground truth.** Every example is synthetic on purpose, with
+  defects injected at exact magnitudes, so the tests assert the *right*
+  answer, not merely *an* answer — and assert the clean reference stays
+  clean, because false positives are how a tool loses the right to be
+  believed.
+- **Findings carry `where` and `try:`**, coordinates and frames
+  included; assumptions (clearance class, dT, integration grid, texture
+  size) are stated inside the report.
+- **Deterministic**: same input, byte-identical report; fixed seeds
+  where sampling is involved, with the resolution reported.
+- **Self-hosting skills**: the first CLI run installs the Claude Code
+  skill; `<tool> uninstall` removes skill and package together.
+- **Scope stated, not implied**: each README lists what is NOT read or
+  checked (pours in pcbsight, GLSL in shadersight, rigging in
+  animationsight, unwrapping in texturesight).
 
-## TextureSight (UV/texture authoring as data)
+## Bugs the tools caught in their own references
 
-Not built. Needs a different substrate than CSG solids: UV-unwrapped
-authored meshes.
+The pattern that keeps recurring — and the reason the family exists:
+every one of these was invisible to inspection and obvious to
+measurement.
 
-- **Core measurements**: texel density per face (UV area vs 3D area),
-  seam detection (UV islands vs mesh adjacency), stretch/distortion
-  (singular values of the per-face UV Jacobian), tiling periodicity
-  (autocorrelation), normal-map continuity across seams, AO statistics.
-- All deterministic, all reportable without looking at a picture.
-- **Blocker**: solidsight models have no UVs; this tool audits meshes
-  from DCC pipelines, so it is a sibling package, not a solidsight
-  feature.
+- animationsight: the first synthetic walk never planted a foot
+  (sinusoids moonwalk); the floor estimate let a penetration defect
+  define the floor and hide itself.
+- texturesight: a transposed matrix reported conformal UVs as 2.6:1
+  stretched; one-axis blocking accused posterised maps of being JPEGs;
+  repetition warned on every correctly tiling texture.
+- shadersight: a uniform-grid integrator read a mirror's albedo as 0.02
+  or 1.19 depending only on resolution; the naive Lambert*(1-F)+GGX
+  coupling measured ITSELF at 1.478x the energy ceiling at grazing.
+- pcbsight: the first "clean" board routed +5V through two pads
+  (flagged at 0.0 mm); diff pairs were reported once per matching
+  suffix rule.
 
-## ShaderSight (shaders as mathematical systems)
+## Still future
 
-Not built. The honest version requires executing shader graphs on a
-deterministic software evaluator (luminance statistics, energy
-conservation of a BRDF, gradient/banding analysis, cost models per
-node). That is a compiler + evaluator project of solidsight's own size.
-A believable first slice: a deterministic BRDF test-harness that
-evaluates material definitions over a hemisphere grid and reports
-energy conservation + reciprocity numerically.
-
-## PCBSight (board design as AI-readable engineering)
-
-Not built. The realistic path is NOT reimplementing a DRC engine:
-KiCad's Python API already exposes nets, courtyards, clearances and DRC
-programmatically. PCBSight should be a thin, solidsight-flavored report
-layer over kicad-cli (exact findings, where + try, deterministic JSON)
-plus the 3D courtyard/enclosure collision check — which solidsight
-already does today when you export the board outline as a ghost part
-(`from_mesh(board.glb)` + `place(ghost=True)` + pair analysis).
-
-## Why this order
-
-Each product is only worth building the way solidsight was built:
-dogfooded blind, every metric pinned by a regression test, every claim
-reproducible from the repo. That is one product at a time.
+- animationsight: glTF animation clips, IK-chain validation, per-frame
+  mesh contact (needs the solidsight kernel).
+- texturesight: per-texel overlap (a real rasterizer), UDIM sets,
+  mipmap-chain audits.
+- shadersight: GLSL/HLSL subset parsing into the graph model,
+  multi-scatter reference curves, anisotropic BRDFs.
+- pcbsight: zones/pours (the big one — nets routed through pours),
+  arcs, courtyard checks against the solidsight enclosure directly.

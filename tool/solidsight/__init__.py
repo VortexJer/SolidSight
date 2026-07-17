@@ -5,7 +5,7 @@ primitives, sketches, booleans, transforms, the parametric parts catalog and
 emit() for registering named parts.
 """
 
-__version__ = "0.6.0"
+__version__ = "0.7.0"
 
 from .errors import (BadArgumentError, EmptyGeometryError, ModelRuntimeError,
                      SceneError, SolidsightError)

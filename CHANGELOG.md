@@ -1,5 +1,64 @@
 # Changelog
 
+## v0.7.0 — 2026-07-17 "the Sight family"
+
+**The four sibling tools** — the solidsight philosophy applied to four
+more domains built for human eyes. Each is its own pip package with its
+own CLI, self-installing Claude Code skill, synthetic known-ground-truth
+examples (defects injected at exact magnitudes; tests assert the right
+answer AND that the clean reference stays clean), and honest scope
+statements. All deterministic.
+
+- **animationsight**: BVH + own FK -> per-joint velocity/accel/jerk,
+  geodesic angular rates, contact events, foot sliding, balance vs
+  support (Dempster segment masses), floor penetration, pops (robust
+  z-score), convention-aware loop seams; evidence frame renders + time
+  tracks; `diff` between takes. Found in itself: the sinusoid walk that
+  never planted a foot; the floor estimate a penetration could hide
+  under.
+- **texturesight**: texel density (area-weighted), UV-Jacobian
+  stretch/flip, islands + seams counted from topology, packing/overlap,
+  tiling judged against the texture's own statistics, normal-map
+  validity + green convention, data-map range/quantisation, codec
+  blocking (both axes). Found in itself: a transposed Jacobian calling
+  conformal UVs 2.6:1 stretched; two more false-positive classes.
+- **shadersight**: energy conservation by multiple importance sampling
+  swept over view angles, Helmholtz reciprocity, positivity, the known
+  single-scatter loss labelled as such; node-graph cycles/dead
+  nodes/dangling refs/ALU cost over live nodes. Found in itself: the
+  uniform-grid integrator that read a mirror as 0.02 or 1.19; the naive
+  diffuse coupling measuring ITSELF at 1.478x the ceiling (now
+  Ashikhmin-Shirley coupled).
+- **pcbsight**: .kicad_pcb reader (footprint rotation composed), net
+  connectivity by union-find over touching copper, exact clearances
+  with coordinates, IPC-2221 current at the narrowest track, diff-pair
+  skew/width, IPC-2141 microstrip estimate; board render with findings
+  circled. Found in itself: the "clean" board routed through two pads;
+  pairs double-reported per suffix rule.
+
+**solidsight core**
+- Images as input: `image_outline()` (marching-squares trace + RDP,
+  holes preserved, real size required), `image_heightfield()`
+  (lithophanes/terrain), `build --ref photo.png` -> reference-vs-render
+  comparison sheet. Example 08. Renderer fix found by it: sliver
+  triangles from complex booleans faked crease/silhouette edges
+  (phantom stripes) — edges are now gated on triangle soundness.
+- 12 deep domain playbooks (`skill/domains/`) replace the 44-line
+  domains table: real numbers (insert holes, centre distances, NACA,
+  stair rules, ring sizes, 16 CFR 1501, triangle budgets), build
+  orders, failure modes, per-domain definitions of done. Loaded one at
+  a time. Installer wipes stale subdirs; drift guard covers them.
+- `joint(..., name=)`: real robotics names in URDF/SDF and
+  `motion --joint`; duplicates rejected.
+- `_say()` flushes: `watch`/`view` logs no longer sit empty in the
+  redirected-output case agents actually use.
+- BOM rows are name + size + catalog provenance instead of a 300-char
+  construction tree (tree kept in JSON as `desc`).
+
+17 new regression tests in the core (70 total); 91 across the family
+(161 in the repo). CI runs all five packages on 3 OS x py3.10/13.
+
+
 ## v0.6.0 — 2026-07-16 "the platform release"
 
 **Live development**

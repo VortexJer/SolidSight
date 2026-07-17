@@ -6,6 +6,16 @@
 deterministic geometry, multi-angle PNG renders, and a machine-readable
 validation report out.
 
+solidsight is also the head of the ***Sight family*** — the same
+philosophy (the agent is blind; give it exact numbers, with renders only
+as evidence) applied to four more domains that were built for human
+eyes: [animationsight](animationsight/) (motion clips),
+[texturesight](texturesight/) (UVs and texture maps),
+[shadersight](shadersight/) (materials and node graphs) and
+[pcbsight](pcbsight/) (board layouts). Each is its own pip package in
+this repo, with its own self-installing Claude Code skill and
+known-ground-truth examples. See [docs/roadmap-sights.md](docs/roadmap-sights.md).
+
 An LLM writing CAD code is blind: it can reason about geometry but cannot see
 what it made. Human CAD tools assume eyes on a screen and a hand on a mouse.
 solidsight closes the loop the way an agent needs it closed — every build
@@ -167,6 +177,16 @@ deterministic and headless:
 - `--free` (default) — visual/artistic exploration: same metrics reported,
   nothing enforced.
 
+## Images as input
+
+The agent has eyes; the kernel does not. `image_outline()` traces the
+dark shapes of a photo or drawing into an exact sketch (holes preserved,
+real size declared by the agent — pixels carry no millimetres), and
+`image_heightfield()` turns brightness into a watertight relief solid
+(lithophanes, terrain). Building with `--ref photo.png` adds a
+reference-vs-render comparison sheet to every build, so the loop closes
+against the source image. Example: [`08-from-image`](skill/examples/08-from-image).
+
 ## The Claude Code skill
 
 [`skill/SKILL.md`](skill/SKILL.md) teaches an agent the full workflow — bill
@@ -174,6 +194,15 @@ of parts before code, catalog before derivation, build-and-look after every
 change, exact queries when eyes are not enough, the assembly
 collision/clearance loop, detail mode for faithful technical models, and a
 definition-of-done checklist.
+
+Beneath it, [`skill/domains/`](skill/domains) carries **12 deep domain
+playbooks** — enclosures, mechanisms, product design, furniture,
+architecture, vehicles, organic, terrain, jewelry/miniatures, game-ready
+assets, toys, scientific — each with the numbers a domain expert would
+assume (heat-set insert holes, gear centre distances, NACA profiles,
+stair rules, ring sizes, the small-parts choking cylinder, triangle
+budgets), the build order, the failure modes, and its own definition of
+done. The agent loads exactly the one that matches the request.
 
 **It installs itself.** The skill ships inside the pip package: the first
 `solidsight` command on a machine with Claude Code drops it into
@@ -212,6 +241,7 @@ metric. Each real bug is pinned by a regression test in `tool/tests/`
 | [`05-assembly`](skill/examples/05-assembly) | multi-part assembly; intentional collision caught with exact bbox/volume, then fixed with measured clearances |
 | [`06-hidden-cavity`](skill/examples/06-hidden-cavity) | a sealed cavity invisible in renders, caught by the report and provable via `query ray`/`voxels` |
 | [`07-engine-block`](skill/examples/07-engine-block) | **detail mode**: a faithful inline-4 block (bores, liner steps, head-bolt matrix, water jacket, cam tunnel, oil galleries, pan rail, gussets, filter pad, inclined mounts) built region-by-region from a feature specification |
+| [`08-from-image`](skill/examples/08-from-image) | **from an image**: a user's emblem traced with `image_outline` and engraved, built with the `--ref` comparison sheet |
 
 ## Stack and why
 
@@ -231,9 +261,15 @@ hits the sweet spot: robust, light, deterministic.
 ## Repository layout
 
 ```
-tool/     the engine + CLI (pip package "solidsight")
-skill/    SKILL.md + references/ + examples/ (models, reports, renders)
-README.md LICENSE
+tool/            the engine + CLI (pip package "solidsight")
+skill/           SKILL.md + references/ + domains/ + examples/
+benchmarks/      graded commissions with machine-checkable expectations
+animationsight/  motion clips as measurement   (pip package, own skill)
+texturesight/    UVs + texture maps            (pip package, own skill)
+shadersight/     materials + node graphs       (pip package, own skill)
+pcbsight/        board layouts                 (pip package, own skill)
+docs/            comparison study, plugins, the *Sight roadmap
+README.md LICENSE CHANGELOG.md CONTRIBUTING.md
 ```
 
 ## Design principles
