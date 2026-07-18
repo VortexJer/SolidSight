@@ -108,6 +108,33 @@ ones nobody can see without measuring:
 | [material set](shadersight/examples/04-materials) (shadersight) | 8/8 conserve — the one FAIL was the tool's own estimator noise | tool fixed + graph 436 → 204 ALU/px |
 | [rover board](pcbsight/examples/02-rover) (pcbsight) | 12 open nets, 26 clearance faults | routed: **OK — 0 findings** |
 
+**Left: blind. Right: through the loop.** Same commission, same author
+competence — the only variable is being able to measure.
+
+<p align="center">
+  <img src="animationsight/examples/03-parkour/audit_blind/playback.gif" width="49%">
+  <img src="animationsight/examples/03-parkour/audit_after/playback.gif" width="49%">
+</p>
+<p align="center"><em>the parkour vault — blind: floaty strides (0.47–0.67x g), toe skate, airborne root gliding on rails · after: every flight at 1 g, feet planted, <b>0 findings</b></em></p>
+
+<p align="center">
+  <img src="texturesight/examples/03-crate-hero/audit_blind/uv_layout.png" width="49%">
+  <img src="texturesight/examples/03-crate-hero/audit_after/uv_layout.png" width="49%">
+</p>
+<p align="center"><em>the hero crate's UVs — blind: 148 flipped faces (red), 7.35:1 stretch, 336 stacked islands · after: same geometry and maps, mapper rewritten — 0 flips, welded shells, 92% packing</em></p>
+
+<p align="center">
+  <img src="shadersight/examples/04-materials/audit/gold/albedo_curve.png" width="49%">
+  <img src="shadersight/examples/04-materials/after/gold/albedo_curve.png" width="49%">
+</p>
+<p align="center"><em>gold vs the 1.0 energy ceiling — the study's twist: the blind side was right, and the FAIL was the tool's own estimator noise (1.004 at fast quality). The fix went into the tool: over-limit views re-measure at 16x samples before condemning.</em></p>
+
+<p align="center">
+  <img src="pcbsight/examples/02-rover/out_blind/board.png" width="49%">
+  <img src="pcbsight/examples/02-rover/out_clean/board.png" width="49%">
+</p>
+<p align="center"><em>the rover board — blind: 12 open nets, 26 clearance faults circled in red · after: routed, <b>0 findings</b></em></p>
+
 Each README credits what the blind side got right, ties every fix to a
 measured finding, and lists the bugs the studies forced back into the
 tools themselves.

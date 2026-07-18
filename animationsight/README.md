@@ -109,8 +109,19 @@ clip's structure is genuinely good and its physics is genuinely wrong:
 strides at 0.47–0.67x g, a 10.95 mm toe skate, outbound steps whose
 root glides airborne. The after clip audits **`OK`, zero findings** —
 and auditing the pair forced three fixes into the tool itself
-(`root-on-rails`, height-only airborne detection, `diff --kind`). The
-GIFs and arc sheets are in the example's README.
+(`root-on-rails`, height-only airborne detection, `diff --kind`).
+
+<p align="center">
+  <img src="examples/03-parkour/audit_blind/playback.gif" width="49%">
+  <img src="examples/03-parkour/audit_after/playback.gif" width="49%">
+</p>
+<p align="center"><em>left: the blind clip — the run looks plausible until you notice nothing ever commits to the ground · right: the after clip — same choreography, physics that measures clean</em></p>
+
+<p align="center">
+  <img src="examples/03-parkour/audit_blind/flight_1_arc.png" width="49%">
+  <img src="examples/03-parkour/audit_after/flight_1_arc.png" width="49%">
+</p>
+<p align="center"><em>the vault flight's arc sheet — blind: the measured COM arc (red) floats above the 1 g reference (green) · after: 1.029x g, the arcs coincide</em></p>
 
 ## Three bugs this found in itself
 

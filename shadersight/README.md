@@ -113,7 +113,15 @@ samples before any material is condemned, with the tolerance
 calibrated against an exact-limit metal. The graph side: verified
 sound (22/22 reachable, acyclic), then baked from 436 to **204
 ALU/pixel** by turning the procedural flake chain into one texture
-fetch. Full numbers in the example's README.
+fetch.
+
+<p align="center">
+  <img src="examples/04-materials/audit/gold/albedo_curve.png" width="49%">
+  <img src="examples/04-materials/after/gold/albedo_curve.png" width="49%">
+</p>
+<p align="center"><em>gold's directional albedo vs the 1.0 ceiling — left: the fast-quality audit reads 1.004 and condemns a physically exact material · right: re-measured at 16x samples, it passes. The defect was in the tool, and the study is what found it.</em></p>
+
+Full numbers in the example's README.
 
 ## Proof it works
 

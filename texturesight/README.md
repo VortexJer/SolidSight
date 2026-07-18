@@ -132,8 +132,21 @@ bugs: **148 flipped faces (FAIL), 7.35:1 stretch, 54x texel density
 spread**. The after build imports the blind generator, rewrites only
 the mapper, and lands at 0 flips, 1.005 p95 anisotropy, 3.35x spread —
 with the two remaining warnings explained as intent (trim-sheet
-overlap, downres'd hidden faces). Full numbers and layouts in the
-example's README.
+overlap, downres'd hidden faces).
+
+<p align="center">
+  <img src="examples/03-crate-hero/audit_blind/uv_layout.png" width="49%">
+  <img src="examples/03-crate-hero/audit_after/uv_layout.png" width="49%">
+</p>
+<p align="center"><em>left: the blind unwrap — 148 flipped faces in red, islands stacked 336 deep · right: the rewritten mapper — 0 flips, welded shells, 92% packing</em></p>
+
+<p align="center">
+  <img src="examples/03-crate-hero/audit_blind/uv_density.png" width="49%">
+  <img src="examples/03-crate-hero/audit_after/uv_density.png" width="49%">
+</p>
+<p align="center"><em>texel density painted per face — blind: a 54x spread between the best- and worst-fed faces · after: 3.35x, with the hidden faces' downres declared as intent</em></p>
+
+Full numbers in the example's README.
 
 ## Reading the results honestly
 
