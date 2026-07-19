@@ -123,7 +123,11 @@ The rules:
   bill of parts with a per-region **Feature Specification**, build and
   verify region by region. If the user gives no further specifications,
   research the object on the web yourself first and tag every spec line
-  `[researched]`, `[standard]` or `[assumed]`.
+  `[researched]`, `[standard]`, `[photo]` or `[assumed]`. For styled
+  objects like a specific car, written specs barely exist — **fetch
+  photos from several angles and work from them** (the from-image.md
+  workflow with `--ref`, scale anchored on wheelbase/overall length);
+  same fallback for any part whose drawing you cannot find.
 - Detail lives in features (holes, bosses, flanges, tunnels, pockets):
   `parts.hole` (counterbore/countersink/chamfer/drill-point), `.aim()`
   for drilling into any face, `parts.bolt_circle`, patterns.

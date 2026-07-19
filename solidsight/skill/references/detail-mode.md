@@ -41,13 +41,29 @@ you found:
 2. Extract: overall dimensions, every functional feature a domain expert
    would name, counts and patterns (how many head bolts? what fastener
    sizes?), standard values (ISO/DIN/JIS parts, typical wall thicknesses).
-3. Tag every line of the Feature Specification with its provenance:
-   `[researched]`, `[standard]` (known norm), or `[assumed]`. Never present
-   an assumption as research.
-4. Tell the user in one line what you researched and what you assumed, and
+3. **When written specs barely exist — fetch PHOTOS.** For styled
+   objects (a specific car, bodywork, consumer products, furniture)
+   the drawings are proprietary and searching longer will not produce
+   them: the visual record IS the spec. Find 3-6 photos from distinct
+   angles (side/front/rear/3-quarter; press kits, brochures, Wikipedia
+   are good sources), download them (`curl -o ref_side.jpg <url>`),
+   LOOK at each one, then switch to the `from-image.md` workflow:
+   anchor scale on the few numbers that ARE published (wheelbase,
+   overall length/width/height), derive proportions and features from
+   the photos, and build with `--ref ref_side.jpg` so every rebuild
+   writes the reference-vs-render sheet and you compare against the
+   real thing, not your memory of it. The same fallback applies to a
+   mechanical part when no drawing or dimension sheet turns up: photos
+   of the real part (teardowns, listings, catalog pages) beat
+   guessing.
+4. Tag every line of the Feature Specification with its provenance:
+   `[researched]`, `[standard]` (known norm), `[photo]` (derived from a
+   fetched photo), or `[assumed]`. Never present an assumption as
+   research.
+5. Tell the user in one line what you researched and what you assumed, and
    ask ONLY if a truly blocking unknown remains (e.g. which specific engine
    family). Otherwise proceed.
-5. No web access available? Proceed from domain knowledge, mark everything
+6. No web access available? Proceed from domain knowledge, mark everything
    `[assumed]`, and say so explicitly.
 
 ## The method: Feature Specification before code
