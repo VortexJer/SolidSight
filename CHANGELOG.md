@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-07-19 — texturesight 0.4.0: two renders that explain UVs to anyone
+
+A UV layout is unreadable to anyone who has never unwrapped a mesh
+(user feedback: "no entiendo qué son esos cuadrados"). Every mesh
+inspect now also writes, via a new deterministic z-buffer rasterizer:
+
+- **correspondence.png** — the 3D mesh with each island tinted its own
+  colour, beside the UV square in the SAME colours: the flat shapes ARE
+  the 3D faces peeled onto the texture.
+- **checker_preview.png** — the mesh (front AND back view; one
+  viewpoint hides half the surface) wearing a checker sampled through
+  its own UVs, an asymmetric L mark in every cell: a MIRRORED L =
+  flipped face, squashed cells = stretch, cell size = texel density.
+
+All example outputs regenerated; 35 tests (3 new: existence,
+byte-determinism, and that the checker actually reacts to defects).
+
 ## 2026-07-19 — the parkour blind baseline, regenerated with proven provenance
 
 The animationsight hero study's blind side was challenged: could its

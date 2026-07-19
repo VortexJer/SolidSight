@@ -180,7 +180,10 @@ def _inspect(args) -> int:
         _say(f"  render: {out}/{r}")
     if rep["files"]["renders"]:
         _say("  NEXT: LOOK at uv_layout.png (red = flipped, orange = "
-             "stretched) and uv_density.png, then read report.json.")
+             "stretched) and uv_density.png, then read report.json. "
+             "New to UVs? correspondence.png shows which flat shape is "
+             "which 3D piece; checker_preview.png makes the defects "
+             "visible on the model itself.")
     return 2 if rep["status"] == "failed" else 0
 
 

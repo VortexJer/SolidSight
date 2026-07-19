@@ -335,3 +335,40 @@ def test_cli_names_the_sparsest_island(tmp_path):
         capture_output=True, text=True)
     assert r.returncode == 0, r.stdout + r.stderr
     assert "islands: #4 is the sparsest" in r.stdout
+
+
+def test_correspondence_and_checker_renders_exist(tmp_path):
+    """The two 'explain it to a human' renders ship with every mesh
+    inspect: 3D<->UV correspondence and the checker preview."""
+    from texturesight.report import inspect
+    rep = inspect(EX / "cube_clean.obj", [], tmp_path / "o")
+    assert "correspondence.png" in rep["files"]["renders"]
+    assert "checker_preview.png" in rep["files"]["renders"]
+    assert (tmp_path / "o" / "correspondence.png").exists()
+    assert (tmp_path / "o" / "checker_preview.png").exists()
+
+
+def test_new_renders_are_deterministic(tmp_path):
+    from texturesight.report import inspect
+    inspect(EX / "cube_clean.obj", [], tmp_path / "a")
+    inspect(EX / "cube_clean.obj", [], tmp_path / "b")
+    for name in ("correspondence.png", "checker_preview.png"):
+        assert (tmp_path / "a" / name).read_bytes() == \
+               (tmp_path / "b" / name).read_bytes()
+
+
+def test_checker_preview_reacts_to_uv_defects(tmp_path):
+    """The checker is sampled THROUGH the UVs, so a broken unwrap must
+    change its pixels — a human-eye render that hides the defects it
+    exists to show would be worse than no render."""
+    from texturesight.report import inspect
+    from PIL import Image
+    inspect(EX / "cube_clean.obj", [], tmp_path / "a")
+    inspect(EX / "cube_broken.obj", [], tmp_path / "b")
+    ia = np.asarray(Image.open(tmp_path / "a" / "checker_preview.png"),
+                    dtype=int)
+    ib = np.asarray(Image.open(tmp_path / "b" / "checker_preview.png"),
+                    dtype=int)
+    assert ia.shape == ib.shape
+    frac = (np.abs(ia - ib).max(axis=2) > 8).mean()
+    assert frac > 0.005, f"checker barely changed ({frac:.4%})"

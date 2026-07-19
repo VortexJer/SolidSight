@@ -35,13 +35,33 @@
       "message": "the UV layout uses 45% of the square",
       "where": "6 island(s)",
       "try": "tighter packing = more texels per asset at the same memory; below ~50% you are paying for empty pixels"
+    },
+    {
+      "id": "normal-not-unit-length",
+      "level": "fail",
+      "message": "normal_bad.png: 88.2% of texels are not unit-length vectors (mean 1.1612)",
+      "try": "the map was resized or compressed as if it were a picture; re-bake or re-export it, and never store normals in sRGB"
+    },
+    {
+      "id": "map-quantised",
+      "level": "warn",
+      "message": "rough_banded.png has only 4 distinct levels: it was quantised somewhere",
+      "try": "re-export from the source; banding in a data map becomes visible steps in the shading"
+    },
+    {
+      "id": "tiling-seam",
+      "level": "warn",
+      "message": "tile_seam.png does not tile (horizontal, vertical): the wrap jump is 34.74x the texture's own neighbouring-pixel difference",
+      "try": "offset the image by half and heal the cross, or ignore this if it was never meant to tile"
     }
   ],
   "files": {
     "report": "report.json",
     "renders": [
       "uv_layout.png",
-      "uv_density.png"
+      "uv_density.png",
+      "correspondence.png",
+      "checker_preview.png"
     ]
   },
   "uv": {
@@ -254,5 +274,244 @@
       }
     ]
   },
-  "textures": []
+  "textures": [
+    {
+      "basics": {
+        "name": "normal_bad.png",
+        "size_px": [
+          256,
+          256
+        ],
+        "channels": 3,
+        "power_of_two": true,
+        "square": true,
+        "megapixels": 0.066
+      },
+      "kind": "normal",
+      "kind_source": "filename",
+      "tiling": {
+        "horizontal": {
+          "edge_diff": 0.0,
+          "interior_median_diff": 0.00113,
+          "ratio": 0.0,
+          "tiles": true
+        },
+        "vertical": {
+          "edge_diff": 0.0,
+          "interior_median_diff": 0.00113,
+          "ratio": 0.0,
+          "tiles": true
+        },
+        "tiles": true,
+        "note": "the wrap difference is compared against the texture's OWN median neighbouring-pixel difference: noisy images are allowed a big edge jump, smooth ones are not"
+      },
+      "repetition": {
+        "peak_correlation": 0.824,
+        "peak_offset_px": [
+          -13,
+          -5
+        ],
+        "periodic": true,
+        "analysis_size": [
+          256,
+          256
+        ],
+        "note": "off-centre autocorrelation peak; >0.5 means a clearly repeating pattern at that offset. Expected in a deliberate pattern, a defect in a 'random' material"
+      },
+      "compression": {
+        "block_8": {
+          "x_edge_gradient": 0.00172,
+          "x_interior_gradient": 0.00151,
+          "x_ratio": 1.14,
+          "y_edge_gradient": 0.00172,
+          "y_interior_gradient": 0.00151,
+          "y_ratio": 1.14,
+          "ratio": 1.14,
+          "blocking": false
+        },
+        "block_4": {
+          "x_edge_gradient": 0.00146,
+          "x_interior_gradient": 0.00156,
+          "x_ratio": 0.936,
+          "y_edge_gradient": 0.00146,
+          "y_interior_gradient": 0.00156,
+          "y_ratio": 0.936,
+          "ratio": 0.936,
+          "blocking": false
+        },
+        "note": "gradient energy on block boundaries vs between them, measured on BOTH axes: a codec's grid is square, so blocking is only flagged when x and y both exceed 1.25x with a visible (>1/255) edge step"
+      },
+      "normal_map": {
+        "unit_length": {
+          "mean": 1.1612,
+          "min": 0.7262,
+          "max": 1.3744,
+          "off_spec_fraction": 0.8823,
+          "ok": false
+        },
+        "z_channel": {
+          "mean": 0.9233,
+          "negative_fraction": 0.0,
+          "ok": true
+        },
+        "green_convention": {
+          "gradient_correlation": 4.8e-05,
+          "likely": "OpenGL (+Y up)",
+          "note": "a guess from the map's own statistics, not a fact in the file: no format records the convention. Confirm against what the engine expects"
+        },
+        "flat_fraction": 0.0004
+      }
+    },
+    {
+      "basics": {
+        "name": "rough_banded.png",
+        "size_px": [
+          256,
+          256
+        ],
+        "channels": 1,
+        "power_of_two": true,
+        "square": true,
+        "megapixels": 0.066
+      },
+      "kind": "roughness",
+      "kind_source": "filename",
+      "tiling": {
+        "horizontal": {
+          "edge_diff": 0.0,
+          "interior_median_diff": 0.0026,
+          "ratio": 0.0,
+          "tiles": true
+        },
+        "vertical": {
+          "edge_diff": 0.0,
+          "interior_median_diff": 0.0,
+          "ratio": 0.0,
+          "tiles": true
+        },
+        "tiles": true,
+        "note": "the wrap difference is compared against the texture's OWN median neighbouring-pixel difference: noisy images are allowed a big edge jump, smooth ones are not"
+      },
+      "repetition": {
+        "peak_correlation": 1.0,
+        "peak_offset_px": [
+          -64,
+          -128
+        ],
+        "periodic": true,
+        "analysis_size": [
+          256,
+          256
+        ],
+        "note": "off-centre autocorrelation peak; >0.5 means a clearly repeating pattern at that offset. Expected in a deliberate pattern, a defect in a 'random' material"
+      },
+      "compression": {
+        "block_8": {
+          "x_edge_gradient": 0.00607,
+          "x_interior_gradient": 0.00454,
+          "x_ratio": 1.338,
+          "y_edge_gradient": 0.0021,
+          "y_interior_gradient": 0.00239,
+          "y_ratio": 0.881,
+          "ratio": 0.881,
+          "blocking": false
+        },
+        "block_4": {
+          "x_edge_gradient": 0.0044,
+          "x_interior_gradient": 0.00483,
+          "x_ratio": 0.911,
+          "y_edge_gradient": 0.00268,
+          "y_interior_gradient": 0.00224,
+          "y_ratio": 1.196,
+          "ratio": 0.911,
+          "blocking": false
+        },
+        "note": "gradient energy on block boundaries vs between them, measured on BOTH axes: a codec's grid is square, so blocking is only flagged when x and y both exceed 1.25x with a visible (>1/255) edge step"
+      },
+      "channel": {
+        "kind": "roughness",
+        "mean": 0.3473,
+        "std": 0.1277,
+        "min": 0.1647,
+        "max": 0.6667,
+        "percentiles": {
+          "p1": 0.1647,
+          "p25": 0.3333,
+          "p50": 0.3333,
+          "p75": 0.498,
+          "p99": 0.6667
+        },
+        "distinct_levels_of_256": 4,
+        "range_used": 0.502,
+        "is_constant": false
+      }
+    },
+    {
+      "basics": {
+        "name": "tile_seam.png",
+        "size_px": [
+          256,
+          256
+        ],
+        "channels": 3,
+        "power_of_two": true,
+        "square": true,
+        "megapixels": 0.066
+      },
+      "kind": "albedo",
+      "kind_source": "filename",
+      "tiling": {
+        "horizontal": {
+          "edge_diff": 0.20657,
+          "interior_median_diff": 0.00977,
+          "ratio": 21.14,
+          "tiles": false
+        },
+        "vertical": {
+          "edge_diff": 0.27302,
+          "interior_median_diff": 0.00786,
+          "ratio": 34.74,
+          "tiles": false
+        },
+        "tiles": false,
+        "note": "the wrap difference is compared against the texture's OWN median neighbouring-pixel difference: noisy images are allowed a big edge jump, smooth ones are not"
+      },
+      "repetition": {
+        "peak_correlation": 0.8568,
+        "peak_offset_px": [
+          -84,
+          -123
+        ],
+        "periodic": true,
+        "analysis_size": [
+          256,
+          256
+        ],
+        "note": "off-centre autocorrelation peak; >0.5 means a clearly repeating pattern at that offset. Expected in a deliberate pattern, a defect in a 'random' material"
+      },
+      "compression": {
+        "block_8": {
+          "x_edge_gradient": 0.01023,
+          "x_interior_gradient": 0.01077,
+          "x_ratio": 0.95,
+          "y_edge_gradient": 0.00778,
+          "y_interior_gradient": 0.00883,
+          "y_ratio": 0.882,
+          "ratio": 0.882,
+          "blocking": false
+        },
+        "block_4": {
+          "x_edge_gradient": 0.01206,
+          "x_interior_gradient": 0.01026,
+          "x_ratio": 1.176,
+          "y_edge_gradient": 0.01172,
+          "y_interior_gradient": 0.00771,
+          "y_ratio": 1.52,
+          "ratio": 1.176,
+          "blocking": false
+        },
+        "note": "gradient energy on block boundaries vs between them, measured on BOTH axes: a codec's grid is square, so blocking is only flagged when x and y both exceed 1.25x with a visible (>1/255) edge step"
+      }
+    }
+  ]
 }

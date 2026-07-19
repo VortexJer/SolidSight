@@ -118,6 +118,11 @@ competence — the only variable is being able to measure.
 <p align="center"><em>the parkour vault — blind: a 0.47x g stride, a turn step on invisible rails, a knee pop at the landing · after: every flight at 1 g, <b>0 findings</b></em></p>
 
 <p align="center">
+  <img src="texturesight/examples/03-crate-hero/audit_after/correspondence.png" width="80%">
+</p>
+<p align="center"><em>how to read a UV picture: the flat shapes ARE the crate's surface peeled onto the texture (same colour = same piece — a box unfolded into its cardboard template)</em></p>
+
+<p align="center">
   <img src="texturesight/examples/03-crate-hero/audit_blind/uv_layout.png" width="49%">
   <img src="texturesight/examples/03-crate-hero/audit_after/uv_layout.png" width="49%">
 </p>

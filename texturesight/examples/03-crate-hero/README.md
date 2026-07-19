@@ -25,6 +25,17 @@ no DCC tools.
 |---|---|
 | ![blind](audit_blind/uv_layout.png) | ![after](audit_after/uv_layout.png) |
 
+New to UVs? `correspondence.png` shows which flat shape is which 3D
+piece (same colour on both sides), and `checker_preview.png` puts the
+defects on the model where any eye can see them:
+
+<p align="center">
+  <img src="audit_after/correspondence.png" width="80%">
+</p>
+<p align="center">
+  <img src="audit_after/checker_preview.png" width="90%">
+</p>
+
 ## What the blind agent got right
 
 A lot. The geometry ran clean first try: winding enforced by Newell

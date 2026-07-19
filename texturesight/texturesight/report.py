@@ -343,7 +343,8 @@ def diff_reports(a: dict, b: dict) -> list[str]:
 def inspect(mesh_path: str | Path | None, texture_paths: list[str],
             out_dir: Path, texture_px: int = 1024,
             kind: str = "auto") -> dict:
-    from .render import render_uv_layout, render_density_map
+    from .render import (render_uv_layout, render_density_map,
+                         render_correspondence, render_checker_preview)
 
     rep: dict = {"status": "ok", "checks": [], "files": {}}
     out = Path(out_dir)
@@ -362,6 +363,11 @@ def inspect(mesh_path: str | Path | None, texture_paths: list[str],
         files.append("uv_layout.png")
         render_density_map(mesh, arrays["density"], out / "uv_density.png")
         files.append("uv_density.png")
+        render_correspondence(mesh, arrays["uv_root"],
+                              out / "correspondence.png")
+        files.append("correspondence.png")
+        render_checker_preview(mesh, out / "checker_preview.png")
+        files.append("checker_preview.png")
 
     rep["textures"] = []
     for t in texture_paths:

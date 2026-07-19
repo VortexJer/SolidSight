@@ -88,6 +88,16 @@ Quote it whenever you quote a density: "327 px/unit at 1024" is a fact;
 - `uv_density.png` — texel density painted per face: dark = starved,
   light = oversampled. Uneven density is invisible on a model and
   obvious here.
+- `correspondence.png` — the 3D mesh with each island tinted its own
+  colour next to the UV square in the SAME colours. Use it to explain
+  a finding to someone who has never unwrapped a mesh: same colour =
+  same piece of surface, the flat shapes ARE the 3D faces peeled onto
+  the texture.
+- `checker_preview.png` — the mesh (front and back view) with a
+  checker applied through its UVs; every cell holds an L mark. A
+  MIRRORED L (rotation is fine) = flipped face, squashed cells =
+  stretch, cell size = texel density. This is the human-eye version of
+  the distortion numbers.
 
 ### Step 5 - Interpret honestly
 

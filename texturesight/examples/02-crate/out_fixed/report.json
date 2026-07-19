@@ -5,7 +5,9 @@
     "report": "report.json",
     "renders": [
       "uv_layout.png",
-      "uv_density.png"
+      "uv_density.png",
+      "correspondence.png",
+      "checker_preview.png"
     ]
   },
   "uv": {

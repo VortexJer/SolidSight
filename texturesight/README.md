@@ -47,6 +47,21 @@ texturesight inspect --texture rough.png --kind roughness
 
 Exit codes: 0 ok, 1 bad input, 2 a FAIL-level finding.
 
+## Never unwrapped a mesh? Two renders explain the whole domain
+
+A UV layout is unreadable if you have never made one, so every mesh
+inspect also writes the two pictures that explain it without words:
+
+<p align="center">
+  <img src="examples/01-cube/out_clean/correspondence.png" width="80%">
+</p>
+<p align="center"><em><code>correspondence.png</code> — same colour = same piece of surface. The flat shapes on the right ARE the 3D faces on the left, peeled onto the texture like a cardboard box unfolded into its die-cut template. Where a piece lands decides which pixels paint it.</em></p>
+
+<p align="center">
+  <img src="examples/01-cube/out_broken/checker_preview.png" width="90%">
+</p>
+<p align="center"><em><code>checker_preview.png</code> — the broken cube wearing a checker through its own UVs, front and back. Every defect the report measures is now visible to any eye: the giant L = the density-starved island (its cells are 3x the size), the squashed cells = the 4:1 stretch, and the <b>mirrored</b> L marks on the back = the flipped faces.</em></p>
+
 ## Proof it works: known ground truth
 
 `examples/01-cube` is synthetic on purpose — every defect is injected by
