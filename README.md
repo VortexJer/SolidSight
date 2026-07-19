@@ -129,10 +129,10 @@ competence — the only variable is being able to measure.
 <p align="center"><em>the hero crate's UVs — blind: 148 flipped faces (red), 7.35:1 stretch, 336 stacked islands · after: same geometry and maps, mapper rewritten — 0 flips, welded shells, 92% packing</em></p>
 
 <p align="center">
-  <img src="shadersight/examples/04-materials/audit/gold/albedo_curve.png" width="49%">
-  <img src="shadersight/examples/04-materials/after/gold/albedo_curve.png" width="49%">
+  <img src="shadersight/examples/03-boosted/out_boosted/albedo_curve.png" width="49%">
+  <img src="shadersight/examples/03-boosted/out_physical/albedo_curve.png" width="49%">
 </p>
-<p align="center"><em>gold vs the 1.0 energy ceiling — the study's twist: the blind side was right, and the FAIL was the tool's own estimator noise (1.004 at fast quality). The fix went into the tool: over-limit views re-measure at 16x samples before condemning.</em></p>
+<p align="center"><em>what shadersight is for: the "boosted highlights" copper emits <b>1.7x the light it receives</b> (curve far above the red ceiling) yet its preview sphere looks almost identical to the physical one — the eye can't audit energy. The blind-vs-measured study's twist: the blind author knew its F0s and <b>refused the boost bait</b>; the one FAIL was the tool's own estimator noise on an exact-F0 gold, fixed at 16x sampling.</em></p>
 
 <p align="center">
   <img src="pcbsight/examples/02-rover/out_blind/board.png" width="49%">

@@ -161,6 +161,21 @@ overlap, downres'd hidden faces).
 </p>
 <p align="center"><em>texel density painted per face — blind: a 54x spread between the best- and worst-fed faces · after: 3.35x, with the hidden faces' downres declared as intent</em></p>
 
+And the same pair through the human-eye renders — read them knowing
+what they CAN'T show:
+
+<p align="center">
+  <img src="examples/03-crate-hero/audit_blind/correspondence.png" width="49%">
+  <img src="examples/03-crate-hero/audit_after/correspondence.png" width="49%">
+</p>
+<p align="center"><em>the crate and its unfolded template, blind vs after — in the blind one the island labels pile into smudges: 336 pieces stacked on the same texels. Same box outside; the template underneath is a heap vs a layout.</em></p>
+
+<p align="center">
+  <img src="examples/03-crate-hero/audit_blind/checker_preview.png" width="49%">
+  <img src="examples/03-crate-hero/audit_after/checker_preview.png" width="49%">
+</p>
+<p align="center"><em>the checker test is the honest one: blind and after look <b>almost the same</b> (the flips live on the trims — 9.9% of the surface — and the stacking shares texels invisibly). A checker catches what it can see; the 148 flips, 54x spread and 336-deep stacking were measured, not spotted. That is the whole point of this tool.</em></p>
+
 Full numbers in the example's README.
 
 ## Reading the results honestly
