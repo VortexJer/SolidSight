@@ -95,14 +95,15 @@ Full narrative and the defect scoreboard: [showcase/README.md](showcase/README.m
 
 ## Blind vs measured: the controlled studies
 
-Four hero examples run the same experiment: a cold-context agent with
-**no tools at all** (numpy/PIL, no viewer, one shot) attempts a hard
-commission; the same commission then goes through the tool's loop. The
-blind sides are genuinely competent — the defects they ship are the
+Five hero examples run the same experiment: a cold-context agent with
+**no tools at all** (numpy/PIL/trimesh, no viewer, one shot) attempts a
+hard commission; the same commission then goes through the tool's loop.
+The blind sides are genuinely competent — the defects they ship are the
 ones nobody can see without measuring:
 
 | study | blind | after |
 |---|---|---|
+| [engine block](docs/comparison) (solidsight) | a 0.45 mm skin over the pressurized oil gallery, drain-backs that dead-end in solid wall, crankcase open to the outside | the loop caught the author's own 4 equivalent mistakes, each fixed to a measured wall |
 | [parkour vault](animationsight/examples/03-parkour) (animationsight) | a 0.47x g stride, root on rails in the turn, a knee pop at landing | **OK — 0 findings**, every flight at 1 g |
 | [hero crate](texturesight/examples/03-crate-hero) (texturesight) | 148 flipped UVs (FAIL), 7.35:1 stretch, 54x density spread | 0 flips, 1.005 anisotropy, 3.35x |
 | [material set](shadersight/examples/04-materials) (shadersight) | 8/8 conserve — the one FAIL was the tool's own estimator noise | tool fixed + graph 436 → 204 ALU/px |
@@ -110,6 +111,12 @@ ones nobody can see without measuring:
 
 **Left: blind. Right: through the loop.** Same commission, same author
 competence — the only variable is being able to measure.
+
+<p align="center">
+  <img src="docs/comparison/blind/out/renders/02_iso_back.png" width="49%">
+  <img src="solidsight/skill/examples/07-engine-block/out/renders/02_iso_back.png" width="49%">
+</p>
+<p align="center"><em>the inline-4 engine — blind: watertight, single shell, shipped convinced of success; the audit then found a <b>0.45 mm wall over the pressurized oil gallery</b>, oil drains that never reach the crankcase, and a ray that crosses the whole engine touching nothing · through the loop: the author made the same kinds of mistakes — the loop caught all four</em></p>
 
 <p align="center">
   <img src="animationsight/examples/03-parkour/audit_blind/playback.gif" width="49%">
