@@ -107,7 +107,17 @@
   <div class="sec"><div class="cap">Findings — click to fly</div>
     <div id="checks"></div></div>
 </div>
-<div id="stage"><div id="hud"></div><div id="status">static</div></div>
+<div id="stage"><div id="hud"></div><div id="status">static</div>
+<div id="waiting" style="display:none;position:absolute;inset:0;
+background:rgba(24,26,28,.92);z-index:40;align-items:center;
+justify-content:center;flex-direction:column;gap:18px">
+  <div style="width:44px;height:44px;border:3px solid #3a3f44;
+border-top-color:#7ab0d8;border-radius:50%;
+animation:ssspin 0.9s linear infinite"></div>
+  <div id="waiting-msg" style="color:#9aa4ac;font:13px/1.4 ui-monospace,
+monospace;letter-spacing:.04em">WAITING FOR THE FIRST BUILD&hellip;</div>
+</div>
+<style>@keyframes ssspin{to{transform:rotate(360deg)}}</style></div>
 
 <script type="module">
 import * as THREE from './three.module.min.js';
@@ -185,6 +195,17 @@ renderer.domElement.addEventListener('wheel', e => {
 function clearGroup(list) { list.forEach(o => sceneGL.remove(o)); list.length = 0; }
 
 function rebuild(payload) {
+  // before the first successful build the server publishes a
+  // {"status":"waiting"} placeholder: show the spinner, build nothing
+  const waitEl = document.getElementById('waiting');
+  if (payload.status === 'waiting' || !payload.parts ||
+      !payload.parts.length) {
+    waitEl.style.display = 'flex';
+    document.getElementById('status').textContent = 'waiting';
+    data = payload;
+    return;
+  }
+  waitEl.style.display = 'none';
   data = payload;
   meshes.forEach(m => sceneGL.remove(m));
   meshes.clear(); baseMat.clear(); offsets.clear();

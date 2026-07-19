@@ -112,7 +112,11 @@ def serve_viewer(viewer_dir: Path, port: int, say) -> ThreadingHTTPServer:
 
 def run_view(model_path: Path, build_kwargs: dict, say,
              port: int = 8377, watch: bool = True,
-             poll_s: float = 0.5) -> int:
+             poll_s: float = 0.5, open_browser: bool = True) -> int:
+    import time
+    import webbrowser
+
+    from .errors import SolidsightError
     from .report import build_model
     from .runner import run_model
     from .watch import run_watch, scene_fingerprint
@@ -124,11 +128,35 @@ def run_view(model_path: Path, build_kwargs: dict, say,
         fp, _ = scene_fingerprint(scene, {})
         write_viewer(viewer_dir, scene_payload(scene, report), fp)
 
-    scene = run_model(model_path)
-    report = build_model(model_path, scene=scene, **build_kwargs)
-    rebuild_payload(scene, report)
-    say(f"build: {report['status'].upper()} ({report['model']})")
-    serve_viewer(viewer_dir, port, say)
+    # the screen comes up FIRST: serve a waiting placeholder (spinner)
+    # immediately, so the human has a window from second one — the model
+    # file may not even exist yet
+    write_viewer(viewer_dir,
+                 {"status": "waiting", "model": model_path.name,
+                  "parts": []}, "waiting-0")
+    httpd = serve_viewer(viewer_dir, port, say)
+    if open_browser:
+        webbrowser.open(f"http://127.0.0.1:{httpd.server_address[1]}/")
+
+    if not model_path.exists():
+        say(f"waiting for {model_path.name} to appear "
+            "(the viewer shows a spinner until the first build) ...")
+        try:
+            while not model_path.exists():
+                time.sleep(poll_s)
+        except KeyboardInterrupt:
+            say("viewer stopped.")
+            return 0
+
+    try:
+        scene = run_model(model_path)
+        report = build_model(model_path, scene=scene, **build_kwargs)
+        rebuild_payload(scene, report)
+        say(f"build: {report['status'].upper()} ({report['model']})")
+    except SolidsightError as e:
+        say("initial build FAILED - the viewer keeps its spinner and "
+            "hot-reloads on the next successful save")
+        say(e.render())
 
     if not watch:
         say("serving until ctrl-c (no watch) ...")

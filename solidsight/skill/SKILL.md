@@ -180,11 +180,14 @@ proves when an edit changed nothing), and `solidsight view model.py`
 serves a live browser viewer — section planes, isolate, explode,
 two-point measuring — that hot-reloads on each successful rebuild.
 
-**Working for a human? ALWAYS give them the live preview.** As soon as
-the first model file exists, launch `solidsight view model.py` in the
-background and tell them it is open — they watch the design evolve
-with every rebuild while you keep working from renders and
-report.json. This is not optional and they should not have to ask.
+**Working for a human? ALWAYS give them the live preview — from the
+very START.** Launch `solidsight view model.py` in the background
+BEFORE the model file even exists: the browser opens immediately with
+a loading spinner, switches to the model at the first successful
+build, and updates on every save from then on. If a model already
+exists (an edit commission), they see it from second one. This is not
+optional and they should not have to ask. You keep working from
+renders and report.json — the viewer is theirs.
 
 ### Step 4 - Build and LOOK after every geometric change
 

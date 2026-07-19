@@ -1010,3 +1010,39 @@ def test_cli_output_flushes_when_not_a_tty(tmp_path):
     text = log.read_text(encoding="utf-8", errors="replace")
     assert "build #1" in text, f"nothing flushed before the kill: {text!r}"
     assert "watching" in text
+
+
+def test_view_starts_before_the_model_exists(tmp_path):
+    """The live preview is a screen FIRST: `view missing.py` must serve
+    a waiting placeholder (spinner) immediately and hot-switch to the
+    scene when the file appears and builds. User: 'sigue sin ensenar
+    el live preview'."""
+    import json
+    import subprocess
+    import sys
+    import time
+    model = tmp_path / "late_model.py"
+    proc = subprocess.Popen(
+        [sys.executable, "-m", "solidsight.cli", "view", str(model),
+         "--no-open", "--poll", "0.2", "--port", "0"],
+        cwd=tmp_path, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    scene_json = tmp_path / "out" / "viewer" / "scene.json"
+    try:
+        deadline = time.monotonic() + 30
+        while time.monotonic() < deadline and not scene_json.exists():
+            time.sleep(0.2)
+        assert scene_json.exists(), "no placeholder served"
+        d = json.loads(scene_json.read_text(encoding="utf-8"))
+        assert d["status"] == "waiting" and d["parts"] == []
+        model.write_text("from solidsight import *\n"
+                         "emit(box(10, 10, 5), name='late')\n",
+                         encoding="utf-8")
+        deadline = time.monotonic() + 60
+        while time.monotonic() < deadline:
+            d = json.loads(scene_json.read_text(encoding="utf-8"))
+            if d["status"] != "waiting":
+                break
+            time.sleep(0.3)
+        assert [p["name"] for p in d["parts"]] == ["late"]
+    finally:
+        proc.kill()

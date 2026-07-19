@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-07-19 — solidsight 0.9.0: the live preview is a screen FIRST
+
+`solidsight view` now opens the browser immediately (auto-open, with
+--no-open to suppress) and works before the model file even exists:
+the page shows a loading spinner, hot-switches to the model at the
+first successful build, and keeps updating on every save. An edit
+commission shows the existing model from second one; a failed initial
+build keeps the spinner and recovers on the next good save. The skill
+mandates launching it at the START of every commission for a human.
+Regression test: view on a missing file serves the waiting placeholder,
+then switches when the file appears.
+
 ## 2026-07-19 — the engine blind baseline, regenerated under a fully traced protocol
 
 The same-prompt comparison's blind side was regenerated once more at
