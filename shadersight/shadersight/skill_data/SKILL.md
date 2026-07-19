@@ -1,6 +1,6 @@
 ---
 name: shadersight
-description: "Use whenever the user asks to review, debug or validate a shader, material or BRDF — energy conservation, reciprocity, negative lobes, node-graph cycles/dead nodes/cost. You cannot render-and-squint; this tool turns the material into physics checks and the graph into graph theory, with exact numbers."
+description: "Use whenever the user asks to review, debug, validate — or EDIT/tune — a shader, material or BRDF: energy conservation, reciprocity, negative lobes, node-graph cycles/dead nodes/cost. You cannot render-and-squint; this tool turns the material into physics checks and the graph into graph theory, and can load an existing material and re-verify the edit (material --from-json)."
 ---
 
 # /shadersight

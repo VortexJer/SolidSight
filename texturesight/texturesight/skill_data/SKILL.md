@@ -1,6 +1,6 @@
 ---
 name: texturesight
-description: "Use whenever the user asks to review, debug or validate UVs and texture maps — texel density, stretch, seams, UV islands, packing, tiling, normal maps, roughness/AO data maps. You cannot squint at a checker texture; this tool turns the layout and the pixels into exact numbers plus evidence renders."
+description: "Use whenever the user asks to review, debug, validate — or EDIT/fix — UVs and texture maps: texel density, stretch, seams, UV islands, packing, tiling, normal maps, roughness/AO data maps. You cannot squint at a checker texture; this tool turns the layout and the pixels into exact numbers plus evidence renders, and can load, modify and re-write the mesh (parse_obj -> save_obj)."
 ---
 
 # /texturesight

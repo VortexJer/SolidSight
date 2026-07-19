@@ -1,6 +1,6 @@
 ---
 name: animationsight
-description: "Use whenever the user asks to review, debug, validate or compare an animation clip or mocap take (.bvh) — foot sliding, pops, ground penetration, balance, timing, loop seams. You cannot watch an animation; this tool turns it into exact numbers plus renders of the exact frames that are wrong."
+description: "Use whenever the user asks to review, debug, validate, compare — or EDIT/fix — an animation clip or mocap take (.bvh): foot sliding, pops, ground penetration, balance, timing, loop seams. You cannot watch an animation; this tool turns it into exact numbers plus renders of the exact frames that are wrong, and can load, modify and re-write the clip (parse_bvh -> save_bvh)."
 ---
 
 # /animationsight

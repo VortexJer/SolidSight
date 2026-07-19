@@ -1,6 +1,6 @@
 ---
 name: pcbsight
-description: "Use whenever the user asks to review, check or validate a PCB layout (.kicad_pcb) — unrouted nets, clearance violations, trace current capacity, differential pair symmetry, impedance estimates. You cannot eyeball copper; this tool turns the board into exact findings with coordinates."
+description: "Use whenever the user asks to review, check, validate — or EDIT/fix — a PCB layout (.kicad_pcb): unrouted nets, clearance violations, trace current capacity, differential pair symmetry, impedance estimates. You cannot eyeball copper; this tool turns the board into exact findings with coordinates, and can load, modify and re-write the board tree (load_sexpr -> save_sexpr)."
 ---
 
 # /pcbsight
