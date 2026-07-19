@@ -1,5 +1,31 @@
 # Changelog
 
+## 2026-07-19 — every Sight can EDIT, and every Sight can SHOW
+
+Two family-wide capabilities (animationsight 0.7.0, texturesight 0.5.0,
+shadersight 0.6.0, pcbsight 0.5.0):
+
+- **Edit, not just review** — solidsight could always take an existing
+  artifact (`from_stl`) and modify it; now the whole family can:
+  - animationsight: `save_bvh` — parse a clip someone hands you, modify
+    joints/frames, write it back, re-inspect. Round-trip tested.
+  - texturesight: `save_obj` — the Mesh arrays are the model; modify
+    verts/UVs, write back (winding sign preserved — a writer that
+    unflipped faces would hide the defect). Round-trip tested.
+  - shadersight: `material --from-json FILE[:NAME]` — load an existing
+    material (flat dict or a materials set), override with flags,
+    re-verify. Windows drive letters survive the `:NAME` syntax (found
+    by the test). The summary now prints the material's name.
+  - pcbsight: s-expression writer (`load_sexpr`/`save_sexpr`/`dumps`) —
+    edit the board tree, write it back (strings come back quoted; the
+    tree round-trips exactly, tested against the example board).
+- **A preview for the human** — the agent's interface is report.json;
+  the person the agent works for now gets `--show` on inspect (and a
+  `preview` subcommand): builds `out/index.html` with the verdict,
+  every finding and every render (GIFs first), and opens it in the
+  browser. The skills teach both: edit-without-re-inspect is a claim,
+  and the preview is never for the agent itself.
+
 ## 2026-07-19 — texturesight 0.4.0: two renders that explain UVs to anyone
 
 A UV layout is unreadable to anyone who has never unwrapped a mesh

@@ -11,14 +11,14 @@ frames the findings point at.
     report = analyze(clip, up="y")
 """
 
-__version__ = "0.6.1"
+__version__ = "0.7.0"
 
-from .bvh import Clip, Joint, forward_kinematics, parse_bvh
+from .bvh import Clip, Joint, forward_kinematics, parse_bvh, save_bvh
 from .errors import AnimationSightError, BadArgumentError, BadClipError
 from .report import analyze, diff_reports, inspect_clip
 
 __all__ = [
-    "parse_bvh", "forward_kinematics", "Clip", "Joint",
+    "parse_bvh", "save_bvh", "forward_kinematics", "Clip", "Joint",
     "analyze", "inspect_clip", "diff_reports",
     "AnimationSightError", "BadClipError", "BadArgumentError",
 ]

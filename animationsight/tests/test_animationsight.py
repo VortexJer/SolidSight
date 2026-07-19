@@ -435,3 +435,35 @@ def test_inspect_gif_is_written(tmp_path):
     with Image.open(g) as im:
         assert getattr(im, "is_animated", False)
         assert im.n_frames > 5
+
+
+# --- edit loop + human preview --------------------------------------------
+
+def test_save_bvh_round_trips(tmp_path):
+    """parse -> save -> parse must preserve the skeleton and the motion:
+    the edit loop is only trustworthy if a no-op edit is a no-op."""
+    from animationsight import parse_bvh, save_bvh
+    jump = Path(__file__).parents[1] / "examples" / "02-jump"
+    a = parse_bvh(jump / "jump_fixed.bvh", unit="cm")
+    save_bvh(a, tmp_path / "rt.bvh")
+    b = parse_bvh(tmp_path / "rt.bvh", unit="cm")
+    assert a.names == b.names
+    assert [j.channels for j in a.joints] == [j.channels for j in b.joints]
+    assert np.allclose(a.frames, b.frames, atol=1e-5)
+    assert abs(a.frame_time - b.frame_time) < 1e-9
+
+
+def test_preview_builds_an_index_page(tmp_path):
+    """--show/preview is for the human: one page, verdict + renders.
+    build_preview is separate from show() so this never opens a browser."""
+    from animationsight.preview import build_preview
+    jump = Path(__file__).parents[1] / "examples" / "02-jump"
+    out = tmp_path / "o"
+    subprocess.run(
+        [sys.executable, "-m", "animationsight.cli", "inspect",
+         str(jump / "jump_fixed.bvh"), "--kind", "oneshot",
+         "--out", str(out)], capture_output=True, text=True)
+    page = build_preview(out)
+    assert page.name == "index.html"
+    text = page.read_text(encoding="utf-8")
+    assert "verdict" in text and ".png" in text

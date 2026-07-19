@@ -264,3 +264,46 @@ def forward_kinematics(clip: Clip) -> tuple[np.ndarray, np.ndarray]:
                                                rot[:, pk], local_t)
             rot[:, k] = rot[:, pk] @ local_r
     return pos, rot
+
+
+def _write_joint(j: Joint, depth: int, lines: list[str],
+                 is_root: bool = False) -> None:
+    ind = "\t" * depth
+    if j.is_end:
+        lines.append(ind + "End Site")
+        lines.append(ind + "{")
+        lines.append(ind + "\tOFFSET %.6f %.6f %.6f" % tuple(j.offset))
+        lines.append(ind + "}")
+        return
+    lines.append(f"{ind}{'ROOT' if is_root else 'JOINT'} {j.name}")
+    lines.append(ind + "{")
+    lines.append(ind + "\tOFFSET %.6f %.6f %.6f" % tuple(j.offset))
+    if j.channels:
+        lines.append(ind + "\tCHANNELS %d %s"
+                     % (len(j.channels), " ".join(j.channels)))
+    for ch in j.children:
+        _write_joint(ch, depth + 1, lines)
+    lines.append(ind + "}")
+
+
+def save_bvh(clip: Clip, path: str | Path) -> Path:
+    """Write a Clip back to a .bvh — the other half of the EDIT loop:
+    parse_bvh -> modify joints/frames (raw file units, same layout) ->
+    save_bvh -> inspect again to prove the edit did what it meant."""
+    p = Path(path)
+    n_chan = sum(len(j.channels) for j in clip.joints)
+    if clip.frames.ndim != 2 or clip.frames.shape[1] != n_chan:
+        raise BadClipError(
+            f"frames shape {tuple(clip.frames.shape)} does not match the "
+            f"hierarchy's {n_chan} channels",
+            suggestion="keep frames as an (F, C) array aligned with the "
+                       "joints' channel layout (Clip.joints order)")
+    lines = ["HIERARCHY"]
+    _write_joint(clip.root, 0, lines, is_root=True)
+    lines.append("MOTION")
+    lines.append(f"Frames: {clip.n_frames}")
+    lines.append("Frame Time: %.7f" % clip.frame_time)
+    for row in clip.frames:
+        lines.append(" ".join("%.6f" % v for v in row))
+    p.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return p

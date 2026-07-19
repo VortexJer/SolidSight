@@ -372,3 +372,26 @@ def test_checker_preview_reacts_to_uv_defects(tmp_path):
     assert ia.shape == ib.shape
     frac = (np.abs(ia - ib).max(axis=2) > 8).mean()
     assert frac > 0.005, f"checker barely changed ({frac:.4%})"
+
+
+def test_save_obj_round_trips(tmp_path):
+    """parse -> save -> parse preserves geometry, UVs (including the
+    winding sign — a writer that unflips faces would hide the defect)
+    and material groups."""
+    from texturesight import parse_obj, save_obj
+    a = parse_obj(EX / "cube_broken.obj")
+    save_obj(a, tmp_path / "rt.obj")
+    b = parse_obj(tmp_path / "rt.obj")
+    assert np.allclose(a.verts, b.verts, atol=1e-5)
+    assert (a.tri_v == b.tri_v).all() and (a.tri_uv == b.tri_uv).all()
+    assert np.allclose(a.face_area_uv(), b.face_area_uv(), atol=1e-9)
+    assert set(a.groups) == set(b.groups)
+
+
+def test_preview_builds_an_index_page(tmp_path):
+    from texturesight.report import inspect
+    from texturesight.preview import build_preview
+    inspect(EX / "cube_broken.obj", [], tmp_path / "o")
+    page = build_preview(tmp_path / "o")
+    text = page.read_text(encoding="utf-8")
+    assert "verdict" in text and "uv_layout.png" in text

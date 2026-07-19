@@ -36,6 +36,15 @@ def main(argv: list[str] | None = None) -> int:
                         "current table (default 10)")
     i.add_argument("--out", default="out")
     i.add_argument("--json", action="store_true")
+    i.add_argument("--show", action="store_true",
+                   help="when done, open an HTML preview of the out dir "
+                        "in the browser (for the human you work for)")
+
+    pv = sub.add_parser("preview",
+                        help="build out/index.html (verdict + every "
+                             "render) and open it in the browser")
+    pv.add_argument("out", nargs="?", default="out",
+                    help="an --out directory from a previous run")
 
     z = sub.add_parser("impedance",
                        help="single-ended microstrip Z0 estimate")
@@ -77,7 +86,15 @@ def main(argv: list[str] | None = None) -> int:
             return _impedance(args)
         if args.cmd == "diff":
             return _diff(args)
-        return _inspect(args)
+        if args.cmd == "preview":
+            from .preview import show
+            _say(f"preview: {show(args.out)}")
+            return 0
+        rc = _inspect(args)
+        if getattr(args, "show", False):
+            from .preview import show
+            _say(f"  preview: {show(args.out or 'out')}")
+        return rc
     except PCBSightError as e:
         _say(f"FAILED\n{e.render()}", err=True)
         return 1

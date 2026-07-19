@@ -82,6 +82,30 @@ is a claim; with one it is a fact.
   carry nets), thermal relief, creepage for mains voltages, EMI. This
   tool complements the EDA package's own DRC; it does not replace it.
 
+### Editing an existing board
+
+You are not limited to reviewing: the s-expression tree is editable.
+
+```python
+from pcbsight import load_sexpr, save_sexpr
+from pcbsight.sexpr import children
+tree = load_sexpr("board.kicad_pcb")
+for seg in children(tree, "segment"):
+    ...                                  # move/retag/add nodes
+save_sexpr(tree, "board_fixed.kicad_pcb")
+```
+
+The rewritten file is valid s-expression but not byte-identical
+(strings come back quoted), so ALWAYS `inspect` the result — an edit
+without a re-inspect is a claim.
+
+### Showing the human
+
+`report.json` and `board.png` are YOUR interface; the person you work
+for gets a browser page. End the final run with `--show`, or run
+`pcbsight preview out/` — it builds `out/index.html` (verdict +
+renders) and opens it. Never use it for yourself.
+
 ## Honesty Rules
 
 - Every clearance claim carries its coordinates; every current claim

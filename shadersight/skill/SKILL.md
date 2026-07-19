@@ -93,6 +93,27 @@ Cost honesty: the numbers are orders of magnitude (a texture fetch
 compare two graphs or find the dominant cost — never as a frame-time
 budget, which depends on hardware this tool has never seen.
 
+### Editing an existing material or graph
+
+You are not limited to authoring from presets: `--from-json` loads a
+material someone hands you, and explicit flags are the edit.
+
+```bash
+shadersight material --from-json set.json:gold --roughness 0.25 --out out_v2
+```
+
+(`set.json` may be a flat params dict or a `{"materials": {...}}` set;
+`:name` picks one.) Graphs are plain JSON — edit the file, re-run
+`graph`, and `diff` the out dirs: an edit without a re-check is a
+claim.
+
+### Showing the human
+
+`report.json` is YOUR interface; the person you work for gets a
+browser page. End the final run with `--show`, or run
+`shadersight preview out/` — it builds `out/index.html` (verdict,
+curves, previews) and opens it. Never use it for yourself.
+
 ## Honesty Rules
 
 - Never say a material "looks right". Say it conserves energy up to X,

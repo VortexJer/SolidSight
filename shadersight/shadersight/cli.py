@@ -46,11 +46,19 @@ def main(argv: list[str] | None = None) -> int:
                         "(multiplies the whole BRDF). 1.0 is physics; "
                         "above it manufactures energy - pass your "
                         "engine's value to MEASURE what it costs")
+    m.add_argument("--from-json", default=None, metavar="FILE[:NAME]",
+                   help="EDIT an existing material: load it from a .json "
+                        "(a flat params dict, or a {\"materials\": {...}} "
+                        "set with :NAME picking one). Explicit flags "
+                        "override the loaded values")
     m.add_argument("--quality", default="normal",
                    choices=["fast", "normal", "high"],
                    help="hemisphere integration resolution (default normal)")
     m.add_argument("--out", default="out")
     m.add_argument("--json", action="store_true")
+    m.add_argument("--show", action="store_true",
+                   help="when done, open an HTML preview of the out dir "
+                        "in the browser (for the human you work for)")
 
     g = sub.add_parser("graph",
                        help="analyse a shader node graph (cycles, dead "
@@ -58,6 +66,14 @@ def main(argv: list[str] | None = None) -> int:
     g.add_argument("graph", help="a graph .json file")
     g.add_argument("--out", default="out")
     g.add_argument("--json", action="store_true")
+    g.add_argument("--show", action="store_true",
+                   help="when done, open an HTML preview of the out dir")
+
+    pv = sub.add_parser("preview",
+                        help="build out/index.html (verdict + every "
+                             "render) and open it in the browser")
+    pv.add_argument("out", nargs="?", default="out",
+                    help="an --out directory from a previous run")
 
     df = sub.add_parser("diff",
                         help="what changed between two material/graph runs")
@@ -84,11 +100,20 @@ def main(argv: list[str] | None = None) -> int:
         if args.cmd == "uninstall":
             from .skill_install import uninstall
             return uninstall()
+        if args.cmd == "preview":
+            from .preview import show
+            _say(f"preview: {show(args.out)}")
+            return 0
         if args.cmd == "material":
-            return _material(args)
-        if args.cmd == "diff":
+            rc = _material(args)
+        elif args.cmd == "diff":
             return _diff(args)
-        return _graph(args)
+        else:
+            rc = _graph(args)
+        if getattr(args, "show", False):
+            from .preview import show
+            _say(f"  preview: {show(args.out or 'out')}")
+        return rc
     except ShaderSightError as e:
         _say(f"FAILED\n{e.render()}", err=True)
         return 1
@@ -142,6 +167,49 @@ def _material(args) -> int:
                 suggestion="one of: " + ", ".join(sorted(PRESETS)))
         params.update(PRESETS[args.preset])
         name = args.preset
+    if args.from_json:
+        import json as _json
+        # FILE[:NAME] — but a Windows path starts with "C:", so only
+        # treat the last ":" as a name separator when FILE alone does
+        # not exist as a file
+        spec = args.from_json
+        fpath, mname = Path(spec), ""
+        if not fpath.exists():
+            head, sep, tail = spec.rpartition(":")
+            if sep and head and Path(head).exists():
+                fpath, mname = Path(head), tail
+        fname = str(fpath)
+        if not fpath.exists():
+            raise BadModelError(f"material file not found: {spec}",
+                                suggestion="check the path (or "
+                                           "FILE:NAME to pick from a set)")
+        data = _json.loads(fpath.read_text(encoding="utf-8"))
+        mats = data.get("materials") if isinstance(data, dict) else None
+        if mats is not None:
+            if not mname:
+                if len(mats) == 1:
+                    mname = next(iter(mats))
+                else:
+                    raise BadModelError(
+                        f"{fname} holds {len(mats)} materials",
+                        suggestion="pick one: --from-json "
+                                   f"{fname}:<{'|'.join(sorted(mats))}>")
+            if mname not in mats:
+                raise BadModelError(
+                    f"no material {mname!r} in {fname}",
+                    suggestion="one of: " + ", ".join(sorted(mats)))
+            entry, name = dict(mats[mname]), mname
+        else:
+            entry = dict(data)
+            name = mname or fpath.stem
+        allowed = {"base_color", "roughness", "metallic", "specular",
+                   "boost"}
+        for k in list(entry):
+            if k not in allowed:
+                entry.pop(k)
+        if "base_color" in entry:
+            entry["base_color"] = tuple(entry["base_color"])
+        params.update(entry)
     if args.base_color is not None:
         try:
             params["base_color"] = tuple(float(v)
@@ -162,7 +230,8 @@ def _material(args) -> int:
 
     mt = rep["material"]
     _say(f"shadersight material: {rep['status'].upper()}")
-    _say(f"  material: base {mt['base_color']}, roughness {mt['roughness']}, "
+    _say(f"  material '{mt.get('name', mat.name)}': base {mt['base_color']}, "
+         f"roughness {mt['roughness']}, "
          f"metallic {mt['metallic']} -> F0 {mt['f0']}, alpha {mt['alpha_ggx']}")
     e = rep["energy_conservation"]
     _say(f"  energy: max albedo {e['max_albedo']} at "

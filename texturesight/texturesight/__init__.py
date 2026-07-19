@@ -8,15 +8,16 @@ the texture's own statistics, normal-map validity, and data-map range.
     from texturesight import parse_obj, analyze_uv, analyze_texture
 """
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 from .errors import (BadArgumentError, BadMeshError, BadTextureError,
                      TextureSightError)
-from .obj import Mesh, parse_obj
+from .obj import Mesh, parse_obj, save_obj
 from .report import analyze_texture, analyze_uv, inspect
 
 __all__ = [
-    "parse_obj", "Mesh", "analyze_uv", "analyze_texture", "inspect",
+    "parse_obj", "save_obj", "Mesh", "analyze_uv", "analyze_texture",
+    "inspect",
     "TextureSightError", "BadMeshError", "BadTextureError",
     "BadArgumentError",
 ]

@@ -333,3 +333,31 @@ def test_boost_slider_violates_energy_and_names_itself():
     # and the physical twin passes
     m2 = Material(base_color=(0.9, 0.6, 0.5), roughness=0.3, metallic=1.0)
     assert analyze_material(m2, quality="fast")["status"] != "failed"
+
+
+# --- edit loop + human preview --------------------------------------------
+
+def test_from_json_edits_an_existing_material(tmp_path):
+    """--from-json is the edit path for a material someone hands you:
+    load it, override with flags, re-verify."""
+    setf = tmp_path / "mats.json"
+    setf.write_text(json.dumps({"materials": {"rubber": {
+        "base_color": [0.1, 0.1, 0.1], "roughness": 0.9,
+        "metallic": 0.0}}}), encoding="utf-8")
+    r = subprocess.run(
+        [sys.executable, "-m", "shadersight.cli", "material",
+         "--from-json", str(setf), "--quality", "fast",
+         "--out", str(tmp_path / "o")], capture_output=True, text=True)
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "rubber" in r.stdout
+
+
+def test_preview_builds_an_index_page(tmp_path):
+    from shadersight.preview import build_preview
+    subprocess.run(
+        [sys.executable, "-m", "shadersight.cli", "material",
+         "--preset", "rubber", "--quality", "fast",
+         "--out", str(tmp_path / "o")], capture_output=True, text=True)
+    page = build_preview(tmp_path / "o")
+    text = page.read_text(encoding="utf-8")
+    assert "verdict" in text and ".png" in text

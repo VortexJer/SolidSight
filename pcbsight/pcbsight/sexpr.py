@@ -1,9 +1,17 @@
-"""A small s-expression reader for KiCad files.
+"""A small s-expression reader/writer for KiCad files.
 
 KiCad's .kicad_pcb is a lisp-style tree: (kicad_pcb (net 1 "GND")
-(segment (start 10 20) ...)). This reads it into nested Python lists,
-with atoms as str/int/float. It reads what it needs and nothing more —
-no writing, no round-tripping.
+(segment (start 10 20) ...)). `parse` reads it into nested Python
+lists with atoms as str/int/float; `dumps`/`save` write a tree back,
+which is what makes EDITING a board possible: load -> modify the tree
+-> save -> inspect again.
+
+One honest caveat: parsing loses the quoted-vs-bare distinction on
+strings, so the writer quotes every string except each node's tag.
+That is legal s-expression syntax and KiCad's reader unquotes tokens
+generically, but the re-written file is not byte-identical to the
+original — run `pcbsight inspect` on the result to prove the edit
+did what it meant.
 """
 
 from __future__ import annotations
@@ -111,3 +119,48 @@ def values(node: list, tag: str) -> list:
     """All values of (tag v1 v2 ...)."""
     c = child(node, tag)
     return c[1:] if c else []
+
+
+# --- writing (the edit loop's other half) ----------------------------------
+
+def _fmt_atom(a, is_tag: bool = False) -> str:
+    if isinstance(a, float):
+        return repr(a)                      # repr round-trips exactly
+    if isinstance(a, int):
+        return str(a)
+    s = str(a)
+    if is_tag and s and not any(c in s for c in ' \t\r\n()"\\'):
+        return s
+    return '"' + s.replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
+def _fmt(node, indent: int) -> str:
+    if not isinstance(node, list):
+        return _fmt_atom(node)
+    parts = [_fmt_atom(node[0], is_tag=True) if node else ""]
+    flat = all(not isinstance(c, list) for c in node[1:])
+    body = [_fmt_atom(c) for c in node[1:]] if flat else None
+    if flat and sum(len(b) for b in body) + len(parts[0]) < 76 - indent:
+        return "(" + " ".join(parts + body) + ")"
+    ind = "  " * (indent // 2 + 1)
+    lines = ["(" + parts[0]]
+    for c in node[1:]:
+        lines.append(ind + _fmt(c, indent + 2))
+    lines.append("  " * (indent // 2) + ")")
+    return "\n".join(lines)
+
+
+def dumps(node: list) -> str:
+    """Serialise a tree from `parse` back to s-expression text."""
+    return _fmt(node, 0) + "\n"
+
+
+def load(path) -> list:
+    from pathlib import Path
+    p = Path(path)
+    return parse(p.read_text(encoding="utf-8", errors="replace"), p.name)
+
+
+def save(node: list, path) -> None:
+    from pathlib import Path
+    Path(path).write_text(dumps(node), encoding="utf-8")

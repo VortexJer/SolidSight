@@ -254,3 +254,33 @@ def test_rover_example_ground_truth():
     # it is a real board: 13 components with refs
     assert len({fp.ref for fp in
                 parse_board(rover / "rover_clean.kicad_pcb").footprints}) >= 12
+
+
+# --- edit loop + human preview --------------------------------------------
+
+def test_sexpr_round_trips_and_board_survives(tmp_path):
+    """load -> dumps -> parse must preserve the tree exactly (a no-op
+    edit is a no-op), and the re-written file must still parse as a
+    board with the same copper."""
+    from pcbsight.sexpr import dumps, parse
+    src = CLEAN.read_text(encoding="utf-8")
+    tree = parse(src, "clean")
+    assert parse(dumps(tree), "rt") == tree
+    p = tmp_path / "rt.kicad_pcb"
+    p.write_text(dumps(tree), encoding="utf-8")
+    a, b = parse_board(CLEAN), parse_board(p)
+    assert len(a.tracks) == len(b.tracks)
+    assert len(a.vias) == len(b.vias)
+    assert {t.net for t in a.tracks} == {t.net for t in b.tracks}
+
+
+def test_preview_builds_an_index_page(tmp_path):
+    from pcbsight.preview import build_preview
+    out = tmp_path / "o"
+    r = subprocess.run(
+        [sys.executable, "-m", "pcbsight.cli", "inspect", str(CLEAN),
+         "--out", str(out)], capture_output=True, text=True)
+    assert r.returncode == 0, r.stdout + r.stderr
+    page = build_preview(out)
+    text = page.read_text(encoding="utf-8")
+    assert "verdict" in text and "board.png" in text

@@ -116,6 +116,28 @@ Quote it whenever you quote a density: "327 px/unit at 1024" is a fact;
 - **Seam count is exact**, seam *quality* is not measured: this tool
   says where the seams are, not whether they are hidden well.
 
+### Editing an existing asset
+
+You are not limited to reviewing: `parse_obj` -> modify -> `save_obj`
+is the edit loop for meshes someone hands you.
+
+```python
+from texturesight import parse_obj, save_obj
+mesh = parse_obj("crate.obj")
+mesh.uvs[:, 0] *= 0.5                    # the arrays ARE the model
+save_obj(mesh, "crate_fixed.obj", mtllib="crate.mtl")
+```
+
+Textures are PNGs — edit them with PIL. Then `inspect` the result and
+`diff` the two out dirs: an edit without a re-inspect is a claim.
+
+### Showing the human
+
+`report.json` and the renders are YOUR interface; the person you work
+for gets a browser page. End the final run with `--show`, or run
+`texturesight preview out/` — it builds `out/index.html` (verdict +
+every render) and opens it. Never use it for yourself.
+
 ## Honesty Rules
 
 - Never say UVs "look fine". Quote the density, the spread, the max
@@ -132,8 +154,10 @@ Measures: texel density, per-face stretch/flip via the UV Jacobian,
 islands/seams/shells, packing and overlap, tiling, repetition,
 normal-map validity, data-map statistics, codec blocking.
 
-Does NOT do: unwrapping, packing, baking, painting, or fixing anything.
-It audits; you fix it in Blender/Substance/whatever made it. It also
+Does NOT do: unwrapping, packing, baking, or painting for you.
+It audits, and gives you `parse_obj`/`save_obj` so programmatic
+fixes are yours to make (artistic fixes still belong in
+Blender/Substance/whatever made it). It also
 does not judge whether a texture is beautiful, only whether it is
 correct.
 

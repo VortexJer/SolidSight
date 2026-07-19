@@ -59,6 +59,15 @@ def main(argv: list[str] | None = None) -> int:
                         "(an animation cannot be read from a still)")
     i.add_argument("--json", action="store_true",
                    help="full report JSON on stdout")
+    i.add_argument("--show", action="store_true",
+                   help="when done, open an HTML preview of the out dir "
+                        "in the browser (for the human you work for)")
+
+    pv = sub.add_parser("preview",
+                        help="build out/index.html (verdict + every "
+                             "render) and open it in the browser")
+    pv.add_argument("out", nargs="?", default="out",
+                    help="an --out directory from a previous run")
 
     d = sub.add_parser("diff", parents=[common],
                        help="what changed between two takes")
@@ -104,7 +113,15 @@ def _dispatch(args) -> int:
         from .skill_install import uninstall
         return uninstall()
     if args.cmd == "inspect":
-        return _inspect(args)
+        rc = _inspect(args)
+        if args.show:
+            from .preview import show
+            _say(f"  preview: {show(args.out or 'out')}")
+        return rc
+    if args.cmd == "preview":
+        from .preview import show
+        _say(f"preview: {show(args.out)}")
+        return 0
     if args.cmd == "diff":
         return _diff(args)
     if args.cmd == "track":

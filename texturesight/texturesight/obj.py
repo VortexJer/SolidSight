@@ -113,3 +113,36 @@ def parse_obj(path: str | Path) -> Mesh:
                 np.array(tri_v, dtype=np.int64), tri_uv_arr,
                 {k: np.array(v, dtype=np.int64) for k, v in groups.items()},
                 p.name)
+
+
+def save_obj(mesh: Mesh, path: str | Path, mtllib: str | None = None) -> Path:
+    """Write a Mesh back to an .obj — the other half of the EDIT loop:
+    parse_obj -> modify verts/uvs (the arrays are the model) ->
+    save_obj -> inspect again to prove the edit did what it meant.
+
+    Faces are written per material group in their original order.
+    Triangulation done at parse time is preserved (polygons come back
+    as their fan triangles)."""
+    p = Path(path)
+    lines = [f"# written by texturesight ({mesh.source})"]
+    if mtllib:
+        lines.append(f"mtllib {mtllib}")
+    for v in mesh.verts:
+        lines.append("v %.6f %.6f %.6f" % tuple(v))
+    for t in mesh.uvs:
+        lines.append("vt %.6f %.6f" % tuple(t))
+    face_mat = {}
+    for mat, faces in mesh.groups.items():
+        for f in faces:
+            face_mat[int(f)] = mat
+    current = None
+    for f in range(mesh.n_faces):
+        mat = face_mat.get(f, "default")
+        if mat != current:
+            lines.append(f"usemtl {mat}")
+            current = mat
+        vi, ti = mesh.tri_v[f], mesh.tri_uv[f]
+        lines.append("f " + " ".join(
+            f"{int(vi[k]) + 1}/{int(ti[k]) + 1}" for k in range(3)))
+    p.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return p

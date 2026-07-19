@@ -113,6 +113,28 @@ Lists peak-speed changes per joint and findings that appeared or
 disappeared. Use it to prove your fix did what you meant and nothing
 else.
 
+### Editing an existing clip
+
+You are not limited to reviewing: `parse_bvh` -> modify -> `save_bvh`
+is the edit loop for clips someone hands you.
+
+```python
+from animationsight import parse_bvh, save_bvh
+clip = parse_bvh("walk.bvh", unit="cm")
+clip.frames[:, 1] += 2.0        # raw channel values, file units
+# joints: clip.joints (depth-first); channel layout: j.chan_start
+save_bvh(clip, "walk_fixed.bvh")
+```
+
+Then `inspect` the result — an edit without a re-inspect is a claim.
+
+### Showing the human
+
+`report.json` and the renders are YOUR interface; the person you work
+for gets a browser page. End the final run with `--show`, or run
+`animationsight preview out/` — it builds `out/index.html` (verdict +
+every render, GIFs first) and opens it. Never use it for yourself.
+
 ## Honesty Rules
 
 - Never say a clip "looks good". Say what was measured and what the
@@ -129,8 +151,9 @@ else.
 Reads: BVH (skeletal mocap/animation clips).
 Measures: kinematics, contacts, balance, smoothness, loops.
 Does NOT do: rendering the character, blend shapes/facial rigs,
-retargeting, physics simulation, or editing the clip. It reviews; you
-fix the clip in the DCC tool that made it.
+retargeting, or physics simulation. Editing is on you, with the
+tool's own halves: `parse_bvh` -> modify -> `save_bvh` -> re-inspect
+(or fix the clip in the DCC tool that made it).
 
 For 3D geometry (parts, assemblies, robots, URDF/collision sweeps), that
 is `solidsight` — a sibling tool with the same philosophy.
