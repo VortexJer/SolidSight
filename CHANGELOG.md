@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-07-19 — the parkour blind baseline, regenerated with proven provenance
+
+The animationsight hero study's blind side was challenged: could its
+quality be contamination (an author who had seen the tool)? The pilot
+baseline could not prove otherwise, so it was discarded and regenerated
+end-to-end by a fresh cold-context agent in an empty directory —
+stdlib+numpy only, forbidden from invoking any tool. The new audit is
+its own provenance proof: it ships a 0.47x-g stride, a root-on-rails
+turn step and a landing knee pop (findings a hidden tool user would
+have removed), while its hand-solved vault measures 1.03x g. The after
+side re-fixed each measured finding in 3 iterations (including one
+honest wrong guess, settled by a numeric probe) to `OK — 0 findings`.
+
+- **animationsight 0.6.1**: `diff` said `-> Nonex gravity` when a
+  flight exists on only one side — which is what a good fix produces
+  (a phantom flight disappearing). Now `no flight`, regression-tested.
+- Example 03-parkour: new blind/after clips, audits, GIFs and README
+  (with a Provenance section); hero sections and study table updated.
+
 ## 2026-07-17 — repo renamed to AISight; family v0.2.0 (dogfooding round)
 
 The repo is now **AISight**: five independent tools, install only what

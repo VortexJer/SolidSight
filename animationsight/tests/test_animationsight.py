@@ -369,6 +369,25 @@ def test_diff_leads_with_gravity_and_folds_peak_spam():
     assert len(peak_lines) <= 5
 
 
+def test_diff_flight_that_disappears_says_no_flight():
+    """A fixed clip can have FEWER flights than the broken one (a
+    root-on-rails 'flight' stops existing once the planted foot stays
+    down). diff printed 'Nonex gravity' for the missing side. Found
+    diffing examples/03-parkour blind vs after."""
+    pk = Path(__file__).parents[1] / "examples" / "03-parkour"
+    if not (pk / "parkour_blind.bvh").exists():
+        pytest.skip("repo layout not present")
+    a = analyze(parse_bvh(pk / "parkour_blind.bvh", unit="cm"),
+                up="y", kind="oneshot")
+    b = analyze(parse_bvh(pk / "parkour_after.bvh", unit="cm"),
+                up="y", kind="oneshot")
+    a.pop("_arrays"), b.pop("_arrays")
+    from animationsight.report import diff_reports
+    joined = "\n".join(diff_reports(a, b))
+    assert "Nonex" not in joined
+    assert "no flight" in joined
+
+
 def test_inspect_writes_a_flight_arc_sheet(tmp_path):
     """Every flight gets its arc sheet — the picture that makes floaty
     legible (ghosts + measured arc + the 1 g reference)."""

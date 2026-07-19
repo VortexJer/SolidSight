@@ -8,13 +8,13 @@
     "joints": 26,
     "unit": "cm",
     "up_axis": "y",
-    "floor_mm": -0.0,
+    "floor_mm": -1.818,
     "floor_inferred": true,
     "floor_estimate": {
       "method": "10th percentile of the per-frame lowest point",
-      "clip_min_mm": -0.001,
+      "clip_min_mm": -6.162,
       "frames_below_floor": 0,
-      "spread_mm": 64.7
+      "spread_mm": 58.91
     }
   },
   "skeleton": {
@@ -22,7 +22,7 @@
     "joint_names": [
       "Hips",
       "Spine",
-      "Chest",
+      "Spine1",
       "Neck",
       "Head",
       "Head_end",
@@ -52,48 +52,36 @@
     "anthropometric_weights": true,
     "trajectory_file": "com_trajectory.csv",
     "height_mm": {
-      "min": 846.57,
-      "max": 1368.0,
-      "mean": 1011.21
+      "min": 827.63,
+      "max": 1546.26,
+      "mean": 981.07
     }
   },
   "ballistics": {
     "flights": [
       {
         "frames": [
-          13,
-          17
+          46,
+          50
         ],
         "duration_s": 0.1667,
-        "apex_rise_mm": 19.2,
-        "vertical_range_mm": 32.2,
-        "effective_gravity_mm_s2": 11312.4,
-        "gravity_ratio": 1.153,
-        "fit_rms_mm": 1.22
+        "apex_rise_mm": 13.4,
+        "vertical_range_mm": 30.2,
+        "effective_gravity_mm_s2": 9807.1,
+        "gravity_ratio": 1.0,
+        "fit_rms_mm": 0.17
       },
       {
         "frames": [
-          37,
-          41
+          60,
+          76
         ],
-        "duration_s": 0.1667,
-        "apex_rise_mm": 18.5,
-        "vertical_range_mm": 33.9,
-        "effective_gravity_mm_s2": 11615.6,
-        "gravity_ratio": 1.184,
-        "fit_rms_mm": 0.69
-      },
-      {
-        "frames": [
-          62,
-          75
-        ],
-        "duration_s": 0.4667,
-        "apex_rise_mm": 240.1,
-        "vertical_range_mm": 240.1,
-        "effective_gravity_mm_s2": 10090.0,
-        "gravity_ratio": 1.029,
-        "fit_rms_mm": 10.7
+        "duration_s": 0.5667,
+        "apex_rise_mm": 332.4,
+        "vertical_range_mm": 361.3,
+        "effective_gravity_mm_s2": 9816.3,
+        "gravity_ratio": 1.001,
+        "fit_rms_mm": 7.45
       }
     ],
     "note": "effective gravity from a parabola fit to the COM height over each airborne span; 1.0 = physical, <0.75 reads floaty, >1.3 reads heavy. ~0.1 or ~10 usually means --unit is wrong"
@@ -101,160 +89,160 @@
   "kind": "oneshot",
   "peaks": {
     "Hips": {
-      "peak_speed_mm_s": 4387.0,
-      "peak_speed_frame": 72,
-      "peak_accel_mm_s2": 42831.8,
-      "peak_angular_deg_s": 147.9
+      "peak_speed_mm_s": 3402.4,
+      "peak_speed_frame": 60,
+      "peak_accel_mm_s2": 30988.9,
+      "peak_angular_deg_s": 206.8
     },
     "Spine": {
-      "peak_speed_mm_s": 4487.4,
-      "peak_speed_frame": 67,
-      "peak_accel_mm_s2": 42013.6,
-      "peak_angular_deg_s": 165.7
+      "peak_speed_mm_s": 3442.7,
+      "peak_speed_frame": 60,
+      "peak_accel_mm_s2": 30910.1,
+      "peak_angular_deg_s": 292.9
     },
-    "Chest": {
-      "peak_speed_mm_s": 4767.0,
-      "peak_speed_frame": 67,
-      "peak_accel_mm_s2": 40375.9,
-      "peak_angular_deg_s": 179.1
+    "Spine1": {
+      "peak_speed_mm_s": 3556.2,
+      "peak_speed_frame": 61,
+      "peak_accel_mm_s2": 35581.6,
+      "peak_angular_deg_s": 364.7
     },
     "Neck": {
-      "peak_speed_mm_s": 5215.6,
-      "peak_speed_frame": 67,
-      "peak_accel_mm_s2": 40143.8,
-      "peak_angular_deg_s": 134.6
+      "peak_speed_mm_s": 3854.0,
+      "peak_speed_frame": 62,
+      "peak_accel_mm_s2": 50009.0,
+      "peak_angular_deg_s": 266.3
     },
     "Head": {
-      "peak_speed_mm_s": 5419.1,
-      "peak_speed_frame": 67,
-      "peak_accel_mm_s2": 40701.4,
-      "peak_angular_deg_s": 128.7
+      "peak_speed_mm_s": 3996.0,
+      "peak_speed_frame": 62,
+      "peak_accel_mm_s2": 56089.9,
+      "peak_angular_deg_s": 146.7
     },
     "Head_end": {
-      "peak_speed_mm_s": 5801.7,
-      "peak_speed_frame": 67,
-      "peak_accel_mm_s2": 41990.7,
-      "peak_angular_deg_s": 128.7
+      "peak_speed_mm_s": 4144.0,
+      "peak_speed_frame": 62,
+      "peak_accel_mm_s2": 61738.9,
+      "peak_angular_deg_s": 146.7
     },
     "LeftShoulder": {
-      "peak_speed_mm_s": 5133.2,
-      "peak_speed_frame": 67,
-      "peak_accel_mm_s2": 39832.3,
-      "peak_angular_deg_s": 179.1
+      "peak_speed_mm_s": 3784.3,
+      "peak_speed_frame": 62,
+      "peak_accel_mm_s2": 46563.8,
+      "peak_angular_deg_s": 364.7
     },
     "LeftArm": {
-      "peak_speed_mm_s": 5139.9,
-      "peak_speed_frame": 67,
-      "peak_accel_mm_s2": 39624.4,
-      "peak_angular_deg_s": 838.0
+      "peak_speed_mm_s": 3810.0,
+      "peak_speed_frame": 62,
+      "peak_accel_mm_s2": 47216.1,
+      "peak_angular_deg_s": 880.7
     },
     "LeftForeArm": {
-      "peak_speed_mm_s": 5520.5,
-      "peak_speed_frame": 64,
-      "peak_accel_mm_s2": 61499.6,
-      "peak_angular_deg_s": 710.8
+      "peak_speed_mm_s": 5184.0,
+      "peak_speed_frame": 60,
+      "peak_accel_mm_s2": 45409.8,
+      "peak_angular_deg_s": 730.3
     },
     "LeftHand": {
-      "peak_speed_mm_s": 7522.2,
-      "peak_speed_frame": 61,
-      "peak_accel_mm_s2": 100976.1,
-      "peak_angular_deg_s": 710.8
+      "peak_speed_mm_s": 6319.9,
+      "peak_speed_frame": 59,
+      "peak_accel_mm_s2": 65413.3,
+      "peak_angular_deg_s": 730.3
     },
     "LeftHand_end": {
-      "peak_speed_mm_s": 8896.6,
-      "peak_speed_frame": 61,
-      "peak_accel_mm_s2": 129428.0,
-      "peak_angular_deg_s": 710.8
+      "peak_speed_mm_s": 7622.8,
+      "peak_speed_frame": 58,
+      "peak_accel_mm_s2": 95567.8,
+      "peak_angular_deg_s": 730.3
     },
     "RightShoulder": {
-      "peak_speed_mm_s": 5130.1,
-      "peak_speed_frame": 67,
-      "peak_accel_mm_s2": 39928.9,
-      "peak_angular_deg_s": 179.1
+      "peak_speed_mm_s": 3776.2,
+      "peak_speed_frame": 62,
+      "peak_accel_mm_s2": 46524.7,
+      "peak_angular_deg_s": 364.7
     },
     "RightArm": {
-      "peak_speed_mm_s": 5123.5,
-      "peak_speed_frame": 67,
-      "peak_accel_mm_s2": 40139.8,
-      "peak_angular_deg_s": 838.3
+      "peak_speed_mm_s": 3775.5,
+      "peak_speed_frame": 62,
+      "peak_accel_mm_s2": 47056.5,
+      "peak_angular_deg_s": 901.9
     },
     "RightForeArm": {
-      "peak_speed_mm_s": 5488.2,
-      "peak_speed_frame": 64,
-      "peak_accel_mm_s2": 72801.8,
-      "peak_angular_deg_s": 713.4
+      "peak_speed_mm_s": 5171.6,
+      "peak_speed_frame": 60,
+      "peak_accel_mm_s2": 49042.7,
+      "peak_angular_deg_s": 626.3
     },
     "RightHand": {
-      "peak_speed_mm_s": 7482.2,
-      "peak_speed_frame": 61,
-      "peak_accel_mm_s2": 118751.4,
-      "peak_angular_deg_s": 713.4
+      "peak_speed_mm_s": 6367.8,
+      "peak_speed_frame": 59,
+      "peak_accel_mm_s2": 58069.6,
+      "peak_angular_deg_s": 626.3
     },
     "RightHand_end": {
-      "peak_speed_mm_s": 8845.2,
-      "peak_speed_frame": 61,
-      "peak_accel_mm_s2": 152981.4,
-      "peak_angular_deg_s": 713.4
+      "peak_speed_mm_s": 7675.1,
+      "peak_speed_frame": 58,
+      "peak_accel_mm_s2": 69376.8,
+      "peak_angular_deg_s": 626.3
     },
     "LeftUpLeg": {
-      "peak_speed_mm_s": 4400.2,
-      "peak_speed_frame": 72,
-      "peak_accel_mm_s2": 42922.8,
-      "peak_angular_deg_s": 1143.2
+      "peak_speed_mm_s": 3406.0,
+      "peak_speed_frame": 60,
+      "peak_accel_mm_s2": 31089.7,
+      "peak_angular_deg_s": 5380.6
     },
     "LeftLeg": {
-      "peak_speed_mm_s": 10876.8,
-      "peak_speed_frame": 63,
-      "peak_accel_mm_s2": 179291.3,
-      "peak_angular_deg_s": 1067.5
+      "peak_speed_mm_s": 9003.5,
+      "peak_speed_frame": 57,
+      "peak_accel_mm_s2": 103279.0,
+      "peak_angular_deg_s": 5369.5
     },
     "LeftFoot": {
-      "peak_speed_mm_s": 10819.4,
-      "peak_speed_frame": 63,
-      "peak_accel_mm_s2": 136656.7,
-      "peak_angular_deg_s": 690.4
+      "peak_speed_mm_s": 6268.8,
+      "peak_speed_frame": 29,
+      "peak_accel_mm_s2": 70096.1,
+      "peak_angular_deg_s": 915.8
     },
     "LeftToeBase": {
-      "peak_speed_mm_s": 11131.2,
-      "peak_speed_frame": 63,
-      "peak_accel_mm_s2": 155573.7,
-      "peak_angular_deg_s": 256.5
+      "peak_speed_mm_s": 6398.9,
+      "peak_speed_frame": 28,
+      "peak_accel_mm_s2": 73918.5,
+      "peak_angular_deg_s": 281.0
     },
     "LeftToeBase_end": {
-      "peak_speed_mm_s": 11131.2,
-      "peak_speed_frame": 63,
-      "peak_accel_mm_s2": 155573.5,
-      "peak_angular_deg_s": 256.5
+      "peak_speed_mm_s": 6465.2,
+      "peak_speed_frame": 28,
+      "peak_accel_mm_s2": 73812.9,
+      "peak_angular_deg_s": 281.0
     },
     "RightUpLeg": {
-      "peak_speed_mm_s": 4425.3,
-      "peak_speed_frame": 72,
-      "peak_accel_mm_s2": 43259.9,
-      "peak_angular_deg_s": 3345.1
+      "peak_speed_mm_s": 3367.0,
+      "peak_speed_frame": 60,
+      "peak_accel_mm_s2": 30953.5,
+      "peak_angular_deg_s": 5332.2
     },
     "RightLeg": {
-      "peak_speed_mm_s": 11471.0,
-      "peak_speed_frame": 53,
-      "peak_accel_mm_s2": 166298.8,
-      "peak_angular_deg_s": 3347.5
+      "peak_speed_mm_s": 5281.4,
+      "peak_speed_frame": 38,
+      "peak_accel_mm_s2": 69403.0,
+      "peak_angular_deg_s": 787.3
     },
     "RightFoot": {
-      "peak_speed_mm_s": 11547.7,
-      "peak_speed_frame": 53,
-      "peak_accel_mm_s2": 125137.3,
-      "peak_angular_deg_s": 728.8
+      "peak_speed_mm_s": 6120.5,
+      "peak_speed_frame": 41,
+      "peak_accel_mm_s2": 49955.3,
+      "peak_angular_deg_s": 898.7
     },
     "RightToeBase": {
-      "peak_speed_mm_s": 11903.3,
-      "peak_speed_frame": 53,
-      "peak_accel_mm_s2": 125630.0,
-      "peak_angular_deg_s": 201.8
+      "peak_speed_mm_s": 6340.2,
+      "peak_speed_frame": 120,
+      "peak_accel_mm_s2": 56897.5,
+      "peak_angular_deg_s": 446.4
     },
     "RightToeBase_end": {
-      "peak_speed_mm_s": 11903.3,
-      "peak_speed_frame": 53,
-      "peak_accel_mm_s2": 125630.0,
-      "peak_angular_deg_s": 201.8
+      "peak_speed_mm_s": 6655.4,
+      "peak_speed_frame": 120,
+      "peak_accel_mm_s2": 58974.3,
+      "peak_angular_deg_s": 446.4
     }
   },
   "contacts": {
@@ -268,232 +256,196 @@
     ],
     "events": [
       {
-        "frame": 3,
-        "joint": "RightToeBase",
-        "event": "lift",
-        "t_s": 0.1
-      },
-      {
-        "frame": 3,
-        "joint": "RightToeBase_end",
-        "event": "lift",
-        "t_s": 0.1
-      },
-      {
-        "frame": 7,
-        "joint": "LeftToeBase",
-        "event": "plant",
-        "t_s": 0.2333
-      },
-      {
-        "frame": 7,
-        "joint": "LeftToeBase_end",
-        "event": "plant",
-        "t_s": 0.2333
-      },
-      {
-        "frame": 12,
-        "joint": "LeftToeBase",
-        "event": "lift",
-        "t_s": 0.4
-      },
-      {
-        "frame": 12,
-        "joint": "LeftToeBase_end",
-        "event": "lift",
-        "t_s": 0.4
-      },
-      {
-        "frame": 19,
+        "frame": 5,
         "joint": "RightToeBase",
         "event": "plant",
-        "t_s": 0.6333
+        "t_s": 0.1667
       },
       {
-        "frame": 19,
+        "frame": 5,
         "joint": "RightToeBase_end",
         "event": "plant",
-        "t_s": 0.6333
+        "t_s": 0.1667
       },
       {
-        "frame": 24,
+        "frame": 9,
         "joint": "RightToeBase",
         "event": "lift",
-        "t_s": 0.8
+        "t_s": 0.3
       },
       {
-        "frame": 24,
+        "frame": 9,
         "joint": "RightToeBase_end",
         "event": "lift",
-        "t_s": 0.8
+        "t_s": 0.3
       },
       {
-        "frame": 31,
+        "frame": 17,
         "joint": "LeftToeBase",
         "event": "plant",
-        "t_s": 1.0333
+        "t_s": 0.5667
       },
       {
-        "frame": 31,
+        "frame": 17,
         "joint": "LeftToeBase_end",
         "event": "plant",
-        "t_s": 1.0333
+        "t_s": 0.5667
       },
       {
-        "frame": 36,
+        "frame": 21,
         "joint": "LeftToeBase",
         "event": "lift",
-        "t_s": 1.2
+        "t_s": 0.7
       },
       {
-        "frame": 36,
+        "frame": 21,
         "joint": "LeftToeBase_end",
         "event": "lift",
-        "t_s": 1.2
+        "t_s": 0.7
       },
       {
-        "frame": 43,
+        "frame": 29,
         "joint": "RightToeBase",
         "event": "plant",
-        "t_s": 1.4333
+        "t_s": 0.9667
       },
       {
-        "frame": 43,
+        "frame": 29,
         "joint": "RightToeBase_end",
         "event": "plant",
-        "t_s": 1.4333
+        "t_s": 0.9667
       },
       {
-        "frame": 48,
+        "frame": 33,
         "joint": "RightToeBase",
         "event": "lift",
-        "t_s": 1.6
+        "t_s": 1.1
       },
       {
-        "frame": 48,
+        "frame": 33,
         "joint": "RightToeBase_end",
         "event": "lift",
-        "t_s": 1.6
+        "t_s": 1.1
       },
       {
-        "frame": 55,
+        "frame": 41,
         "joint": "LeftToeBase",
         "event": "plant",
-        "t_s": 1.8333
+        "t_s": 1.3667
       },
       {
-        "frame": 55,
+        "frame": 41,
         "joint": "LeftToeBase_end",
         "event": "plant",
-        "t_s": 1.8333
+        "t_s": 1.3667
       },
       {
-        "frame": 61,
+        "frame": 45,
         "joint": "LeftToeBase",
         "event": "lift",
-        "t_s": 2.0333
+        "t_s": 1.5
       },
       {
-        "frame": 61,
+        "frame": 45,
         "joint": "LeftToeBase_end",
         "event": "lift",
-        "t_s": 2.0333
+        "t_s": 1.5
+      },
+      {
+        "frame": 53,
+        "joint": "RightToeBase",
+        "event": "plant",
+        "t_s": 1.7667
+      },
+      {
+        "frame": 53,
+        "joint": "RightToeBase_end",
+        "event": "plant",
+        "t_s": 1.7667
+      },
+      {
+        "frame": 59,
+        "joint": "RightToeBase",
+        "event": "lift",
+        "t_s": 1.9667
+      },
+      {
+        "frame": 59,
+        "joint": "RightToeBase_end",
+        "event": "lift",
+        "t_s": 1.9667
       },
       {
         "frame": 78,
-        "joint": "RightToeBase",
+        "joint": "LeftToeBase",
         "event": "plant",
         "t_s": 2.6
       },
       {
         "frame": 78,
-        "joint": "RightToeBase_end",
+        "joint": "LeftToeBase_end",
         "event": "plant",
         "t_s": 2.6
       },
       {
-        "frame": 85,
-        "joint": "LeftToeBase",
-        "event": "plant",
-        "t_s": 2.8333
-      },
-      {
-        "frame": 85,
-        "joint": "LeftToeBase_end",
-        "event": "plant",
-        "t_s": 2.8333
-      },
-      {
-        "frame": 92,
+        "frame": 84,
         "joint": "RightToeBase",
-        "event": "lift",
-        "t_s": 3.0667
+        "event": "plant",
+        "t_s": 2.8
       },
       {
-        "frame": 92,
+        "frame": 84,
         "joint": "RightToeBase_end",
-        "event": "lift",
-        "t_s": 3.0667
+        "event": "plant",
+        "t_s": 2.8
       },
       {
-        "frame": 103,
+        "frame": 98,
         "joint": "LeftToeBase",
         "event": "lift",
-        "t_s": 3.4333
+        "t_s": 3.2667
       },
       {
-        "frame": 103,
+        "frame": 98,
         "joint": "LeftToeBase_end",
         "event": "lift",
-        "t_s": 3.4333
+        "t_s": 3.2667
       },
       {
-        "frame": 104,
-        "joint": "RightToeBase",
+        "frame": 112,
+        "joint": "LeftToeBase",
         "event": "plant",
-        "t_s": 3.4667
+        "t_s": 3.7333
       },
       {
-        "frame": 104,
-        "joint": "RightToeBase_end",
+        "frame": 112,
+        "joint": "LeftToeBase_end",
         "event": "plant",
-        "t_s": 3.4667
-      },
-      {
-        "frame": 114,
-        "joint": "RightToeBase",
-        "event": "lift",
-        "t_s": 3.8
-      },
-      {
-        "frame": 114,
-        "joint": "RightToeBase_end",
-        "event": "lift",
-        "t_s": 3.8
+        "t_s": 3.7333
       },
       {
         "frame": 116,
-        "joint": "LeftToeBase",
-        "event": "plant",
+        "joint": "RightToeBase",
+        "event": "lift",
         "t_s": 3.8667
       },
       {
         "frame": 116,
-        "joint": "LeftToeBase_end",
-        "event": "plant",
+        "joint": "RightToeBase_end",
+        "event": "lift",
         "t_s": 3.8667
       },
       {
-        "frame": 126,
+        "frame": 124,
         "joint": "LeftToeBase",
         "event": "lift",
-        "t_s": 4.2
+        "t_s": 4.1333
       },
       {
-        "frame": 126,
+        "frame": 124,
         "joint": "LeftToeBase_end",
         "event": "lift",
-        "t_s": 4.2
+        "t_s": 4.1333
       },
       {
         "frame": 130,
@@ -508,46 +460,40 @@
         "t_s": 4.3333
       },
       {
-        "frame": 139,
-        "joint": "RightToeBase",
-        "event": "lift",
-        "t_s": 4.6333
+        "frame": 141,
+        "joint": "LeftToeBase",
+        "event": "plant",
+        "t_s": 4.7
       },
       {
-        "frame": 139,
+        "frame": 141,
+        "joint": "LeftToeBase_end",
+        "event": "plant",
+        "t_s": 4.7
+      },
+      {
+        "frame": 142,
+        "joint": "RightToeBase",
+        "event": "lift",
+        "t_s": 4.7333
+      },
+      {
+        "frame": 142,
         "joint": "RightToeBase_end",
         "event": "lift",
-        "t_s": 4.6333
+        "t_s": 4.7333
       },
       {
-        "frame": 145,
-        "joint": "LeftToeBase",
-        "event": "plant",
-        "t_s": 4.8333
-      },
-      {
-        "frame": 145,
-        "joint": "LeftToeBase_end",
-        "event": "plant",
-        "t_s": 4.8333
-      },
-      {
-        "frame": 154,
+        "frame": 158,
         "joint": "LeftToeBase",
         "event": "lift",
-        "t_s": 5.1333
+        "t_s": 5.2667
       },
       {
-        "frame": 154,
+        "frame": 158,
         "joint": "LeftToeBase_end",
         "event": "lift",
-        "t_s": 5.1333
-      },
-      {
-        "frame": 160,
-        "joint": "RightToeBase",
-        "event": "plant",
-        "t_s": 5.3333
+        "t_s": 5.2667
       },
       {
         "frame": 160,
@@ -556,16 +502,22 @@
         "t_s": 5.3333
       },
       {
-        "frame": 169,
-        "joint": "LeftToeBase",
+        "frame": 170,
+        "joint": "RightToeBase",
         "event": "plant",
-        "t_s": 5.6333
+        "t_s": 5.6667
       },
       {
-        "frame": 169,
+        "frame": 174,
         "joint": "LeftToeBase_end",
         "event": "plant",
-        "t_s": 5.6333
+        "t_s": 5.8
+      },
+      {
+        "frame": 182,
+        "joint": "LeftToeBase",
+        "event": "plant",
+        "t_s": 6.0667
       }
     ],
     "sliding": [],
@@ -573,28 +525,33 @@
   },
   "balance": {
     "com_to_support_mm": {
-      "max": 357.5,
-      "mean": 93.64,
-      "at_frame": 49
+      "max": 383.83,
+      "mean": 117.69,
+      "at_frame": 128
     },
     "airborne_frames": [
+      0,
+      1,
+      2,
+      11,
+      12,
       13,
       14,
-      15,
-      16,
-      17,
+      23,
+      24,
+      25,
       26,
-      27,
-      28,
-      29,
+      35,
+      36,
       37,
       38,
-      39,
-      40,
-      41,
+      46,
+      47,
+      48,
+      49,
       50,
-      51,
-      52,
+      60,
+      61,
       62,
       63,
       64,
@@ -609,46 +566,44 @@
       73,
       74,
       75,
-      141,
-      142,
-      156,
-      157
+      76,
+      127
     ],
-    "airborne_ratio": 0.1458,
+    "airborne_ratio": 0.1583,
     "note": "distance from the COM's ground projection to the support base; large values in flight//dynamic frames are expected - read them with airborne_frames"
   },
   "penetration": [],
   "smoothness": {
     "jerk_rms_mm_s3": {
-      "Hips": 156725.6,
-      "Spine": 157054.5,
-      "Chest": 158424.6,
-      "Neck": 163308.4,
-      "Head": 166798.3,
-      "Head_end": 174819.8,
-      "LeftShoulder": 162028.7,
-      "LeftArm": 161705.3,
-      "LeftForeArm": 222673.3,
-      "LeftHand": 325443.0,
-      "LeftHand_end": 416047.1,
-      "RightShoulder": 162194.3,
-      "RightArm": 162588.4,
-      "RightForeArm": 245738.2,
-      "RightHand": 347147.0,
-      "RightHand_end": 442232.0,
-      "LeftUpLeg": 156926.0,
-      "LeftLeg": 742401.7,
-      "LeftFoot": 717349.9,
-      "LeftToeBase": 714868.5,
-      "LeftToeBase_end": 714046.1,
-      "RightUpLeg": 156660.8,
-      "RightLeg": 976581.4,
-      "RightFoot": 729675.0,
-      "RightToeBase": 711724.2,
-      "RightToeBase_end": 710406.4
+      "Hips": 79543.7,
+      "Spine": 84285.8,
+      "Spine1": 99810.8,
+      "Neck": 132068.2,
+      "Head": 147201.8,
+      "Head_end": 162134.8,
+      "LeftShoulder": 123776.3,
+      "LeftArm": 124817.0,
+      "LeftForeArm": 171157.3,
+      "LeftHand": 252158.1,
+      "LeftHand_end": 328124.2,
+      "RightShoulder": 124007.4,
+      "RightArm": 125801.9,
+      "RightForeArm": 133939.6,
+      "RightHand": 170320.9,
+      "RightHand_end": 211057.4,
+      "LeftUpLeg": 78325.0,
+      "LeftLeg": 371783.4,
+      "LeftFoot": 225635.4,
+      "LeftToeBase": 227052.2,
+      "LeftToeBase_end": 227185.6,
+      "RightUpLeg": 78446.3,
+      "RightLeg": 334829.0,
+      "RightFoot": 220818.2,
+      "RightToeBase": 228837.2,
+      "RightToeBase_end": 231551.7
     },
-    "roughest_joint": "RightLeg",
-    "roughest_jerk_rms_mm_s3": 976581.4,
+    "roughest_joint": "LeftLeg",
+    "roughest_jerk_rms_mm_s3": 371783.4,
     "pops": [],
     "pop_count": 0,
     "raw_spike_count": 0,
@@ -656,19 +611,19 @@
   },
   "loop": {
     "pose_gap_mm": {
-      "max": 654.35,
-      "mean": 231.97,
-      "worst_joint": "RightHand_end"
+      "max": 742.27,
+      "mean": 245.64,
+      "worst_joint": "LeftHand_end"
     },
-    "typical_frame_motion_mm": 87.6,
+    "typical_frame_motion_mm": 74.45,
     "velocity_gap_mm_frame": {
-      "max": 27.44,
-      "worst_joint": "Head"
+      "max": 78.42,
+      "worst_joint": "LeftToeBase"
     },
     "root_travel_mm": [
-      2299.98,
-      20.15,
-      8801.04
+      2215.0,
+      13.47,
+      7200.0
     ],
     "convention": "discontinuous",
     "loops_cleanly": false,
@@ -691,8 +646,7 @@
     ],
     "flight_arcs": [
       "flight_0_arc.png",
-      "flight_1_arc.png",
-      "flight_2_arc.png"
+      "flight_1_arc.png"
     ],
     "gif": "playback.gif"
   }

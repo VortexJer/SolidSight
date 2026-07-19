@@ -102,28 +102,29 @@ animationsight diff jump_floaty.bvh jump_fixed.bvh --kind oneshot
 ## Blind vs measured: the parkour vault
 
 [`examples/03-parkour`](examples/03-parkour) is the full study: a
-240-frame run → kong vault → land → turn → settle sequence authored
-twice — once by a cold-context agent with **no tools at all** (numpy
-and arithmetic, one shot), once through this tool's loop. The blind
-clip's structure is genuinely good and its physics is genuinely wrong:
-strides at 0.47–0.67x g, a 10.95 mm toe skate, outbound steps whose
-root glides airborne. The after clip audits **`OK`, zero findings** —
-and auditing the pair forced three fixes into the tool itself
-(`root-on-rails`, height-only airborne detection, `diff --kind`).
+240-frame run → vault → land → turn → settle sequence authored twice —
+once by a cold-context agent with **no tools at all** (numpy and
+arithmetic, one shot), once through this tool's loop. The blind clip is
+genuinely strong — hand-solved vault ballistics that measure 1.03x g,
+IK-pinned feet, zero sliding — and still ships what no eye can see: a
+stride flight at 0.47x g, a turn step whose "flight" is really IK
+overreach lifting the planted foot, a 116607 mm/s² knee pop at the
+landing. The after clip audits **`OK`, zero findings**, and the diff
+proves each fix did what it meant.
 
 <p align="center">
   <img src="examples/03-parkour/audit_blind/playback.gif" width="49%">
   <img src="examples/03-parkour/audit_after/playback.gif" width="49%">
 </p>
-<p align="center"><em>left: the blind clip — the run looks plausible until you notice nothing ever commits to the ground · right: the after clip — same choreography, physics that measures clean</em></p>
+<p align="center"><em>left: the blind one-shot — competent enough that its defects are exactly the invisible kind · right: the after clip — same choreography, physics that measures clean</em></p>
 
 <p align="center">
-  <img src="examples/03-parkour/audit_blind/flight_1_arc.png" width="49%">
-  <img src="examples/03-parkour/audit_after/flight_1_arc.png" width="49%">
+  <img src="examples/03-parkour/audit_blind/flight_0_arc.png" width="49%">
+  <img src="examples/03-parkour/audit_after/flight_0_arc.png" width="49%">
 </p>
-<p align="center"><em>the vault flight's arc sheet — blind: the measured COM arc (red) floats above the 1 g reference (green) · after: 1.029x g, the arcs coincide</em></p>
+<p align="center"><em>the stride flight's arc sheet — blind: the measured COM arc (red) runs flat at 0.47x g while the 1 g reference (green) falls · after: 1.0x g, the arcs coincide</em></p>
 
-## Three bugs this found in itself
+## Four bugs this found in itself
 
 Worth stating plainly, because they are the same class of bug the tool
 exists to catch:
@@ -142,6 +143,10 @@ exists to catch:
    metric measured the freshly-authored demo jump at 0.68 g — written as
    an "arbitrary nice parabola" and shipped without a second look. It is
    now `examples/02-jump`, defect preserved, with the fix beside it.
+4. **`diff` printed `Nonex gravity`** when a flight exists on only one
+   side — which is precisely what a good fix produces (the parkour turn
+   step stopped being a "flight" once its planted foot stayed down). It
+   says `no flight` now, regression-tested.
 
 ## Scope, honestly
 

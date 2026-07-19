@@ -341,8 +341,11 @@ def diff_reports(a: dict, b: dict) -> list[str]:
         if ga != gb:
             da = f"{fa[i]['duration_s']}s" if i < len(fa) else "-"
             db = f"{fb[i]['duration_s']}s" if i < len(fb) else "-"
-            lines.append(f"  flight {i}: {ga}x gravity ({da}) -> "
-                         f"{gb}x gravity ({db})")
+            # a flight that only exists on one side is "gone"/"new",
+            # not "Nonex gravity"
+            sa = f"{ga}x gravity ({da})" if ga is not None else "no flight"
+            sb = f"{gb}x gravity ({db})" if gb is not None else "no flight"
+            lines.append(f"  flight {i}: {sa} -> {sb}")
 
     # peak speeds: whole-body edits move every joint by a similar amount
     # (rigid motion), so show the largest few and fold the rest

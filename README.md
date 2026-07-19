@@ -103,7 +103,7 @@ ones nobody can see without measuring:
 
 | study | blind | after |
 |---|---|---|
-| [parkour vault](animationsight/examples/03-parkour) (animationsight) | strides at 0.47–0.67x g, toe skate, root on rails | **OK — 0 findings**, vault at 1.03x g |
+| [parkour vault](animationsight/examples/03-parkour) (animationsight) | a 0.47x g stride, root on rails in the turn, a knee pop at landing | **OK — 0 findings**, every flight at 1 g |
 | [hero crate](texturesight/examples/03-crate-hero) (texturesight) | 148 flipped UVs (FAIL), 7.35:1 stretch, 54x density spread | 0 flips, 1.005 anisotropy, 3.35x |
 | [material set](shadersight/examples/04-materials) (shadersight) | 8/8 conserve — the one FAIL was the tool's own estimator noise | tool fixed + graph 436 → 204 ALU/px |
 | [rover board](pcbsight/examples/02-rover) (pcbsight) | 12 open nets, 26 clearance faults | routed: **OK — 0 findings** |
@@ -115,7 +115,7 @@ competence — the only variable is being able to measure.
   <img src="animationsight/examples/03-parkour/audit_blind/playback.gif" width="49%">
   <img src="animationsight/examples/03-parkour/audit_after/playback.gif" width="49%">
 </p>
-<p align="center"><em>the parkour vault — blind: floaty strides (0.47–0.67x g), toe skate, airborne root gliding on rails · after: every flight at 1 g, feet planted, <b>0 findings</b></em></p>
+<p align="center"><em>the parkour vault — blind: a 0.47x g stride, a turn step on invisible rails, a knee pop at the landing · after: every flight at 1 g, <b>0 findings</b></em></p>
 
 <p align="center">
   <img src="texturesight/examples/03-crate-hero/audit_blind/uv_layout.png" width="49%">
