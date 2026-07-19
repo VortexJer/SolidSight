@@ -131,12 +131,16 @@ Then `inspect` the result — an edit without a re-inspect is a claim.
 ### Showing the human
 
 `report.json` and the renders are YOUR interface; the person you work
-for gets a browser page. End the final run with `--show`, or run
-`animationsight preview out/` — it builds `out/index.html` (verdict +
-every render, GIFs first) and opens it. Never use it for yourself.
+for gets a browser page. **ALWAYS end a commission's FINAL run with
+`--show`** (or run `animationsight preview out/`) — it builds
+`out/index.html` (verdict + every render, GIFs first) and opens it in
+their browser. Not optional, and they should not have to ask; one
+popup per commission (skip it on intermediate iterations). Never use
+it for yourself.
 
 ## Honesty Rules
 
+- A commission that names a SPECIFIC real thing (a particular character, vehicle, device, board) without its identifying details: ask which exact one BEFORE working — never substitute your invented average of the category.
 - Never say a clip "looks good". Say what was measured and what the
   numbers were.
 - The COM is only as good as the joint names: if

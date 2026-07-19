@@ -110,12 +110,15 @@ claim.
 ### Showing the human
 
 `report.json` is YOUR interface; the person you work for gets a
-browser page. End the final run with `--show`, or run
-`shadersight preview out/` — it builds `out/index.html` (verdict,
-curves, previews) and opens it. Never use it for yourself.
+browser page. **ALWAYS end a commission's FINAL run with `--show`**
+(or run `shadersight preview out/`) — it builds `out/index.html`
+(verdict, curves, previews) and opens it in their browser. Not
+optional, and they should not have to ask; one popup per commission
+(skip it on intermediate iterations). Never use it for yourself.
 
 ## Honesty Rules
 
+- A commission that names a SPECIFIC real thing (a particular character, vehicle, device, board) without its identifying details: ask which exact one BEFORE working — never substitute your invented average of the category.
 - Never say a material "looks right". Say it conserves energy up to X,
   is reciprocal to Y, at grid Z.
 - Distinguish law violations (FAIL: wrong in any renderer) from model

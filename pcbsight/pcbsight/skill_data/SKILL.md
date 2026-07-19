@@ -102,12 +102,16 @@ without a re-inspect is a claim.
 ### Showing the human
 
 `report.json` and `board.png` are YOUR interface; the person you work
-for gets a browser page. End the final run with `--show`, or run
-`pcbsight preview out/` — it builds `out/index.html` (verdict +
-renders) and opens it. Never use it for yourself.
+for gets a browser page. **ALWAYS end a commission's FINAL run with
+`--show`** (or run `pcbsight preview out/`) — it builds
+`out/index.html` (verdict + renders) and opens it in their browser.
+Not optional, and they should not have to ask; one popup per
+commission (skip it on intermediate iterations). Never use it for
+yourself.
 
 ## Honesty Rules
 
+- A commission that names a SPECIFIC real thing (a particular character, vehicle, device, board) without its identifying details: ask which exact one BEFORE working — never substitute your invented average of the category.
 - Every clearance claim carries its coordinates; every current claim
   carries its dT and copper weight. No naked numbers.
 - The clearance rule and stackup used are stated in the report - if

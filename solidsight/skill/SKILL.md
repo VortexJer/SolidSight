@@ -96,6 +96,17 @@ Every part name here becomes an `emit(solid, name="...")` at the end of the
 file. If you cannot write this list, you do not understand the request yet —
 ask the user, do not guess geometry.
 
+**A SPECIFIC referent = ALWAYS ask the detail question.** The
+detail-mode question below is not only for engines and gearboxes: if
+the request names or implies a particular real thing you cannot
+imagine on its own — "my car", "a Porsche 911", a specific phone, a
+specific machine — you MUST ask it every time, whatever the object.
+Only generic requests with sensible defaults ("a mug", "a phone
+stand") skip the question. If they choose detailed and gave no specs,
+first pin down the exact variant (which model / year / trim), then
+research it and tag every spec `[researched]`/`[standard]`/`[assumed]`
+— never silently substitute your invented average of the category.
+
 **Detail mode is OPT-IN — always ask first, never assume.** If the
 request is a real technical object (engine, gearbox, housing, pump...)
 and the user did not already say how faithful it must be, ask ONE
@@ -164,6 +175,12 @@ Core rules (full language reference: `references/design-language.md`):
 proves when an edit changed nothing), and `solidsight view model.py`
 serves a live browser viewer — section planes, isolate, explode,
 two-point measuring — that hot-reloads on each successful rebuild.
+
+**Working for a human? ALWAYS give them the live preview.** As soon as
+the first model file exists, launch `solidsight view model.py` in the
+background and tell them it is open — they watch the design evolve
+with every rebuild while you keep working from renders and
+report.json. This is not optional and they should not have to ask.
 
 ### Step 4 - Build and LOOK after every geometric change
 
