@@ -51,6 +51,7 @@ solidsight components show bearing_608
 solidsight query model.py distance lid box       # exact min distance / overlap between two parts
 solidsight fit 8 H7 g6                           # ISO 286 limits & fits, real values
 solidsight explain thin-wall                     # what a check id means + evidence + fix menu
+solidsight profile side.png --length 4465        # MEASURE a side/front silhouette -> exact mm envelope (cars, profiles)
 solidsight critique model.py                     # full design review (findings + verified good)
 solidsight cost model.py --process fdm           # material + machine-time estimate
 solidsight assembly model.py                     # BOM, per-axis play, suggested assembly sequence
@@ -160,7 +161,11 @@ vocabulary, and the measured pitfalls.
 first: LOOK at the image, estimate real dimensions with named anchors,
 trace faithful flat shapes with `image_outline()`, reliefs with
 `image_heightfield()`, and build with `--ref photo.png` so every build
-writes a reference-vs-render comparison sheet to look at.
+writes a reference-vs-render comparison sheet to look at. For a
+straight-on side/front view of a designed form (a car, a bottle, a
+chair profile), don't eyeball the proportions — `profile_read()` /
+`solidsight profile` MEASURES the silhouette into an exact mm envelope
+your loft stations copy.
 
 ### Step 2 - Check the catalog before deriving geometry
 

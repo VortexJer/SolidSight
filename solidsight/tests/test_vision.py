@@ -5,7 +5,23 @@ import pytest
 from PIL import Image, ImageDraw
 
 from solidsight.errors import BadArgumentError, EmptyGeometryError
-from solidsight.vision import image_heightfield, image_outline
+from solidsight.vision import (image_heightfield, image_outline,
+                               profile_read)
+
+
+@pytest.fixture()
+def car_side_png(tmp_path):
+    """A toy car side silhouette: a bulged body on two ground-touching
+    wheels, dark on white, 800x400 px."""
+    im = Image.new("L", (800, 400), 255)
+    d = ImageDraw.Draw(im)
+    d.polygon([(80, 300), (180, 300), (230, 180), (520, 150), (600, 220),
+               (720, 240), (720, 300), (80, 300)], fill=20)
+    for cx in (220, 600):                      # wheels touch ground at y=340
+        d.ellipse([cx - 45, 250, cx + 45, 340], fill=20)
+    p = tmp_path / "car_side.png"
+    im.save(p)
+    return p
 
 
 @pytest.fixture()
@@ -92,6 +108,61 @@ def test_heightfield_invert_is_complementary(tmp_path):
     both = a.volume + b.volume
     # a + b = footprint * (2*base + relief) exactly, up to resampling
     assert both == pytest.approx(footprint * (2 * 1 + 8), rel=0.02)
+
+
+def test_profile_read_measures_length_height_and_axles(car_side_png):
+    r = profile_read(str(car_side_png), length=4465, stations=12)
+    # length is the anchor, so it is exact
+    assert r["length_mm"] == pytest.approx(4465.0, rel=1e-4)
+    # body spans rows 150..340 px at 4465/640 mm/px -> ~1325 mm tall
+    assert r["height_mm"] == pytest.approx(1325.0, rel=0.03)
+    # both wheels (drawn at cx 220 and 600 px) are found and ordered
+    assert len(r["axles"]) == 2
+    assert r["axles"][0]["x"] < r["axles"][1]["x"]
+    # drawn wheelbase 380 px * 6.977 mm/px ~ 2651 mm
+    assert r["wheelbase_measured_mm"] == pytest.approx(2651.0, rel=0.04)
+    assert len(r["stations"]) == 12
+    # the roof crown (mid) sits well above the front stub
+    tops = [s["top_z"] for s in r["stations"]]
+    assert max(tops) > tops[0] + 500
+
+
+def test_profile_read_is_deterministic(car_side_png):
+    a = profile_read(str(car_side_png), length=4465, stations=9)
+    b = profile_read(str(car_side_png), length=4465, stations=9)
+    assert a["stations"] == b["stations"]
+    assert a["axles"] == b["axles"]
+
+
+def test_profile_read_writes_verification_overlay(car_side_png, tmp_path):
+    out = tmp_path / "check.png"
+    r = profile_read(str(car_side_png), length=4465, overlay=str(out))
+    assert out.exists()
+    assert r["overlay"] == str(out)
+    # overlay keeps the source dimensions
+    with Image.open(out) as im:
+        assert im.size == (800, 400)
+
+
+def test_profile_read_wheelbase_anchor(car_side_png):
+    # anchor on the known wheelbase + the two axle pixel columns instead
+    r = profile_read(str(car_side_png), wheelbase=2704,
+                     axle_px=(220, 600), stations=6)
+    # scale set so those columns are exactly 2704 mm apart -> length scales up
+    assert r["length_mm"] == pytest.approx(640 * 2704 / 380, rel=0.02)
+
+
+def test_profile_read_needs_an_anchor(car_side_png):
+    with pytest.raises(BadArgumentError):
+        profile_read(str(car_side_png))
+
+
+def test_profile_read_blank_image_says_what_to_try(tmp_path):
+    p = tmp_path / "blank.png"
+    Image.new("L", (60, 60), 255).save(p)
+    with pytest.raises(EmptyGeometryError) as ei:
+        profile_read(str(p), length=1000)
+    assert "invert" in str(ei.value)
 
 
 def test_heightfield_is_watertight_single_shell(tmp_path):

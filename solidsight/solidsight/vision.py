@@ -13,12 +13,15 @@ them, like from_stl() does.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import numpy as np
 
-from .errors import BadArgumentError, EmptyGeometryError
+from .errors import BadArgumentError, EmptyGeometryError, fmt_num
 from .geom import Sketch, Solid, _warn
 
-__all__ = ["image_outline", "image_heightfield", "comparison_sheet"]
+__all__ = ["image_outline", "image_heightfield", "comparison_sheet",
+           "profile_read"]
 
 _IMG_EXTS = (".png", ".jpg", ".jpeg", ".bmp", ".gif", ".webp", ".tif",
              ".tiff")
@@ -206,6 +209,190 @@ def comparison_sheet(ref_path, render_path, out_path,
         draw.text((x + 2, pad), label, fill=(40, 40, 40), font=font)
         x += im.width + pad
     sheet.save(out_path)
+
+
+def _largest_blob(mask: np.ndarray) -> np.ndarray:
+    """Keep only the biggest 4-connected component of a boolean mask, so
+    dimension lines, callout text and scanner specks around a side-view
+    drawing do not pollute the measured silhouette."""
+    from scipy import ndimage
+
+    lbl, n = ndimage.label(mask)
+    if n <= 1:
+        return mask
+    counts = np.bincount(lbl.ravel())
+    counts[0] = 0
+    return lbl == int(counts.argmax())
+
+
+def _runs(idx: np.ndarray, gap: int = 1):
+    """Split a sorted index array into contiguous runs (max step `gap`)."""
+    if len(idx) == 0:
+        return []
+    breaks = np.where(np.diff(idx) > gap)[0]
+    return np.split(idx, breaks + 1)
+
+
+def profile_read(path: str, length: float | None = None,
+                 wheelbase: float | None = None,
+                 axle_px: tuple[float, float] | None = None,
+                 stations: int = 14, invert: bool = False,
+                 threshold: float = 0.5, overlay: str | None = None) -> dict:
+    """MEASURE a clean side (or front) silhouette into exact numbers — the
+    cure for eyeballing a car's proportions.
+
+    Feed it a straight-on side profile (a "<car> blueprint side view" line
+    drawing or a filled silhouette on a plain background). It finds the
+    body, scales pixels to millimetres from ONE real anchor, and returns
+    the measured shape so your loft stations come from the photo, not your
+    imagination:
+
+      - overall length and height (mm),
+      - the UPPER envelope (roof/hood/decklid crown line) and the LOWER
+        envelope (rocker/underside) sampled at `stations` x-positions,
+      - auto-detected wheel axles (the two ground-touching clusters) with
+        their x and radius, and the measured wheelbase,
+
+    Scale comes from exactly one anchor: pass real `length` (mm), OR
+    `wheelbase` (mm) together with `axle_px=(front_col, rear_col)` if you
+    read the two axle pixel columns yourself. The image's own two in-plane
+    axes are reported as (x, z): the agent labels which is length/height.
+    Run it on a FRONT view too and the same envelopes give width and the
+    tumblehome/shoulder — width never comes from a side view.
+
+    Pass `overlay="check.png"` to burn the sampled points and detected
+    axles back onto the image: LOOK at it to confirm the read before you
+    build. This measures the geometry; you still judge what the object is.
+    """
+    arr, name = _load_gray(path)
+    if stations < 3:
+        raise BadArgumentError("profile_read() needs stations >= 3")
+    if not 0.0 < threshold < 1.0:
+        raise BadArgumentError(
+            f"threshold must be between 0 and 1, got {threshold}")
+    mask = (arr < threshold) if not invert else (arr > threshold)
+    if int(mask.sum()) < 16:
+        raise EmptyGeometryError(
+            f"profile_read({name}): no shape found at threshold={threshold}"
+            + (" (invert=True)" if invert else ""),
+            suggestion="a side view should be a dark shape on a light "
+                       "background; pass invert=True for light-on-dark, or "
+                       "adjust threshold")
+    body = _largest_blob(mask)
+    h_px, w_px = body.shape
+    cols_any = np.where(body.any(axis=0))[0]
+    x0, x1 = int(cols_any.min()), int(cols_any.max())
+    span_px = x1 - x0
+    if span_px < 2:
+        raise EmptyGeometryError(f"profile_read({name}): silhouette too thin")
+
+    # per-column top (highest = smallest row) and bottom (largest row)
+    top_row = np.full(w_px, -1)
+    bot_row = np.full(w_px, -1)
+    for c in cols_any:
+        rows = np.where(body[:, c])[0]
+        top_row[c] = int(rows.min())
+        bot_row[c] = int(rows.max())
+
+    # scale (mm per pixel) from one real anchor
+    if length is not None:
+        scale = float(length) / span_px
+        anchor = f"length {fmt_num(length)} mm"
+    elif wheelbase is not None and axle_px is not None:
+        a0, a1 = float(axle_px[0]), float(axle_px[1])
+        if abs(a1 - a0) < 1.0:
+            raise BadArgumentError("profile_read() axle_px columns coincide")
+        scale = float(wheelbase) / abs(a1 - a0)
+        anchor = f"wheelbase {fmt_num(wheelbase)} mm"
+    else:
+        raise BadArgumentError(
+            "profile_read() needs a real-world anchor",
+            suggestion="pass length=<mm> (overall length, published for "
+                       "every car), or wheelbase=<mm> with "
+                       "axle_px=(front_col, rear_col)")
+
+    def X(col):  # image column -> body x in mm, 0 at the left edge
+        return round(float((col - x0) * scale), 2)
+
+    def Z(row):  # image row -> world-up z in mm, 0 at the lowest body pixel
+        return round(float((ground_row - row) * scale), 2)
+
+    ground_row = int(bot_row[cols_any].max())      # lowest body pixel
+    length_mm = round(span_px * scale, 2)
+    z_top = Z(int(top_row[cols_any].min()))
+    height_mm = round(z_top, 2)
+
+    # sample the envelopes at evenly spaced stations
+    st_cols = np.linspace(x0, x1, stations).round().astype(int)
+    env = []
+    for c in st_cols:
+        c = int(np.clip(c, x0, x1))
+        if top_row[c] < 0:                          # gap column: nearest
+            near = cols_any[np.argmin(np.abs(cols_any - c))]
+            c = int(near)
+        env.append({"x": X(c), "top_z": Z(top_row[c]),
+                    "bottom_z": Z(bot_row[c])})
+
+    # wheel axles: columns whose underside touches the ground band
+    band = max(2, round(0.03 * (ground_row - top_row[cols_any].min())))
+    ground_cols = cols_any[bot_row[cols_any] >= ground_row - band]
+    axles = []
+    for run in _runs(ground_cols, gap=max(1, round(0.01 * span_px))):
+        if len(run) < 2:
+            continue
+        cc = int(round(run.mean()))
+        axles.append({"x": X(cc), "radius": round(len(run) * scale / 2.0, 2),
+                      "_col": cc})
+    axles.sort(key=lambda a: a["x"])
+    wheelbase_meas = (round(abs(axles[-1]["x"] - axles[0]["x"]), 2)
+                      if len(axles) >= 2 else None)
+
+    result = {
+        "image": name, "scale_mm_per_px": round(scale, 5), "anchor": anchor,
+        "length_mm": length_mm, "height_mm": height_mm,
+        "stations": env,
+        "axles": [{"x": a["x"], "radius": a["radius"]} for a in axles],
+        "wheelbase_measured_mm": wheelbase_meas,
+        "note": "x is 0 at the LEFT image edge, z is 0 at the lowest body "
+                "pixel; label which end is the front from the picture. "
+                "Width comes from a front/top view, never this one.",
+    }
+
+    if overlay is not None:
+        _annotate_profile(path, overlay, env, axles, scale, x0, ground_row)
+        result["overlay"] = str(overlay)
+    return result
+
+
+def _annotate_profile(src, out, env, axles, scale, x0, ground_row) -> None:
+    """Burn the sampled envelope points and detected axles onto a copy of
+    the source image so the human/agent can confirm the measurement."""
+    from PIL import Image, ImageDraw
+
+    from .assembly import _resolve
+    with Image.open(_resolve(src)) as im:
+        im = im.convert("RGB")
+    draw = ImageDraw.Draw(im)
+
+    def col(xmm):
+        return x0 + xmm / scale
+    for e in env:
+        cx = col(e["x"])
+        ty = ground_row - e["top_z"] / scale
+        by = ground_row - e["bottom_z"] / scale
+        draw.line([(cx, ty), (cx, by)], fill=(0, 170, 255), width=1)
+        draw.ellipse([cx - 3, ty - 3, cx + 3, ty + 3], outline=(230, 40, 40),
+                     width=2)                         # roof/hood crown
+        draw.ellipse([cx - 3, by - 3, cx + 3, by + 3], outline=(40, 190, 90),
+                     width=2)                         # underside
+    for a in axles:
+        cx = a["_col"]
+        draw.line([(cx, 0), (cx, im.height)], fill=(255, 140, 0), width=1)
+    outp = Path(out)
+    if not outp.is_absolute():
+        outp = _resolve(str(out))                    # relative to the model
+    outp.parent.mkdir(parents=True, exist_ok=True)
+    im.save(outp)
 
 
 def image_heightfield(path: str, width: float, relief: float,

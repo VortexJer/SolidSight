@@ -166,6 +166,35 @@ def main(argv: list[str] | None = None) -> int:
     cv.add_argument("src", help="input mesh file")
     cv.add_argument("dst", help="output mesh file (format from extension)")
 
+    pf = sub.add_parser(
+        "profile",
+        help="MEASURE a side/front silhouette (a car blueprint, a "
+             "product profile) into exact mm: roof + underside envelope, "
+             "dimensions, wheel axles — so loft stations come from the "
+             "image, not a guess")
+    pf.add_argument("image", help="a clean side (or front) view: dark "
+                                  "shape on a light background")
+    anchor = pf.add_mutually_exclusive_group(required=True)
+    anchor.add_argument("--length", type=float,
+                        help="real overall length in mm (published for "
+                             "every car) — the simplest scale anchor")
+    anchor.add_argument("--wheelbase", type=float,
+                        help="real wheelbase in mm; needs --axles too")
+    pf.add_argument("--axles", default=None, metavar="FRONT_COL,REAR_COL",
+                    help="the two axle pixel columns you read off the "
+                         "image (only with --wheelbase)")
+    pf.add_argument("--stations", type=int, default=14,
+                    help="how many x-positions to sample the envelope at "
+                         "(default 14)")
+    pf.add_argument("--invert", action="store_true",
+                    help="light shape on a dark background")
+    pf.add_argument("--threshold", type=float, default=0.5,
+                    help="dark/light cutoff 0..1 (default 0.5)")
+    pf.add_argument("--out", default=None, metavar="OVERLAY.png",
+                    help="write the read back onto the image to verify it "
+                         "(default: <image>.measured.png)")
+    pf.add_argument("--json", action="store_true")
+
     _add_query_parser(sub)
 
     bn = sub.add_parser("bench",
@@ -477,6 +506,12 @@ def _dispatch(parser, args) -> int:
                                args.part, say=_say)
         except SolidsightError as e:
             _say(f"DRAWING FAILED\n{e.render()}", err=True)
+            return 1
+    if args.command == "profile":
+        try:
+            return _profile(args)
+        except SolidsightError as e:
+            _say(f"PROFILE FAILED\n{e.render()}", err=True)
             return 1
     if args.command == "catalog":
         return _catalog(args.name)
@@ -1001,6 +1036,52 @@ def _convert(src: Path, dst: Path) -> int:
         return 1
     _say(f"converted {src.name} -> {dst}  "
          f"({len(mesh.faces)} triangles, watertight: {mesh.is_watertight})")
+    return 0
+
+
+def _profile(args) -> int:
+    from .vision import profile_read
+    img = Path(args.image)
+    axle_px = None
+    if args.axles:
+        try:
+            a, b = (float(v) for v in args.axles.split(","))
+            axle_px = (a, b)
+        except ValueError:
+            _say("PROFILE FAILED\nbad --axles (want FRONT_COL,REAR_COL)",
+                 err=True)
+            return 1
+    if args.wheelbase is not None and axle_px is None:
+        _say("PROFILE FAILED\n--wheelbase needs --axles FRONT_COL,REAR_COL\n"
+             "  tip: --length <mm> is the easier anchor", err=True)
+        return 1
+    out = Path(args.out) if args.out else img.with_suffix(
+        img.suffix + ".measured.png")
+    res = profile_read(str(img), length=args.length, wheelbase=args.wheelbase,
+                       axle_px=axle_px, stations=args.stations,
+                       invert=args.invert, threshold=args.threshold,
+                       overlay=str(out))
+    if args.json:
+        print(json.dumps(res, indent=2))
+        return 0
+    _say(f"profile: {res['image']}  (scale {res['scale_mm_per_px']} mm/px "
+         f"from {res['anchor']})")
+    _say(f"  length {res['length_mm']} mm | height {res['height_mm']} mm")
+    if res["axles"]:
+        ax = "; ".join(f"x={a['x']} r~{a['radius']}" for a in res["axles"])
+        wb = res["wheelbase_measured_mm"]
+        _say(f"  axles: {ax}"
+             + (f"  | measured wheelbase {wb} mm" if wb else ""))
+    else:
+        _say("  axles: none auto-detected (wheels may not be drawn)")
+    _say("  measured envelope (x from LEFT edge; front is your call):")
+    _say(f"  {'x_mm':>8} {'top_z':>8} {'bottom_z':>9}   (roof/hood | underside)")
+    for e in res["stations"]:
+        _say(f"  {e['x']:>8} {e['top_z']:>8} {e['bottom_z']:>9}")
+    _say(f"  overlay: {res.get('overlay')}")
+    _say("  NEXT: LOOK at the overlay to confirm the read, then build "
+         "loft_sections stations by SAMPLING top_z/bottom_z at each x. "
+         "Width comes from a front view (run profile on it too).")
     return 0
 
 

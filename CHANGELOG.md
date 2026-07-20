@@ -1,5 +1,33 @@
 # Changelog
 
+## 2026-07-20 — solidsight 0.11.0: measure the reference, don't squint at it
+
+The Vantage still came out wrong after 0.10.0 — not because the loft
+couldn't make the shape, but because the proportions were EYEBALLED
+from the photo. "It looks about right" is the exact squint solidsight
+exists to kill, and the perception step had escaped it. So the fix
+puts a ruler on the image:
+
+- **`profile_read()` / `solidsight profile`** — MEASURES a straight-on
+  side (or front) silhouette into exact millimetres: overall length
+  and height, the upper envelope (roof/hood/decklid crown) and lower
+  envelope (underside) sampled station by station, and the wheel axles
+  (with a measured wheelbase to confirm the scale). It isolates the
+  body from callout text/specks (largest connected blob), scales from
+  ONE real anchor (`--length`, or `--wheelbase` + the axle columns),
+  and writes an annotated overlay — red dots on the crown, green on the
+  underside, orange through the wheels — so a wrong read is caught by
+  LOOKING before any geometry is built. Deterministic; six new tests.
+- **`car-bodies.md` + `from-image.md`** — the car method now leads with
+  "do not eyeball": get a clean blueprint side view, run `profile`,
+  confirm the overlay, then build `loft_sections` stations by SAMPLING
+  the measured `top_z`/`bottom_z` — width from a front-view read. The
+  sanity checklist now requires the render's roofline to trace the
+  measured crown within ~30 mm.
+- A straight-on side view is now an explicit exception to "never trace
+  a 3D object's photo": it IS an orthographic profile, and
+  `profile_read` is built to measure it.
+
 ## 2026-07-19 — solidsight 0.10.0: cars stop being boxes with cabins
 
 A user asked for a 2024 Vantage coupe and got a greenhouse welded onto

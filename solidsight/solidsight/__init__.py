@@ -5,7 +5,7 @@ primitives, sketches, booleans, transforms, the parametric parts catalog and
 emit() for registering named parts.
 """
 
-__version__ = "0.10.0"
+__version__ = "0.11.0"
 
 from .errors import (BadArgumentError, EmptyGeometryError, ModelRuntimeError,
                      SceneError, SolidsightError)
@@ -16,7 +16,7 @@ from .geom import (DEFAULT_SEGMENTS, Sketch, Solid, box, circle, cone,
 from .scene import Scene, emit
 from .assembly import expect, from_mesh, from_model, from_stl, place
 from .robot import joint
-from .vision import image_heightfield, image_outline
+from .vision import image_heightfield, image_outline, profile_read
 from . import parts
 
 __all__ = [
@@ -32,7 +32,7 @@ __all__ = [
     # assembly
     "place", "from_model", "from_stl", "from_mesh", "expect", "joint",
     # image -> geometry
-    "image_outline", "image_heightfield",
+    "image_outline", "image_heightfield", "profile_read",
     # errors
     "SolidsightError", "EmptyGeometryError", "BadArgumentError",
     "SceneError", "ModelRuntimeError",

@@ -37,40 +37,66 @@ photos will read:
 
 ## The method
 
-1. **Research first** (detail-mode rules apply): the four numbers that
-   anchor everything are published for every car — overall length,
-   width, height, wheelbase `[researched]`. Fetch 3-6 photos (side,
-   front, rear, 3/4) and keep them as `--ref` images `[photo]`.
-   Example, Vantage 2024: 4465 x 1942 x 1273, WB 2704.
-2. **Lay the datums**: X along the length, Z up, ground at z=0. Place
-   the axles from wheelbase + overhangs (front overhang of a
-   front-engine coupe ~0.8-0.9 m, rear slightly longer).
-3. **Write ONE parametric station template** — a function that returns
+**Do not eyeball the photo.** A car is lost or won on its silhouette,
+and "it looks about right" is exactly the squint solidsight exists to
+kill. You MEASURE the reference into numbers, then build to those
+numbers. Pipeline: clean side view -> `solidsight profile` turns it
+into an exact mm envelope -> your stations SAMPLE that envelope ->
+build with `--ref` and compare.
+
+1. **Research + get a clean side view** (detail-mode rules apply): the
+   four numbers are published for every car — overall length, width,
+   height, wheelbase `[researched]` (Vantage 2024: 4465 x 1942 x 1273,
+   WB 2704). Then fetch a **straight-on side profile** — search
+   "<car> blueprint side" or "<car> side profile" and pick clean
+   line-art / a filled silhouette on a plain background (NOT a 3/4
+   glamour shot — perspective lies). Grab a **front** view too; width
+   and tumblehome only exist there.
+2. **MEASURE the side view** — the step that replaces guessing:
+
+       solidsight profile side.png --length 4465 --stations 14 \
+                                   --out side.measured.png
+
+   It returns, in real mm: overall length and height, the wheel axles
+   (with the measured wheelbase — check it against the published one to
+   confirm scale), and the **upper envelope (roof/hood/decklid crown)
+   and lower envelope (rocker/underside) sampled at every station**.
+   **LOOK at side.measured.png** (Read tool): red dots must sit on the
+   roofline, green on the underside, orange lines through the wheel
+   centres. If they do not, the silhouette was dirty — raise/lower
+   `--threshold` or pick a cleaner image; do NOT proceed on a bad read.
+   Run it on the front view too to measure half-width and glass taper.
+3. **Lay the datums**: X along the length, Z up, ground at z=0. Take
+   the axle x's straight from the read; the crown at each station is
+   `top_z`, the underside `bottom_z` — measured, not guessed.
+4. **Write ONE parametric station template** — a function that returns
    a closed section polygon (same point count every call; that is what
    `loft_sections` welds station to station). Half-template, mirrored:
-   - floor (flat, at ground-clearance height ~110-130)
+   - floor (flat, at the measured ground clearance = min `bottom_z`)
    - rocker turn-up
    - body side rising to the beltline with a **barrel bulge** (widest
-     ~55% up the side)
+     ~55% up the side; max half-width comes from the front read)
    - **shoulder**: the concave inboard run to the greenhouse base
    - **top region**: an elliptical tumblehome arc ending
-     TANGENT-HORIZONTAL at the centerline. On hood/decklid stations
-     this same arc IS the hood crown — that identity is what makes the
-     body one piece.
-4. **Evaluate the template at 10-14 stations**: splitter lip, grille
-   face, pre-arch, front axle (fender peak), hood mid, cowl, A-pillar,
-   roof crown (over the seats), C-pillar, rear axle (the haunch:
-   widest y of the whole car), decklid, tail face. Parameters that
-   move: half-width, beltline z, greenhouse half-width, top z, crown
-   fullness.
-5. **`body = parts.loft_sections(sections, xs)`** — then carve:
+     TANGENT-HORIZONTAL at the centerline, its **peak z set to the
+     measured `top_z` at that station**. On hood/decklid stations this
+     same arc IS the hood crown — that identity makes the body one piece.
+5. **Evaluate the template at the profile's stations**: splitter lip,
+   grille face, pre-arch, front axle (fender peak), hood mid, cowl,
+   A-pillar, roof crown (over the seats), C-pillar, rear axle (the
+   haunch: widest y of the whole car), decklid, tail face. Each
+   station's top z is its measured `top_z`; half-width and greenhouse
+   half-width interpolate from the front-view measurement. You are
+   FITTING the template to measured points, not inventing them.
+6. **`body = parts.loft_sections(sections, xs)`** — then carve:
    wheel arches (a centered cylinder along Y at each axle), grille and
    intake pockets, DLO inset if you want the glass line engraved.
-6. **Separate parts**: wheels (`material="matte"`, dark), glass band
+7. **Separate parts**: wheels (`material="matte"`, dark), glass band
    if modeled (`material="glass"`), mirrors. Body gets
    `material="glossy"` and its real paint color.
-7. **Build with `--ref photo_side.jpg` and LOOK at every render**
-   against the photos. Judge like a designer: stance, DLO shape,
+8. **Build with `--ref side.png` and LOOK at every render** against the
+   photo and the measured overlay. The roofline of your render must
+   trace the red dots. Judge like a designer: stance, DLO shape,
    haunch, tumblehome — not like a machinist.
 
 ## Measured pitfalls (each cost the pilot an iteration)
@@ -100,6 +126,8 @@ photos will read:
 - One `body` part; NO part named cabin/greenhouse/hood as a solid.
 - length/width/height within 1% of the researched numbers
   (`report.json scene.size`).
+- the render's roofline traces the red dots of `side.measured.png`; the
+  crown z per station is within ~30 mm of the measured `top_z`.
 - tyres at z=0; arch gap over tyre 35-60 mm.
 - rear haunch is the widest point; front fender slightly narrower.
 - viewer check: `solidsight view` was already running from Step 0.5 —
