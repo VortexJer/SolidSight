@@ -1,5 +1,36 @@
 # Changelog
 
+## 2026-07-22 — solidsight 0.11.3: the viewer is a window, not a report
+
+0.11.2 made the payload light and the page still crawled, because the
+slow part was never the payload: `view` ran the FULL pipeline on every
+save. Measured on a real 138k-triangle bottle — metrics 12.3 s, four
+PNG renders 22 s, pair analysis on top when the model declares
+`expect()` — the first build took 81 s, and with pairs it never
+finished while the human stared at a spinner and concluded the viewer
+was broken.
+
+- **`view` builds are light by default**: geometry only — no ray-cast
+  wall probes, no decompose, no void detection, no renders, no pair
+  analysis. The same bottle went **42 s -> 1.77 s** per reload. The
+  browser is the render; `solidsight build` is still where checks come
+  from, and `view --full` restores the whole pipeline.
+- **`views=[]` now means "render nothing".** `views = views or [...]`
+  treated an empty list as "unset" and quietly rendered the four
+  default views — which is why the first light build still cost 42 s.
+  Only `None` means defaults.
+- **"building" is a state.** `status.json` said `waiting` for the whole
+  81 s of a first build, so readers concluded `view` never starts one.
+  It now reports `building` (initial build and every watch rebuild),
+  and the skill documents the file instead of letting agents kill the
+  human's window to "check".
+- **Declared transparency survives the option panel.** Touching any
+  viewer toggle ran `mat.opacity = 1` over every non-ghost part, wiping
+  `emit(material={"opacity": 0.22})` — glass rendered solid. The
+  declared value is remembered and restored; x-ray is now a temporary
+  override that cannot make a transparent part more opaque than it
+  asked to be.
+
 ## 2026-07-22 — solidsight 0.11.2: the viewer becomes an application, and photos stop stalling
 
 Three complaints, three measurements, three fixes.

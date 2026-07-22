@@ -32,11 +32,14 @@ def build_model(model_path: Path, out_dir: Path, mode: str = "free",
                 gif: bool = False,
                 scene: Scene | None = None,
                 unchanged_parts: set[str] | None = None,
-                skip_pairs: bool = False) -> dict:
+                skip_pairs: bool = False, light: bool = False) -> dict:
     """scene: pass a pre-executed Scene to skip re-running the model (watch
     mode does this to fingerprint first). unchanged_parts: export files for
     these parts are reused if already on disk (incremental rebuilds)."""
-    views = views or ["iso", "front", "right", "top"]
+    # [] means "render nothing" (the live viewer draws the scene itself);
+    # only None means "use the defaults" — `views or [...]` swallowed the
+    # difference and rendered four views into every light build
+    views = ["iso", "front", "right", "top"] if views is None else views
     slices = slices or []
 
     if scene is None:
@@ -55,7 +58,8 @@ def build_model(model_path: Path, out_dir: Path, mode: str = "free",
 
     opts = ValidationOptions(mode=mode, min_wall=min_wall,
                              max_overhang=max_overhang,
-                             allow_multiple_shells=allow_multiple_shells)
+                             allow_multiple_shells=allow_multiple_shells,
+                             light=light)
     with BUS.stage("validate", "metrics + checks + pair analysis"):
         metrics, checks, pairs = analyze_scene(scene, opts,
                                                skip_pairs=skip_pairs)
@@ -75,7 +79,7 @@ def build_model(model_path: Path, out_dir: Path, mode: str = "free",
         # named views render in parallel (independent framebuffers ->
         # byte-identical to sequential); files are saved in view order
         from concurrent.futures import ThreadPoolExecutor
-        with ThreadPoolExecutor(max_workers=min(4, len(views))) as pool:
+        with ThreadPoolExecutor(max_workers=max(1, min(4, len(views)))) as pool:
             futures = [pool.submit(render_view, scene, view, size=size,
                                    title=title, subtitle=mode, focus=focus)
                        for view in views]

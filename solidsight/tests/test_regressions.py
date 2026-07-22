@@ -1212,3 +1212,55 @@ def test_viewer_geometry_is_binary_not_json(tmp_path):
     # version.txt is the reload trigger: it must land after the geometry
     assert (tmp_path / "v" / "mesh.bin").stat().st_mtime_ns <= \
            (tmp_path / "v" / "version.txt").stat().st_mtime_ns
+
+
+def test_empty_views_means_render_nothing(tmp_path):
+    """`views=[]` must render NOTHING. `views = views or [...]` treated
+    an empty list as "unset" and quietly rendered the four default
+    views, which is what kept the viewer's light build at 42 s."""
+    from solidsight.report import build_model
+    m = tmp_path / "m.py"
+    m.write_text("from solidsight import *\nemit(box(10, 10, 10), name='b')\n",
+                 encoding="utf-8")
+    rep = build_model(m, out_dir=tmp_path / "out", views=[], skip_pairs=True)
+    assert rep["files"]["renders"] == []
+    assert list((tmp_path / "out" / "renders").glob("*.png")) == []
+    rep2 = build_model(m, out_dir=tmp_path / "out2", skip_pairs=True)
+    assert len(rep2["files"]["renders"]) == 4     # None still means default
+
+
+def test_light_build_skips_the_expensive_metrics(tmp_path):
+    """The live viewer needs geometry, not 600-ray wall probes: light
+    builds must keep bbox/volume/triangles and drop the rest, which is
+    what took 12.3 s of a 138k-triangle bottle's 42 s rebuild."""
+    from solidsight.report import build_model
+    m = tmp_path / "m.py"
+    m.write_text("from solidsight import *\n"
+                 "emit(sphere(r=15, segments=64), name='ball')\n",
+                 encoding="utf-8")
+    light = build_model(m, out_dir=tmp_path / "l", views=[], light=True,
+                        skip_pairs=True)["parts"]["ball"]
+    full = build_model(m, out_dir=tmp_path / "f", views=[],
+                       skip_pairs=True)["parts"]["ball"]
+    assert light["light"] is True
+    assert light["volume_mm3"] == full["volume_mm3"]
+    assert light["triangles"] == full["triangles"]
+    for heavy in ("wall_thickness", "overhangs", "internal_voids",
+                  "shells", "genus", "stability"):
+        assert heavy not in light, heavy
+        assert heavy in full, heavy
+
+
+def test_declared_opacity_survives_the_xray_toggle():
+    """The viewer forced opacity=1 on every non-ghost part whenever the
+    option panel was touched, wiping emit(material={'opacity':...}).
+    User: 'nuestro viewer no interpreta transparencia'."""
+    from pathlib import Path
+    html = (Path(__file__).parents[1] / "solidsight" / "viewer_assets"
+            / "index.html").read_text(encoding="utf-8")
+    assert "declaredOpacity" in html
+    assert "mat.opacity = opts.xray ? 0.35 : 1;" not in html
+    # and the packaged asset must be the same file the repo ships
+    pkg = (Path(__file__).parents[1] / "solidsight" / "viewer_assets"
+           / "index.html")
+    assert pkg.exists()

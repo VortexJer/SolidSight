@@ -253,6 +253,12 @@ cat out/viewer/status.json      # or GET http://127.0.0.1:<port>/status.json
 #  "last_build":"ok", "last_error":null, "url":"http://127.0.0.1:8377/"}
 ```
 
+`view` builds are **light** by default: geometry only, no metrics, no
+renders, no pair analysis — a 138k-triangle model reloads in ~1.8 s
+instead of 42 s. It is a window, not a report: keep using `solidsight
+build` for checks (or `view --full` if you really want the whole
+pipeline on every save).
+
 `state: build-failed` means the server is fine and your code isn't —
 fix the model, the page hot-reloads by itself. It opens as an app
 window (no tabs, no address bar); `--tab` forces a normal tab, and it

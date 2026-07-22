@@ -235,7 +235,8 @@ def open_viewer_window(url: str, say, app_mode: bool = True) -> None:
 
 def run_view(model_path: Path, build_kwargs: dict, say,
              port: int = 8377, watch: bool = True, poll_s: float = 0.5,
-             open_browser: bool = True, app_mode: bool = True) -> int:
+             open_browser: bool = True, app_mode: bool = True,
+             light: bool = True) -> int:
     import time
 
     from .errors import SolidsightError
@@ -245,6 +246,22 @@ def run_view(model_path: Path, build_kwargs: dict, say,
 
     out_dir = build_kwargs["out_dir"]
     viewer_dir = out_dir / "viewer"
+    if light:
+        # A live preview needs geometry and nothing else. The full
+        # pipeline — 600-ray wall probes, decompose, void detection,
+        # PNG renders, and pair analysis over every part combination —
+        # is what made a 138k-triangle bottle take 81 s per reload (and
+        # minutes with expect() specs), so the human watched a spinner
+        # and concluded the viewer was dead. Measure with
+        # `solidsight build`; look with `solidsight view`.
+        build_kwargs = dict(build_kwargs)
+        build_kwargs.update(light=True, skip_pairs=True, views=[],
+                            slices=[], turntable=0, exploded=False,
+                            export_stl=False, export_3mf=False,
+                            export_obj=False, export_glb=False,
+                            export_dxf=False, export_svg=False)
+        say("mode:    light builds (geometry only, no metrics/renders) — "
+            "run `solidsight build` for checks, or `view --full`")
     state = {"pid": os.getpid(), "model": str(model_path),
              "state": "starting", "builds": 0, "last_build": None,
              "last_error": None, "url": None}
@@ -294,6 +311,10 @@ def run_view(model_path: Path, build_kwargs: dict, say,
             return 0
 
     try:
+        # "building" is a state of its own: a first build can take a
+        # while, and a reader that only sees "waiting" concludes the
+        # viewer never started one
+        note_state(state="building")
         scene = run_model(model_path)
         report = build_model(model_path, scene=scene, **build_kwargs)
         rebuild_payload(scene, report)
@@ -321,4 +342,5 @@ def run_view(model_path: Path, build_kwargs: dict, say,
                        last_error=str(error).split("\n")[0])
 
     return run_watch(model_path, build_kwargs, say=say, poll_s=poll_s,
-                     on_build=on_build)
+                     on_build=on_build,
+                     on_start=lambda reason: note_state(state="building"))

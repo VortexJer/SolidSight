@@ -238,6 +238,7 @@ function rebuild(payload) {
       roughness: fin.roughness !== undefined ? fin.roughness : 0.85,
       side: THREE.DoubleSide,
       transparent: p.ghost || op < 1, opacity: op });
+    mat.userData.declaredOpacity = op;   // what emit(material=) asked for
     const mesh = new THREE.Mesh(g, mat);
     mesh.name = p.name;
     sceneGL.add(mesh);
@@ -386,9 +387,14 @@ function applyOptions() {
     const hidden = isolated && name !== isolated;
     mesh.visible = !hidden;
     if (!part.ghost) {
-      mat.transparent = opts.xray;
-      mat.opacity = opts.xray ? 0.35 : 1;
-      mat.depthWrite = !opts.xray;
+      // x-ray is a temporary override; when it is off, go back to the
+      // opacity the model DECLARED (glass, tinted lenses...), not to 1 —
+      // this line used to wipe every emit(material={'opacity':...})
+      const dec = mat.userData.declaredOpacity;
+      const o = opts.xray ? Math.min(0.35, dec) : dec;
+      mat.transparent = o < 1;
+      mat.opacity = o;
+      mat.depthWrite = !(o < 1);
     }
     const off = offsets.get(name);
     mesh.position.set(off.x * explode, off.y * explode,

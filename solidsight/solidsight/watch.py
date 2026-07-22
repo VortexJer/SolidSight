@@ -62,7 +62,7 @@ def watched_files(model_path: Path) -> dict[Path, tuple[float, int]]:
 
 def run_watch(model_path: Path, build_kwargs: dict, say,
               poll_s: float = 0.5, on_build=None,
-              max_builds: int | None = None) -> int:
+              max_builds: int | None = None, on_start=None) -> int:
     """The watch loop. `say` is the CLI printer; `on_build(report|None,
     error|None)` notifies integrations (the browser viewer); `max_builds`
     exists for tests."""
@@ -77,6 +77,8 @@ def run_watch(model_path: Path, build_kwargs: dict, say,
     def build_once(reason: str) -> None:
         nonlocal last_fp, last_parts, builds
         builds += 1
+        if on_start is not None:      # so a watcher can say "building"
+            on_start(reason)
         t0 = time.monotonic()
         try:
             with BUS.stage("model", f"executing {model_path.name}"):
