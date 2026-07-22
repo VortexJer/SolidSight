@@ -165,6 +165,48 @@ deterministic and headless:
 - `--free` (default) — visual/artistic exploration: same metrics reported,
   nothing enforced.
 
+## Scope: parts and machines — not styling
+
+solidsight is a CSG kernel driven by code, and it is at its best where a
+shape is *specified*: brackets, enclosures, mechanisms, gears, engine
+internals, fixtures, furniture, robots — anything whose correctness is a
+number (a wall, a clearance, a centre distance, a hole pattern, a print
+angle). There the loop is decisive: the report finds what nobody can see
+and the diff proves the fix did only what you meant.
+
+**It is bad at styled organic surfaces** — cars, character bodies,
+sculpted consumer shells, anything whose acceptance test is *"does it
+look like the photo"*. Not a matter of trying harder; it is what the
+stack cannot do:
+
+- **No surface modelling.** No NURBS patches, no subdivision, no
+  sculpting, no curvature-continuous (class-A) blends, no 3D fillet
+  across arbitrary edges — `round_corners`/`offset` live in 2D sketches.
+  Booleans of primitives plus station lofts give faceted shoulders and
+  hard transitions exactly where a car body needs continuity.
+- **The report measures manufacturability, not likeness.** Watertight,
+  single shell, 0 findings, every spec met — and it can still look
+  nothing like the car. `--ref` prints a reference-vs-render sheet, but
+  nothing in the tool *scores* resemblance; that judgement stays with
+  the human eye, which is the one thing this tool was built to replace.
+- **Details on a curved body are hand-carved.** Glass, lights, grilles,
+  trim and shutlines have to be cut out of the body shell with booleans
+  against an eroded copy of itself, each one a fight with coincident
+  faces and z-fighting — and the piece count grows far faster than the
+  loop can iterate (a full body scene is minutes per build, not
+  seconds).
+- **Likeness is per-piece work.** Getting a mirror or a headlight to
+  read as the real part takes its own commission, its own photos and
+  its own iterations; a car is fifty of those, and any one that looks
+  wrong ruins the whole.
+
+Rule of thumb: **if the acceptance test is a caliper, use solidsight; if
+it is an eye, don't.** For styled exteriors expect a recognisable
+massing at best — [`04-vase`](skill/examples/04-vase) and
+[`09-coupe-body`](skill/examples/09-coupe-body) are that honest ceiling,
+not a finished product — and take the real surfacing to a sub-D /
+NURBS modeller.
+
 ## Images as input
 
 The agent has eyes; the kernel does not. `image_outline()` traces the
@@ -190,7 +232,10 @@ assets, toys, scientific — each with the numbers a domain expert would
 assume (heat-set insert holes, gear centre distances, NACA profiles,
 stair rules, ring sizes, the small-parts choking cylinder, triangle
 budgets), the build order, the failure modes, and its own definition of
-done. The agent loads exactly the one that matches the request.
+done. The agent loads exactly the one that matches the request. (The
+vehicles and organic playbooks are subject to the same ceiling as the
+[Scope](#scope-parts-and-machines--not-styling) section: they teach
+correct proportions and build order, not class-A surfacing.)
 
 **It installs itself.** The skill ships inside the pip package: the first
 `solidsight` command on a machine with Claude Code drops it into
@@ -230,7 +275,7 @@ metric. Each real bug is pinned by a regression test in `tool/tests/`
 | [`06-hidden-cavity`](skill/examples/06-hidden-cavity) | a sealed cavity invisible in renders, caught by the report and provable via `query ray`/`voxels` |
 | [`07-engine-block`](skill/examples/07-engine-block) | **detail mode**: a faithful inline-4 block (bores, liner steps, head-bolt matrix, water jacket, cam tunnel, oil galleries, pan rail, gussets, filter pad, inclined mounts) built region-by-region from a feature specification |
 | [`08-from-image`](skill/examples/08-from-image) | **from an image**: a user's emblem traced with `image_outline` and engraved, built with the `--ref` comparison sheet |
-| [`09-coupe-body`](skill/examples/09-coupe-body) | **styled bodywork**: a 2024-coupe-proportioned one-piece body by station lofting (`loft_sections`, concave shoulder sections, carved arches) — the car-bodies.md recipe, proven |
+| [`09-coupe-body`](skill/examples/09-coupe-body) | **styled bodywork — and the tool's ceiling**: a 2024-coupe-proportioned one-piece body by station lofting (`loft_sections`, concave shoulder sections, carved arches). Correct proportions and a clean single shell; *not* a class-A exterior — see [Scope](#scope-parts-and-machines--not-styling) |
 
 ## Stack and why
 
