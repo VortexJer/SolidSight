@@ -157,6 +157,30 @@ a box with a cabin on top fails the commission. The reference gives
 the station-template method (`parts.loft_sections`), the automotive
 vocabulary, and the measured pitfalls.
 
+**And SAY WHAT YOU CAN DELIVER BEFORE YOU START.** A styled body is
+where this tool is weakest, and the user must hear that from you at
+the start, not discover it after twenty builds. State it in one or two
+plain sentences and let them decide:
+
+- there is **no surface modelling** here — no NURBS, no sub-D, no
+  class-A blends, no 3D fillet across arbitrary edges. Booleans and
+  station lofts give correct proportions and a clean single shell;
+  they do not give a finished exterior.
+- the report measures **manufacturability, not likeness**: watertight,
+  0 findings and every spec met can still look nothing like the
+  referent. `--ref` compares, but nothing scores resemblance — that
+  judgement is the user's eye.
+- every non-body piece (lights, glass, grille, mirrors, trim) is its
+  own little commission carved out of the body shell, and one bad
+  piece ruins the whole. A faithful car is dozens of them, minutes per
+  build.
+
+So offer the honest deal: **a well-proportioned massing** is realistic;
+a photo-faithful car is not. If they want the real exterior, say a
+sub-D/NURBS modeller is the right tool and offer solidsight for the
+parts around it. If they accept the massing, do exactly that and don't
+promise likeness later.
+
 **If the user supplied a photo or drawing**, load `references/from-image.md`
 first: LOOK at the image, estimate real dimensions with named anchors,
 trace faithful flat shapes with `image_outline()`, reliefs with
@@ -402,3 +426,8 @@ Worked examples with real reports and renders: `examples/01-mounting-bracket`
   model file (same input -> byte-identical output).
 - If the tool errors, show the user the real error text — it contains the
   location and a suggestion by design.
+- Never let a commission the tool cannot deliver start silently. For
+  styled organic bodies (cars, hulls, characters, sculpted shells) say
+  up front that the ceiling is a well-proportioned massing, not a
+  class-A exterior — see the styled-body block in Step 1. A `0
+  findings` report is never evidence that something *looks* right.

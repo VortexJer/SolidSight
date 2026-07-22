@@ -13,6 +13,7 @@ content is the scene fingerprint (deterministic, no timestamps).
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import socket
 import threading
@@ -91,19 +92,55 @@ class _Quiet(SimpleHTTPRequestHandler):
         super().end_headers()
 
 
+class _Server(ThreadingHTTPServer):
+    daemon_threads = True
+    # HTTPServer sets allow_reuse_address, and on Windows SO_REUSEADDR
+    # lets a second process bind a port another server is ACTIVELY
+    # listening on: the bind succeeds, two viewers answer one URL and the
+    # browser keeps talking to the stale one (it looks like the model
+    # never updates). Never reuse there; on POSIX bind already fails when
+    # the port is taken, and reuse only helps across TIME_WAIT restarts.
+    allow_reuse_address = os.name != "nt"
+
+
+def _port_is_free(port: int) -> bool:
+    """True if a server can really own this port right now."""
+    with socket.socket() as s:
+        if os.name == "nt":     # exclusive = the honest answer on Windows
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+        try:
+            s.bind(("127.0.0.1", port))
+        except OSError:
+            return False
+    return True
+
+
+PORT_SCAN = 20      # how many ports above the requested one to try
+
+
 def serve_viewer(viewer_dir: Path, port: int, say) -> ThreadingHTTPServer:
     handler = partial(_Quiet, directory=str(viewer_dir))
-    try:
-        httpd = ThreadingHTTPServer(("127.0.0.1", port), handler)
-    except OSError:
-        with socket.socket() as s:      # port busy: let the OS pick one
-            s.bind(("127.0.0.1", 0))
-            port = s.getsockname()[1]
-        httpd = ThreadingHTTPServer(("127.0.0.1", port), handler)
+    wanted, httpd = port, None
+    candidates = range(port, port + PORT_SCAN) if port else ()
+    for cand in candidates:     # port 0 = "any free port", asked for it
+        if not _port_is_free(cand):
+            continue
+        try:
+            httpd = _Server(("127.0.0.1", cand), handler)
+            break
+        except OSError:         # lost the race between probe and bind
+            continue
+    if httpd is None:           # nothing free nearby: let the OS choose
+        httpd = _Server(("127.0.0.1", 0), handler)
+        if not port:
+            wanted = httpd.server_address[1]     # nothing to warn about
+    got = httpd.server_address[1]
+    if got != wanted:
+        say(f"note:    port {wanted} is in use (another viewer?) - "
+            f"serving on {got} instead")
     t = threading.Thread(target=httpd.serve_forever, daemon=True)
     t.start()
-    say(f"viewer:  http://127.0.0.1:{httpd.server_address[1]}/  "
-        f"(serving {viewer_dir})")
+    say(f"viewer:  http://127.0.0.1:{got}/  (serving {viewer_dir})")
     return httpd
 
 

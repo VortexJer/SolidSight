@@ -1111,3 +1111,30 @@ def test_loft_sections_rejects_mismatched_point_counts():
     quad = [(0, 0), (10, 0), (10, 10), (0, 10)]
     with _pytest.raises(BadArgumentError):
         loft_sections([tri, quad], [0.0, 10.0])
+
+
+def test_viewer_falls_back_when_the_port_is_taken(tmp_path):
+    """Two viewers must never share a URL. The second one probes the
+    requested port, finds it owned (on Windows SO_REUSEADDR would have
+    let it bind anyway and the browser would keep reading the stale
+    server) and serves on the next free port, saying so.
+    User: 'el viewer deberia comprobar automaticamente si puede usar
+    ese port y sino usar otro libre'."""
+    from solidsight.viewer import serve_viewer, write_viewer
+    a_dir, b_dir = tmp_path / "a", tmp_path / "b"
+    for d in (a_dir, b_dir):
+        write_viewer(d, {"status": "waiting", "parts": []}, "waiting-0")
+    lines_a, lines_b = [], []
+    first = serve_viewer(a_dir, 0, lines_a.append)     # any free port
+    port = first.server_address[1]
+    try:
+        second = serve_viewer(b_dir, port, lines_b.append)
+        try:
+            assert second.server_address[1] != port
+            assert any("in use" in ln for ln in lines_b), lines_b
+        finally:
+            second.shutdown()
+            second.server_close()
+    finally:
+        first.shutdown()
+        first.server_close()

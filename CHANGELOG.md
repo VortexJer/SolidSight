@@ -1,5 +1,38 @@
 # Changelog
 
+## 2026-07-22 — solidsight 0.11.1: say what the tool cannot do, and never share a port
+
+The Vantage arc ends with an honest answer instead of another recipe:
+after 0.10.0 and 0.11.0 the massing is right and the styling still
+isn't, because nothing in a CSG kernel makes a class-A surface. That
+belongs in writing, before someone spends a day finding out.
+
+- **README — `Scope: parts and machines, not styling`.** solidsight is
+  decisive where correctness is a number (walls, clearances, centre
+  distances, hole patterns) and weak where it is a look. Stated with
+  the reasons: no surface modelling (no NURBS/sub-D/class-A blends, no
+  3D fillet on arbitrary edges), a report that measures
+  manufacturability and *never* resemblance (`--ref` compares, nothing
+  scores likeness), details on a curved body hand-carved out of its own
+  shell, and likeness that is per-piece work. `09-coupe-body` is
+  relabelled as the ceiling — proportions and a clean shell, not a
+  finished exterior.
+- **SKILL.md — set expectations BEFORE accepting a styled body.** The
+  styled-body step now requires the agent to say up front what it can
+  deliver (a well-proportioned massing) and what it cannot (a
+  photo-faithful exterior — that is a sub-D/NURBS job), and a new
+  honesty rule forbids letting such a commission start silently: `0
+  findings` is never evidence that something *looks* right.
+- **Viewer picks a free port, and says so.** `serve_viewer` now probes
+  the requested port for real and scans the next 20 before falling back
+  to an OS-chosen one, printing `port 8377 is in use (another viewer?)
+  - serving on 8378 instead`. The Windows bug behind it: `HTTPServer`
+  sets `allow_reuse_address`, and there SO_REUSEADDR lets a second
+  viewer bind a port another process is actively listening on — two
+  servers on one URL, the browser stuck on the stale one, which is
+  exactly the "I still see the old model" symptom. Regression test
+  included.
+
 ## 2026-07-20 — solidsight 0.11.0: measure the reference, don't squint at it
 
 The Vantage still came out wrong after 0.10.0 — not because the loft
