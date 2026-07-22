@@ -93,7 +93,8 @@ def _ring_area(ring: np.ndarray) -> float:
 def image_outline(path: str, width: float | None = None,
                   height: float | None = None, threshold: float = 0.5,
                   invert: bool = False, simplify: float = 0.4,
-                  min_area: float | None = None) -> Sketch:
+                  min_area: float | None = None, trace_px: int = 1400,
+                  max_contours: int | None = 400) -> Sketch:
     """Trace the dark shapes of an image into an exact 2D sketch.
 
     Dark pixels are material (ink on paper); pass invert=True for
@@ -106,11 +107,25 @@ def image_outline(path: str, width: float | None = None,
     simplify (mm) is the max deviation allowed when straightening the
     traced outline; min_area (mm^2, default (3*simplify)^2) drops
     specks and scanner noise.
+
+    trace_px caps the long side used for tracing (deterministic
+    downscale): beyond it a photo only adds noise contours, not
+    accuracy — mm fidelity is set by simplify. max_contours refuses a
+    trace that came out shredded (a photo instead of a line drawing)
+    instead of handing you a sketch that takes minutes to extrude; pass
+    None to allow anything.
     """
     from contourpy import contour_generator
     from manifold3d import CrossSection, FillRule
 
     arr, name = _load_gray(path)
+    if trace_px and max(arr.shape) > trace_px:
+        from PIL import Image
+        s = trace_px / max(arr.shape)
+        nx, ny = max(2, round(arr.shape[1] * s)), max(2, round(arr.shape[0] * s))
+        with Image.fromarray((arr * 255.0).astype(np.uint8)) as im:
+            arr = np.asarray(im.resize((nx, ny), Image.LANCZOS),
+                             dtype=np.float64) / 255.0
     if (width is None) == (height is None):
         raise BadArgumentError(
             "image_outline() needs the real size: pass exactly one of "
@@ -135,10 +150,17 @@ def image_outline(path: str, width: float | None = None,
     dropped = 0
     default_min_area = (3.0 * simplify) ** 2 if simplify > 0 else 1.0
     area_floor = default_min_area if min_area is None else float(min_area)
+    px_floor = area_floor / (scale * scale)   # same test, in pixels
+    kept_areas: list[float] = []
     for ring in rings_px:
         pts = np.asarray(ring, dtype=np.float64)
         if len(pts) < 4 or not np.allclose(pts[0], pts[-1]):
             continue  # open fragment: cannot bound material
+        # speck test FIRST, in pixel space: simplifying 19k noise rings
+        # to then throw them away is what made photos take minutes
+        if _ring_area(pts[:-1]) < px_floor:
+            dropped += 1
+            continue
         # (x=col, y=row) -> mm, image up = +y, minus the 1px pad
         xy = np.column_stack(((pts[:, 0] - 1.0) * scale,
                               (h_px - 1.0 - (pts[:, 1] - 1.0)) * scale))
@@ -146,9 +168,11 @@ def image_outline(path: str, width: float | None = None,
         if len(xy) < 3:
             dropped += 1
             continue
-        if _ring_area(xy) < area_floor:
+        a = _ring_area(xy)
+        if a < area_floor:
             dropped += 1
             continue
+        kept_areas.append(a)
         rings_mm.append(xy)
 
     if not rings_mm:
@@ -158,6 +182,23 @@ def image_outline(path: str, width: float | None = None,
             suggestion="if the image is light-on-dark pass invert=True; "
                        "otherwise adjust threshold (lower = stricter "
                        "about what counts as dark)")
+    if max_contours is not None and len(rings_mm) > max_contours:
+        big = sorted(kept_areas, reverse=True)
+        keep20 = big[min(19, len(big) - 1)]
+        pts_total = sum(len(r) for r in rings_mm)
+        raise BadArgumentError(
+            f"image_outline({name}): the trace came out shredded — "
+            f"{len(rings_mm)} contours, {pts_total} points. That is a "
+            f"photo's texture, not an outline; extruding it would take "
+            f"minutes and produce a mesh with ~{2 * pts_total} triangles.",
+            suggestion=(
+                "trace a FLAT image (logo, silhouette, blueprint, or a "
+                "photo thresholded to 2 colours first), not a "
+                f"photograph; or drop the noise with "
+                f"min_area={keep20:.3g} (keeps the ~20 largest shapes); "
+                "or raise simplify. To measure a car/bottle silhouette "
+                "use profile_read() instead — it is built for photos. "
+                "max_contours=None disables this check."))
     if dropped:
         _warn("image-specks-dropped",
               f"image_outline({name}): dropped {dropped} contour(s) "

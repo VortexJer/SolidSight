@@ -131,9 +131,15 @@ deterministic and headless:
 
 - **Live mode** — `solidsight watch` rebuilds on save with provable
   skips (exact scene fingerprints); `solidsight view` serves an
-  interactive browser viewer (isolate, x-ray, section planes, explode,
-  finding markers with fly-to, two-point measuring) that hot-reloads on
-  every successful rebuild. Self-contained: vendored three.js, no CDN.
+  interactive viewer (isolate, x-ray, section planes, explode, finding
+  markers with fly-to, two-point measuring) that hot-reloads on every
+  successful rebuild. It opens as an **app window** (Chromium `--app`:
+  no tab strip, no address bar, own taskbar entry; `--tab` for a normal
+  tab), takes the next free port when yours is busy and says which,
+  ships geometry as binary `mesh.bin` (a 22 MB JSON scene became a few
+  MB of typed arrays), and writes `status.json` — pid, url, state,
+  build count — so a caller can tell "still serving" from "crashed"
+  without killing it. Self-contained: vendored three.js, no CDN.
 - **Progress everywhere** — `--progress` live stage lines (%, ETA) and
   `--events file.ndjson` structured streams; artifacts stay
   byte-deterministic.
@@ -216,6 +222,13 @@ real size declared by the agent — pixels carry no millimetres), and
 (lithophanes, terrain). Building with `--ref photo.png` adds a
 reference-vs-render comparison sheet to every build, so the loop closes
 against the source image. Example: [`08-from-image`](skill/examples/08-from-image).
+
+`image_outline` is for *flat* art. Pointed at a photograph it used to
+trace the texture — 19,194 contours from one car photo, 42 s just to
+extrude — so it now caps the trace resolution and refuses a shredded
+result with the counts and the way out (threshold the image, raise
+`min_area`, or use `profile_read()`, which is the one built to measure
+photographed silhouettes).
 
 ## The Claude Code skill
 

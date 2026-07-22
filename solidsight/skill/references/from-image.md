@@ -40,7 +40,25 @@ geometry into exact shapes, and proves whether your model matches.
    corner radii...). Fix the biggest difference, rebuild, repeat.
 4. Validate as always: report.json, print-safe if it will be printed.
 
-## image_outline(path, width=|height=, threshold=0.5, invert=False, simplify=0.4, min_area=None) -> Sketch
+**Never point `image_outline` at a photograph.** Its texture traces as
+thousands of tiny contours: a 4000 px car photo came out as 19,194
+rings / 213k points, and merely extruding that took 42 s and produced
+822k triangles — every later boolean, metric and render then dragged.
+The tool now refuses such a trace with the numbers and the remedies
+(threshold the image to 2 colours first, raise `min_area`, or use
+`profile_read()`), so if you see `the trace came out shredded`, do not
+retry with `max_contours=None` — change the input. Tracing is capped at
+`trace_px=1400` on the long side; more pixels add noise, not accuracy
+(mm fidelity comes from `simplify`).
+
+Fetching the reference photos is where the other stall happens: pick
+sources that serve files (Wikimedia Commons works:
+`commons.wikimedia.org/w/index.php?title=Special:Redirect/file/<name>&width=1800`,
+send a User-Agent), and after 2 failed hosts switch source instead of
+retrying — press sites like autoevolution/wsupercars answer 403/404 to
+scripted fetches and will burn the whole session.
+
+## image_outline(path, width=|height=, threshold=0.5, invert=False, simplify=0.4, min_area=None, trace_px=1400, max_contours=400) -> Sketch
 
 Traces dark shapes (ink on paper) into a centered Sketch, holes
 preserved (even-odd). Give the REAL size via exactly one of width= or

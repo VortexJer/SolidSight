@@ -28,23 +28,35 @@ ASSETS = Path(__file__).parent / "viewer_assets"
 # payload
 # ---------------------------------------------------------------------------
 
-def scene_payload(scene, report: dict) -> dict:
-    """Everything the browser needs, rounded for determinism."""
-    parts = []
+def scene_payload(scene, report: dict) -> tuple[dict, bytes]:
+    """Everything the browser needs: metadata (JSON) + meshes (binary).
+
+    Geometry used to travel as JSON number lists — a 100k-triangle scene
+    was a 22 MB text file, re-encoded in Python loops on every rebuild
+    and re-parsed by the page on every hot reload. It now rides in one
+    mesh.bin (float32 positions, uint32 indices) that numpy writes in a
+    millisecond and the browser maps straight into typed arrays; the
+    JSON keeps only offsets. Still deterministic: same scene, same bytes.
+    """
+    import numpy as np
+    parts, blobs, off = [], [], 0
     for p in scene.parts:
         tm = p.solid.to_trimesh()
         m = report["parts"].get(p.name, {})
         wall = m.get("wall_thickness") or {}
         over = m.get("overhangs") or {}
         voids = (m.get("internal_voids") or {}).get("voids", [])
+        pos = np.round(np.asarray(tm.vertices, dtype=np.float64),
+                       3).astype("<f4")
+        idx = np.asarray(tm.faces, dtype="<u4")
+        pos_b, idx_b = pos.tobytes(), idx.tobytes()
         parts.append({
             "name": p.name,
             "color": p.color,
             "ghost": bool(p.ghost),
             "material": p.material or {},
-            "positions": [round(float(v), 3)
-                          for xyz in tm.vertices for v in xyz],
-            "indices": [int(i) for tri in tm.faces for i in tri],
+            "pos_off": off, "pos_n": int(pos.size),
+            "idx_off": off + len(pos_b), "idx_n": int(idx.size),
             "bbox": m.get("bbox") or {
                 "min": [round(float(v), 3) for v in tm.bounds[0]],
                 "max": [round(float(v), 3) for v in tm.bounds[1]]},
@@ -55,6 +67,9 @@ def scene_payload(scene, report: dict) -> dict:
             "overhang_at": over.get("worst_at"),
             "void_boxes": voids,
         })
+        blobs.append(pos_b)
+        blobs.append(idx_b)
+        off += len(pos_b) + len(idx_b)
     return {
         "model": report["model"],
         "mode": report["mode"],
@@ -64,16 +79,21 @@ def scene_payload(scene, report: dict) -> dict:
         "pairs": report.get("pairs", []),
         "checks": [c for c in report["checks"]
                    if c["level"] in ("fail", "warn")],
-    }
+    }, b"".join(blobs)
 
 
-def write_viewer(viewer_dir: Path, payload: dict, version: str) -> None:
+def write_viewer(viewer_dir: Path, payload: dict, version: str,
+                 mesh_bin: bytes = b"") -> None:
     viewer_dir.mkdir(parents=True, exist_ok=True)
     for asset in ("index.html", "three.module.min.js"):
         src = ASSETS / asset
         dst = viewer_dir / asset
         if not dst.exists() or src.stat().st_mtime > dst.stat().st_mtime:
             shutil.copyfile(src, dst)
+    # meshes first: the page reads version.txt to decide when to reload,
+    # so it must be the LAST thing written or a poll can catch a scene
+    # whose geometry is still half on disk
+    (viewer_dir / "mesh.bin").write_bytes(mesh_bin)
     (viewer_dir / "scene.json").write_text(
         json.dumps(payload, separators=(",", ":")), encoding="utf-8")
     (viewer_dir / "version.txt").write_text(version, encoding="utf-8")
@@ -145,14 +165,78 @@ def serve_viewer(viewer_dir: Path, port: int, say) -> ThreadingHTTPServer:
 
 
 # ---------------------------------------------------------------------------
+# opening it: an app window, not a tab
+# ---------------------------------------------------------------------------
+
+# Chromium's --app=URL gives a frameless window with no tab strip, no
+# omnibox and its own taskbar entry: the viewer stops looking like a web
+# page and behaves like the desktop application it is.
+_CHROMIUM = {
+    "nt": [
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+        r"C:\Program Files\BraveSoftware\Brave-Browser\Application"
+        r"\brave.exe",
+    ],
+    "posix": [
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+        "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
+        "/Applications/Chromium.app/Contents/MacOS/Chromium",
+    ],
+}
+_CHROMIUM_CMDS = ["google-chrome", "google-chrome-stable", "chromium",
+                  "chromium-browser", "brave-browser", "microsoft-edge"]
+
+
+def find_app_browser() -> str | None:
+    """Path to a Chromium-family browser that can do --app=, or None."""
+    import shutil as _sh
+    env = os.environ.get("SOLIDSIGHT_BROWSER")
+    if env:
+        return env if Path(env).exists() else _sh.which(env)
+    for cand in _CHROMIUM.get(os.name, []) + _CHROMIUM["posix"]:
+        if Path(cand).exists():
+            return cand
+    for cmd in _CHROMIUM_CMDS:
+        found = _sh.which(cmd)
+        if found:
+            return found
+    return None
+
+
+def open_viewer_window(url: str, say, app_mode: bool = True) -> None:
+    """Open the viewer as an app window; fall back to a normal tab."""
+    import subprocess
+    import webbrowser
+    exe = find_app_browser() if app_mode else None
+    if exe:
+        try:
+            subprocess.Popen(
+                [exe, f"--app={url}", "--window-size=1280,860",
+                 "--new-window"],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            say(f"window:  app mode ({Path(exe).stem})")
+            return
+        except OSError as e:      # browser present but unlaunchable
+            say(f"note:    could not start {Path(exe).stem} ({e}); "
+                "opening a normal tab")
+    elif app_mode:
+        say("note:    no Chromium-family browser found for app mode "
+            "(set SOLIDSIGHT_BROWSER=<path>); opening a normal tab")
+    webbrowser.open(url)
+
+
+# ---------------------------------------------------------------------------
 # command
 # ---------------------------------------------------------------------------
 
 def run_view(model_path: Path, build_kwargs: dict, say,
-             port: int = 8377, watch: bool = True,
-             poll_s: float = 0.5, open_browser: bool = True) -> int:
+             port: int = 8377, watch: bool = True, poll_s: float = 0.5,
+             open_browser: bool = True, app_mode: bool = True) -> int:
     import time
-    import webbrowser
 
     from .errors import SolidsightError
     from .report import build_model
@@ -161,10 +245,27 @@ def run_view(model_path: Path, build_kwargs: dict, say,
 
     out_dir = build_kwargs["out_dir"]
     viewer_dir = out_dir / "viewer"
+    state = {"pid": os.getpid(), "model": str(model_path),
+             "state": "starting", "builds": 0, "last_build": None,
+             "last_error": None, "url": None}
+
+    def note_state(**kw) -> None:
+        """Heartbeat an agent can read: `view` never returns, so a
+        caller watching only stdout concludes it crashed. This file (and
+        GET /status.json) says otherwise, in one read."""
+        state.update(kw)
+        try:
+            (viewer_dir / "status.json").write_text(
+                json.dumps(state, indent=1), encoding="utf-8")
+        except OSError:
+            pass
 
     def rebuild_payload(scene, report) -> None:
         fp, _ = scene_fingerprint(scene, {})
-        write_viewer(viewer_dir, scene_payload(scene, report), fp)
+        payload, mesh_bin = scene_payload(scene, report)
+        write_viewer(viewer_dir, payload, fp, mesh_bin)
+        note_state(state="serving", builds=state["builds"] + 1,
+                   last_build=report["status"], last_error=None)
 
     # the screen comes up FIRST: serve a waiting placeholder (spinner)
     # immediately, so the human has a window from second one — the model
@@ -173,8 +274,14 @@ def run_view(model_path: Path, build_kwargs: dict, say,
                  {"status": "waiting", "model": model_path.name,
                   "parts": []}, "waiting-0")
     httpd = serve_viewer(viewer_dir, port, say)
+    note_state(state="waiting", port=httpd.server_address[1],
+               url=f"http://127.0.0.1:{httpd.server_address[1]}/")
+    say("alive:   this command stays in the foreground until ctrl-c — "
+        "that is not a hang. Liveness: GET /status.json (or read "
+        f"{viewer_dir / 'status.json'})")
     if open_browser:
-        webbrowser.open(f"http://127.0.0.1:{httpd.server_address[1]}/")
+        open_viewer_window(f"http://127.0.0.1:{httpd.server_address[1]}/",
+                           say, app_mode=app_mode)
 
     if not model_path.exists():
         say(f"waiting for {model_path.name} to appear "
@@ -192,8 +299,10 @@ def run_view(model_path: Path, build_kwargs: dict, say,
         rebuild_payload(scene, report)
         say(f"build: {report['status'].upper()} ({report['model']})")
     except SolidsightError as e:
+        note_state(state="build-failed", last_error=str(e).split("\n")[0])
         say("initial build FAILED - the viewer keeps its spinner and "
-            "hot-reloads on the next successful save")
+            "hot-reloads on the next successful save (the server is up: "
+            "check status.json)")
         say(e.render())
 
     if not watch:
@@ -207,6 +316,9 @@ def run_view(model_path: Path, build_kwargs: dict, say,
     def on_build(report, error, scene=None) -> None:
         if report is not None and scene is not None:
             rebuild_payload(scene, report)
+        elif error is not None:
+            note_state(state="build-failed",
+                       last_error=str(error).split("\n")[0])
 
     return run_watch(model_path, build_kwargs, say=say, poll_s=poll_s,
                      on_build=on_build)

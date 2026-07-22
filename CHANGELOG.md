@@ -1,5 +1,46 @@
 # Changelog
 
+## 2026-07-22 — solidsight 0.11.2: the viewer becomes an application, and photos stop stalling
+
+Three complaints, three measurements, three fixes.
+
+- **The viewer opens as an app window.** Chromium `--app=`: no tab
+  strip, no address bar, its own taskbar entry, and the model's name in
+  the title bar. Chrome/Edge/Brave/Chromium are found automatically
+  (override with `SOLIDSIGHT_BROWSER`), `--tab` forces the old
+  behaviour, and anything unfound falls back to a normal tab with a
+  note.
+- **The viewer stops being slow: geometry is binary now.** A real
+  scene.json from a bumper commission weighed **22 MB** because meshes
+  travelled as JSON number lists, rebuilt in Python loops on every save
+  and re-parsed by the page on every hot reload. Geometry moved to
+  `mesh.bin` (float32 positions + uint32 indices) with the JSON keeping
+  offsets only: encoding a 45k-triangle part went from 0.24 s to
+  0.001 s (**211x**), and the browser maps typed arrays instead of
+  parsing megabytes of text. `version.txt` is now written last, so a
+  poll can never catch half-written geometry.
+- **`view` says it is alive.** It never returns by design, and agents
+  kept concluding it had crashed and restarting it. It now writes
+  `out/viewer/status.json` (also `GET /status.json`) with pid, url,
+  state (`waiting` / `serving` / `build-failed`), build count and the
+  last error, prints `alive: this command stays in the foreground until
+  ctrl-c — that is not a hang`, and the skill tells the agent to read
+  that file instead of killing the human's window.
+- **`image_outline` refuses photographs instead of hanging.** Measured:
+  a 4000 px car photo traced to **19,194 contours / 213k points**, and
+  just extruding it took **42 s** for 822k triangles (3M with
+  `simplify=0`) — every later boolean, metric and render then dragged.
+  Now tracing is capped at `trace_px=1400` on the long side (more
+  pixels add noise, not accuracy — mm fidelity comes from `simplify`),
+  specks are dropped in pixel space *before* the simplifier instead of
+  after, and `max_contours=400` turns the stall into an instant error
+  that states the counts and the way out (threshold to 2 colours, a
+  computed `min_area=`, or `profile_read()`, which is the tool built
+  for photos). Clean drawings are unaffected.
+- Skill: `from-image.md` gains the "never trace a photo" rule and the
+  photo-fetching recipe that does not stall (Wikimedia Commons serves
+  files; switch source after two 403s instead of retrying).
+
 ## 2026-07-22 — solidsight 0.11.1: say what the tool cannot do, and never share a port
 
 The Vantage arc ends with an honest answer instead of another recipe:

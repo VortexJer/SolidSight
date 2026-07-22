@@ -242,6 +242,24 @@ exists (an edit commission), they see it from second one. This is not
 optional and they should not have to ask. You keep working from
 renders and report.json — the viewer is theirs.
 
+**`view` never returns — that is not a crash.** It holds the terminal
+until ctrl-c by design. Do NOT restart it because "it hung", and do
+NOT kill it to "check": you steal the human's window and the port
+dance starts. To check on it, read the liveness file it writes:
+
+```bash
+cat out/viewer/status.json      # or GET http://127.0.0.1:<port>/status.json
+# {"pid":…, "state":"serving"|"waiting"|"build-failed", "builds":3,
+#  "last_build":"ok", "last_error":null, "url":"http://127.0.0.1:8377/"}
+```
+
+`state: build-failed` means the server is fine and your code isn't —
+fix the model, the page hot-reloads by itself. It opens as an app
+window (no tabs, no address bar); `--tab` forces a normal tab, and it
+takes the next free port when the one you asked for is busy, printing
+which one it took. If it says `8378` and the human sees an old model,
+they are looking at a different window — send them the printed URL.
+
 ### Step 4 - Build and LOOK after every geometric change
 
 ```bash

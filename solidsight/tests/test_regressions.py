@@ -492,15 +492,24 @@ def test_viewer_payload_structure(tmp_path):
                  encoding="utf-8")
     scene = run_model(m)
     report = build_model(m, out_dir=tmp_path / "out", views=["iso"])
-    payload = scene_payload(scene, report)
+    payload, mesh_bin = scene_payload(scene, report)
     assert [p["name"] for p in payload["parts"]] == ["plate", "post"]
     p0 = payload["parts"][0]
-    assert len(p0["positions"]) % 3 == 0 and len(p0["indices"]) % 3 == 0
-    assert max(p0["indices"]) < len(p0["positions"]) // 3
+    # geometry lives in mesh.bin now: JSON carries offsets only
+    import numpy as _np
+    pos = _np.frombuffer(mesh_bin, dtype="<f4", count=p0["pos_n"],
+                         offset=p0["pos_off"])
+    idx = _np.frombuffer(mesh_bin, dtype="<u4", count=p0["idx_n"],
+                         offset=p0["idx_off"])
+    assert len(pos) % 3 == 0 and len(idx) % 3 == 0
+    assert idx.max() < len(pos) // 3
+    assert len(mesh_bin) == sum(4 * (q["pos_n"] + q["idx_n"])
+                                for q in payload["parts"])
     assert p0["com"] is not None and p0["volume"] == pytest.approx(1000)
     assert payload["pairs"][0]["status"] == "collision"  # post pierces plate
     assert payload["pairs"][0]["overlap_bbox"] is not None
-    write_viewer(tmp_path / "v", payload, "abc123")
+    write_viewer(tmp_path / "v", payload, "abc123", mesh_bin)
+    assert (tmp_path / "v" / "mesh.bin").read_bytes() == mesh_bin
     assert (tmp_path / "v" / "index.html").exists()
     assert (tmp_path / "v" / "three.module.min.js").exists()
     assert (tmp_path / "v" / "version.txt").read_text(
@@ -1074,7 +1083,7 @@ def test_emit_material_reaches_viewer_and_glb(tmp_path):
               "scene": {"bbox": {"min": [0, 0, 0], "max": [1, 1, 1]},
                         "size": [1, 1, 1]},
               "parts": {}, "checks": []}
-    pay = scene_payload(sc, report)
+    pay, _bin = scene_payload(sc, report)
     assert pay["parts"][0]["material"]["metallic"] == 1.0
 
     from solidsight.report import _export_glb_scene
@@ -1138,3 +1147,68 @@ def test_viewer_falls_back_when_the_port_is_taken(tmp_path):
     finally:
         first.shutdown()
         first.server_close()
+
+
+def test_image_outline_refuses_a_photo_instead_of_hanging(tmp_path):
+    """A photograph traces into thousands of texture contours; the old
+    behaviour was a sketch that took ~40 s to extrude into ~800k
+    triangles and dragged every later boolean. It must be refused with
+    the numbers and a remedy. User: 'se atasca muchisimo cuando mira
+    fotos'."""
+    import numpy as np
+    from PIL import Image
+    from solidsight.errors import SolidsightError
+    from solidsight.vision import image_outline
+    rng = np.random.default_rng(7)
+    noise = rng.integers(0, 255, size=(900, 1200), dtype=np.uint8)
+    p = tmp_path / "photo.png"
+    Image.fromarray(noise, mode="L").save(p)
+    with pytest.raises(SolidsightError) as e:
+        image_outline(str(p), width=400)
+    msg = e.value.render()
+    assert "shredded" in msg and "contours" in msg
+    assert "min_area=" in msg and "profile_read" in msg
+
+
+def test_image_outline_still_traces_a_clean_drawing(tmp_path):
+    """The guard must not touch the real case: a flat two-tone shape
+    traces as before, and the trace_px cap keeps its size exact."""
+    import numpy as np
+    from PIL import Image
+    from solidsight.vision import image_outline
+    img = np.full((2400, 3200), 255, dtype=np.uint8)   # over trace_px
+    img[600:1800, 800:2400] = 0                        # one black rect
+    p = tmp_path / "flat.png"
+    Image.fromarray(img, mode="L").save(p)
+    sk = image_outline(str(p), width=320.0)            # 0.1 mm per px
+    rings = sk.cross_section.to_polygons()
+    assert len(rings) == 1
+    xs = [pt[0] for pt in rings[0]]
+    ys = [pt[1] for pt in rings[0]]
+    assert (max(xs) - min(xs)) == pytest.approx(160.0, abs=1.0)
+    assert (max(ys) - min(ys)) == pytest.approx(120.0, abs=1.0)
+
+
+def test_viewer_geometry_is_binary_not_json(tmp_path):
+    """A 100k-triangle scene used to be a 22 MB scene.json rebuilt in
+    Python loops on every save. Geometry must ride in mesh.bin and the
+    JSON must stay small. User: 'el viewer es super lento'."""
+    from solidsight.report import build_model
+    from solidsight.runner import run_model
+    from solidsight.viewer import scene_payload, write_viewer
+    import json as _json
+    m = tmp_path / "m.py"
+    m.write_text("from solidsight import *\n"
+                 "emit(sphere(r=20, segments=120), name='ball')\n",
+                 encoding="utf-8")
+    scene = run_model(m)
+    report = build_model(m, out_dir=tmp_path / "out", views=["iso"],
+                         skip_pairs=True)
+    payload, mesh_bin = scene_payload(scene, report)
+    js = _json.dumps(payload)
+    assert "positions" not in js and "indices" not in js
+    assert len(mesh_bin) > 20 * len(js)          # bytes are where it went
+    write_viewer(tmp_path / "v", payload, "fp1", mesh_bin)
+    # version.txt is the reload trigger: it must land after the geometry
+    assert (tmp_path / "v" / "mesh.bin").stat().st_mtime_ns <= \
+           (tmp_path / "v" / "version.txt").stat().st_mtime_ns

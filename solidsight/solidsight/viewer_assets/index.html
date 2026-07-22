@@ -139,6 +139,7 @@ sceneGL.add(sun);
 
 // ---- state ----------------------------------------------------------------
 let data = null;                 // scene.json payload
+let meshBuf = new ArrayBuffer(0);// mesh.bin: all part geometry, binary
 const meshes = new Map();        // name -> THREE.Mesh
 const baseMat = new Map();       // name -> material
 const offsets = new Map();       // name -> THREE.Vector3 explode direction
@@ -219,9 +220,14 @@ function rebuild(payload) {
 
   for (const p of payload.parts) {
     const g = new THREE.BufferGeometry();
-    g.setAttribute('position',
-      new THREE.Float32BufferAttribute(p.positions, 3));
-    g.setIndex(p.indices);
+    const pos = p.positions
+      ? new Float32Array(p.positions)            // legacy JSON scenes
+      : new Float32Array(meshBuf, p.pos_off, p.pos_n);
+    const idx = p.indices
+      ? new Uint32Array(p.indices)
+      : new Uint32Array(meshBuf, p.idx_off, p.idx_n);
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    g.setIndex(new THREE.BufferAttribute(idx, 1));
     g.computeVertexNormals();
     // emit(material=...) drives the finish: metallic/roughness/opacity
     const fin = p.material || {};
@@ -317,6 +323,8 @@ function addMarker(at, diag, color, label) {
 function buildPanel(p) {
   document.getElementById('model-name').textContent =
     `${p.model} · ${p.mode} · ${p.status.toUpperCase()}`;
+  // in app mode the window title bar IS the chrome: name the model there
+  document.title = `${p.model} — solidsight`;
   const s = p.scene;
   document.getElementById('scene-info').innerHTML =
     `<div class="kv"><span class="k">size</span><span>${s.size.join(' × ')} mm</span></div>` +
@@ -496,8 +504,17 @@ function resize() {
 window.addEventListener('resize', resize);
 
 async function loadScene() {
-  const resp = await fetch('scene.json', { cache: 'no-store' });
-  rebuild(await resp.json());
+  // geometry rides in mesh.bin (float32 positions + uint32 indices);
+  // scene.json carries only offsets, so a heavy scene is a few MB of
+  // typed arrays instead of tens of MB of JSON text to parse
+  const [payload, buf] = await Promise.all([
+    fetch('scene.json', { cache: 'no-store' }).then(r => r.json()),
+    fetch('mesh.bin', { cache: 'no-store' })
+      .then(r => r.ok ? r.arrayBuffer() : new ArrayBuffer(0))
+      .catch(() => new ArrayBuffer(0)),
+  ]);
+  meshBuf = buf;
+  rebuild(payload);
 }
 async function pollVersion() {
   try {

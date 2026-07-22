@@ -67,6 +67,11 @@ def main(argv: list[str] | None = None) -> int:
                    help="do not auto-open the browser (default: it opens; "
                         "if the model file does not exist yet the page "
                         "shows a spinner until the first build)")
+    v.add_argument("--tab", action="store_true",
+                   help="open as a normal browser tab; the default is an "
+                        "app window (Chromium --app: no tab strip, no "
+                        "address bar, own taskbar entry). Set "
+                        "SOLIDSIGHT_BROWSER=<path> to choose the browser")
 
     c = sub.add_parser("catalog", help="list the parametric parts catalog")
     c.add_argument("name", nargs="?", help="show full docs for one part")
@@ -666,7 +671,8 @@ def _view(args) -> int:
     try:
         return run_view(Path(args.model), kwargs, say=_say, port=args.port,
                         watch=not args.no_watch, poll_s=args.poll,
-                        open_browser=not args.no_open)
+                        open_browser=not args.no_open,
+                        app_mode=not args.tab)
     except SolidsightError as e:
         _say(f"VIEW FAILED\n{e.render()}", err=True)
         return 1
