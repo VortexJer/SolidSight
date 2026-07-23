@@ -155,22 +155,36 @@ def _rasterize(color: np.ndarray, zbuf: np.ndarray, cam: _Camera, tm,
     tri_z = depth[faces]            # (t,3)
     tri_s = vshade[faces]           # (t,3)
 
+    # Screen box and degeneracy for EVERY triangle in one numpy pass. The
+    # loop below used to work these out one triangle at a time — eight numpy
+    # round-trips each, on meshes where most triangles cover less than a
+    # single pixel, and that was 94% of a render. Same formulas in the same
+    # order, so the same triangles are drawn with the same arithmetic.
+    px, py = tri_pix[:, :, 0], tri_pix[:, :, 1]
+    bx0 = np.maximum(np.floor(px.min(axis=1)), 0).astype(np.intp)
+    bx1 = np.minimum(np.ceil(px.max(axis=1)), size - 1).astype(np.intp)
+    by0 = np.maximum(np.floor(py.min(axis=1)), 0).astype(np.intp)
+    by1 = np.minimum(np.ceil(py.max(axis=1)), size - 1).astype(np.intp)
+    den = ((tri_pix[:, 1, 1] - tri_pix[:, 2, 1])
+           * (tri_pix[:, 0, 0] - tri_pix[:, 2, 0])
+           + (tri_pix[:, 2, 0] - tri_pix[:, 1, 0])
+           * (tri_pix[:, 0, 1] - tri_pix[:, 2, 1]))
+    drawable = ((bx0 <= bx1) & (by0 <= by1) & (np.abs(den) >= 1e-12)
+                & np.isfinite(px).all(axis=1) & np.isfinite(py).all(axis=1))
+
     # draw far-to-near so equal-depth overwrites are deterministic
     order = np.argsort(-tri_z.mean(axis=1), kind="stable")
-    for ti in order:
+    for ti in order[drawable[order]]:
         p = tri_pix[ti]
         z = tri_z[ti]
         s = tri_s[ti]
-        xmin = max(int(np.floor(p[:, 0].min())), 0)
-        xmax = min(int(np.ceil(p[:, 0].max())), size - 1)
-        ymin = max(int(np.floor(p[:, 1].min())), 0)
-        ymax = min(int(np.ceil(p[:, 1].max())), size - 1)
-        if xmin > xmax or ymin > ymax:
-            continue
-        xs = np.arange(xmin, xmax + 1) + 0.5
-        ys = np.arange(ymin, ymax + 1) + 0.5
-        gx, gy = np.meshgrid(xs, ys)
-        d = _bary(p, gx, gy)
+        xmin, xmax = int(bx0[ti]), int(bx1[ti])
+        ymin, ymax = int(by0[ti]), int(by1[ti])
+        # broadcasting instead of meshgrid: two allocations per triangle
+        # fewer, and _bary combines both axes so the values are identical
+        xs = (np.arange(xmin, xmax + 1) + 0.5)[None, :]
+        ys = (np.arange(ymin, ymax + 1) + 0.5)[:, None]
+        d = _bary(p, xs, ys)
         if d is None:
             continue
         w0, w1, w2 = d
