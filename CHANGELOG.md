@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-07-23 — solidsight 0.11.8: a cheaper skill, and --tab speaks up
+
+`view --tab` opened a browser tab and said nothing about it. If the
+browser was already running, the tab landed behind another window — and
+since `webbrowser.open`'s return value was discarded, a browser that
+never opened looked exactly the same from the terminal. It now names the
+window it used and repeats the URL, or says plainly that it could not
+open one. (`view` without `--tab` is still the app window.)
+
+SKILL.md is read in full on every commission, and at 26 KB it was the
+most expensive thing about a small job: 25.9 -> 19.9 KB, ~6,500 ->
+~5,000 tokens. Every trigger stays verbatim — the specific-referent
+rule, the detail-mode question, "silence = representative", the
+styled-body and from-image entry points; the method behind each moved to
+the reference file that is already mandatory reading in that exact case.
+The honest deal for styled bodies was the one thing that lived nowhere
+else, so it is now written into `references/car-bodies.md`.
+
+Also: every subcommand of all six tools audited against the docs.
+Nothing documented is missing; `install-skill` is now documented for the
+four smaller tools too.
+
 ## 2026-07-23 — the family ships: PyPI, a plugin, and one way out
 
 All five tools are on PyPI (`pip install solidsight`), published from a
