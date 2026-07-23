@@ -1340,3 +1340,22 @@ def test_touching_transparent_parts_do_not_z_fight():
     assert "camera.far = sph.r" in html
     # and the bias is re-decided on the x-ray toggle, not only at build time
     assert "biasDepth(mat, mat.opacity < 1, rank)" in html
+
+
+def test_uninstall_also_drops_the_aisight_umbrella(tmp_path, monkeypatch):
+    """`pip install aisight` depends on this package, so removing it and
+    leaving the umbrella behind is a broken install. The other tools are
+    NOT touched — pip does not cascade, and they are not ours to remove.
+    User: 'deberia desinstalar los pips tambien los unistalls'."""
+    from solidsight import skill_install as si
+    calls = []
+    monkeypatch.setattr(si.subprocess, "call",
+                        lambda a, **k: (calls.append(a), 0)[1])
+    monkeypatch.setattr(si, "_installed", lambda name: name == "aisight")
+    monkeypatch.setattr(si, "default_skill_dir", lambda: tmp_path / "gone")
+    assert si.uninstall() == 0
+    removed = [c[-1] for c in calls]
+    assert "solidsight" in removed
+    assert "aisight" in removed
+    assert not [r for r in removed
+                if r not in ("solidsight", "aisight", "-y", "uninstall")]

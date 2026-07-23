@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "animationsight",
   "displayName": "AnimationSight",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "Animation clips and mocap (.bvh): foot sliding, pops, ground penetration, balance, loop seams \u2014 measured, with renders of the exact frames that are wrong.",
   "author": {
     "name": "AISight contributors"

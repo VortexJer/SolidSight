@@ -43,6 +43,30 @@ def install_skill(target: Path | None = None, quiet: bool = False) -> Path:
     return dst
 
 
+def _installed(name: str) -> bool:
+    """Is this distribution installed right now?"""
+    from importlib.metadata import PackageNotFoundError, version
+    try:
+        version(name)
+    except PackageNotFoundError:
+        return False
+    return True
+
+
+def _drop_umbrella() -> int:
+    """`pip install aisight` pulls the five tools in as dependencies, so
+    removing one of them leaves the umbrella behind requiring a package
+    that is gone — a broken install pip will complain about. The umbrella
+    goes with it. The other four tools are untouched: pip does not
+    cascade, and they were never aisight's to remove."""
+    if not _installed("aisight"):
+        return 0
+    print("also removing the aisight umbrella (it requires animationsight) — "
+          "the other tools stay")
+    return subprocess.call([sys.executable, "-m", "pip", "uninstall",
+                            "-y", "aisight"])
+
+
 def uninstall(remove_package: bool = True) -> int:
     dst = default_skill_dir()
     if dst.exists():
@@ -52,8 +76,9 @@ def uninstall(remove_package: bool = True) -> int:
         print(f"skill was not installed (nothing at {dst})")
     if remove_package:
         print("removing the animationsight package...")
-        return subprocess.call([sys.executable, "-m", "pip", "uninstall",
+        code = subprocess.call([sys.executable, "-m", "pip", "uninstall",
                                 "-y", "animationsight"])
+        return _drop_umbrella() or code
     return 0
 
 

@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "shadersight",
   "displayName": "ShaderSight",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "Materials, BRDFs and shader node graphs: energy conservation, reciprocity, negative lobes, cycles, dead nodes, per-pixel cost.",
   "author": {
     "name": "AISight contributors"

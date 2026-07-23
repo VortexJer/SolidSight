@@ -1,15 +1,20 @@
 # aisight
 
-The family command. The five tools are independent on purpose — install
-one, some or all — but nothing knew about all of them at once, which is
-exactly what you want the day you leave.
+Both ends of the family in one command. The five tools are independent
+on purpose — install one, some or all, none depends on another — but
+nothing knew about all of them at once, which is what you want on the
+first day and on the last one.
 
 ```bash
-pip install aisight
+pip install aisight   # brings in all five tools
 
-aisight status       # what is installed on this machine
-aisight uninstall    # the skills, the packages, the plugin marketplace
+aisight status        # what is installed on this machine
+aisight uninstall     # the skills, the packages, the plugin marketplace
 ```
+
+`pip install aisight` installs solidsight, animationsight, texturesight,
+shadersight and pcbsight — solidsight's dependencies included, so it is
+the heaviest way in. Want one tool? `pip install solidsight`.
 
 ## What it removes
 

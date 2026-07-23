@@ -128,3 +128,16 @@ def test_bare_invocation_prints_help(argv, capsys):
     except SystemExit:
         pass
     assert "uninstall" in capsys.readouterr().out
+
+
+def test_installing_aisight_installs_the_family():
+    """`pip install aisight` has to bring the five tools with it, or
+    `aisight uninstall` would be a command for removing nothing.
+    User: 'pip install aisight deberia hacer pip install (individuales)'."""
+    import pathlib
+    import re
+    txt = (pathlib.Path(__file__).parents[1] / "pyproject.toml") \
+        .read_text(encoding="utf-8")
+    deps = re.search(r"dependencies = \[(.*?)\]", txt, re.S).group(1)
+    for t in TOOLS:
+        assert re.search(rf'"{t}>=', deps), f"{t} is not a dependency"

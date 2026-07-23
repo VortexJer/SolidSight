@@ -4,14 +4,20 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aisight"
-version = "0.1.0"
-description = "The AISight family command: what is installed, and one clean uninstall for all five tools."
+version = "0.2.0"
+description = "The AISight family: installs all five tools, and takes them all back off again."
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"
 authors = [{ name = "AISight contributors" }]
 keywords = ["aisight", "solidsight", "uninstall", "ai-agent"]
-dependencies = []
+dependencies = [
+    "solidsight>=0.11.7",
+    "animationsight>=0.7.2",
+    "texturesight>=0.5.2",
+    "shadersight>=0.6.2",
+    "pcbsight>=0.5.2",
+]
 
 [project.urls]
 Homepage = "https://github.com/VortexJer/AISight/tree/main/aisight"

@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "solidsight",
   "displayName": "SolidSight",
-  "version": "0.11.6",
+  "version": "0.11.7",
   "description": "3D design, CAD and 3D printing: parametric Python in, deterministic geometry, renders and a machine-readable validation report out.",
   "author": {
     "name": "AISight contributors"

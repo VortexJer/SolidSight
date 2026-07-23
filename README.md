@@ -32,10 +32,11 @@ pip install shadersight
 pip install pcbsight
 ```
 
-**All five** in one line:
+**All five** in one line — `aisight` depends on every tool, so it pulls
+the family in, and is also the command that takes it back off:
 
 ```bash
-pip install solidsight animationsight texturesight shadersight pcbsight
+pip install aisight
 ```
 
 **The unreleased `main`**, or a checkout you are editing:
@@ -67,7 +68,6 @@ for people who manage their agent's capabilities through `/plugin`.
 ## Uninstalling
 
 ```bash
-pip install aisight     # the family command
 aisight status          # what is installed on this machine
 aisight uninstall       # every skill, every package, the marketplace
 ```

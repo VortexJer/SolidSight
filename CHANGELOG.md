@@ -1,5 +1,28 @@
 # Changelog
 
+## 2026-07-23 — the family ships: PyPI, a plugin, and one way out
+
+All five tools are on PyPI (`pip install solidsight`), published from a
+tag by GitHub Actions through PyPI trusted publishing — no API token
+anywhere. The repo is also a **plugin marketplace**: `/plugin marketplace
+add VortexJer/AISight` then `/plugin install solidsight@aisight`. A
+plugin reads its skills from `skills/<name>/SKILL.md`, so each tool's
+`skill/` is now `skills/<tool>/` — same files, still one copy.
+
+New sixth package, **aisight** — both ends of the family in one command.
+`pip install aisight` depends on all five, so it brings the whole thing
+in; `aisight status` says what is installed; `aisight uninstall` removes
+the five skills, the five packages, the plugin marketplace and its
+registry entry, then itself. `--only <tool>` narrows it, `--dry-run`
+prints without touching, and a git checkout is never guessed: `--repo
+PATH` deletes one only after verifying the directory really is an
+AISight working copy.
+
+Each tool's own `<tool> uninstall` still removes that tool's skill and
+package — and now the aisight umbrella too, since leaving it behind
+after removing one of its dependencies is a broken install. The other
+four tools stay.
+
 ## 2026-07-23 — solidsight 0.11.6: the port really does come back
 
 CI caught it on macOS and Linux: after a viewer closes, its port sits in
