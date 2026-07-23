@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-07-23 — solidsight 0.11.10: ghost any part by hand
+
+Seeing through the valve cover while the rest of the engine stays solid
+used to mean editing the model and rebuilding: `ghost=True` was a
+build-time property and x-ray was all-or-nothing. Every row in the
+viewer's parts panel now carries a **GHOST** toggle — one part, several,
+as many as you like — and it respects the opacity the model declared for
+real glass.
+
+The package now also writes its own routing note into
+`~/.claude/CLAUDE.md` on install and removes it on uninstall. It is
+fenced: only our block is ever touched, a hand-written mention is never
+ours to delete, and nothing is created where Claude Code is not
+installed.
+
+And a real bug, mine: the test suite reached outside its sandbox. The
+CLI self-hosts its skill on every invocation, so running the tests
+reinstalled skills that had been deliberately removed and edited the
+developer's own Claude Code setup. Every suite now runs with a throwaway
+home, and finds the package through the checkout instead of quietly
+depending on it being pip-installed.
+
 ## 2026-07-23 — solidsight 0.11.9: the renderer stops being the bottleneck
 
 3.8x faster, and not one pixel moved. Two changes, both allowed only
