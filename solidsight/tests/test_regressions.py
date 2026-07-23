@@ -1285,15 +1285,27 @@ def test_closing_the_window_frees_the_port(tmp_path):
     watch_for_window_close(httpd, lambda *_: None,
                            lambda: (stopped.append(True), httpd.shutdown()))
     url = f"http://127.0.0.1:{port}"
-    _u.urlopen(f"{url}/version.txt", timeout=3).read()      # a window opens
-    # a reload: bye, then a poll inside the grace -> must survive
-    _u.urlopen(_u.Request(f"{url}/bye", data=b"", method="POST"), timeout=3)
-    _t.sleep(1.0)
-    _u.urlopen(f"{url}/version.txt", timeout=3).read()
+
+    # every response must be closed: a client socket left open holds the
+    # server's end in FIN_WAIT_2, which SO_REUSEADDR does NOT excuse, and
+    # the port would look busy for reasons that have nothing to do with
+    # the viewer (this is how the test failed on ubuntu and macos).
+    def poll():                     # a window asking "new build?"
+        with _u.urlopen(f"{url}/version.txt", timeout=3) as r:
+            return r.read()
+
+    def bye():                      # a window going away
+        req = _u.Request(f"{url}/bye", data=b"", method="POST")
+        with _u.urlopen(req, timeout=3) as r:
+            return r.read()
+
+    poll()                          # a window opens
+    bye()                           # a reload: bye, then a poll inside the
+    _t.sleep(1.0)                   # grace -> must survive
+    poll()
     _t.sleep(2.0)
     assert not stopped, "a reload must not stop the viewer"
-    # now the window really closes
-    _u.urlopen(_u.Request(f"{url}/bye", data=b"", method="POST"), timeout=3)
+    bye()                           # now the window really closes
     for _ in range(120):
         if stopped:
             break
@@ -1303,6 +1315,10 @@ def test_closing_the_window_frees_the_port(tmp_path):
     # "free" = a new viewer can take it back. Probe exactly the way
     # serve_viewer does: a raw bind() calls a TIME_WAIT port busy on
     # macOS/Linux even though the server (SO_REUSEADDR) can have it.
+    for _ in range(12):
+        if _port_is_free(port):
+            break
+        _t.sleep(0.25)              # the last connections winding down
     assert _port_is_free(port), "the port must be usable again"
 
 
