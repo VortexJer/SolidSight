@@ -1,5 +1,33 @@
 # Changelog
 
+## 2026-07-23 — solidsight 0.11.9: the renderer stops being the bottleneck
+
+3.8x faster, and not one pixel moved. Two changes, both allowed only
+because they are exactly equivalent to what the per-triangle loop did:
+
+- **Back faces are never drawn.** Every mesh comes out of manifold3d, so
+  it is closed, and along any ray the nearest surface is the one you
+  enter through — a front face. The far half of every solid was being
+  rasterised in full and then thrown away by the z-test.
+- **Triangles go through a vectorised batch**, in bands (2/4/8/16/32 px)
+  so a 3x3 triangle is not padded out to 32x32. A strict `<` z-test
+  means the winner of a pixel is the nearest fragment, earlier draw
+  breaking an exact tie — a lexicographic minimum of (depth, draw
+  index), which does not care what order fragments are computed in. A
+  per-pixel writer index keeps the tie half of that rule honest.
+
+Measured interleaved, three rounds each: 12.72s -> 2.40s on the contour
+bottle; the five-model bench 34.6s -> 17.6s. Every PNG keeps the sha256
+it had before, and a test renders the same scene with the fast path
+disabled and asserts the two images are identical.
+
+Also in this release: `build` now says when a build produced exactly the
+same geometry as the previous one — a patch that silently did not apply
+(a 
+ pattern against a CRLF file, the wrong path) used to look just
+like a fix that did not work. And the parts line carries triangle counts
+for anything past 50k, so a slow render names its own culprit.
+
 ## 2026-07-23 — solidsight 0.11.8: a cheaper skill, and --tab speaks up
 
 `view --tab` opened a browser tab and said nothing about it. If the
