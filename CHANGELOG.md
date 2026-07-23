@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-07-23 — solidsight 0.11.5: no more flickering seams
+
+Two parts that touch share a face, and a shared face rasterises to the
+*same* depth value on both. Which one owns each pixel then comes down to
+float noise, so the seam shimmered as you orbited — most visibly where a
+transparent part sat flush against a solid one.
+
+- The camera frustum is now fitted to the model: `near`/`far` follow the
+  orbit distance and the scene size instead of a fixed `0.1 -> 100000`,
+  which spent almost the whole depth buffer on empty space.
+- See-through parts carry a polygon offset that pulls them a hair toward
+  the camera, so the tie is broken the same way every frame — and each
+  gets its own slice, so two panes of glass sitting flush do not fight
+  each other either. The bias is re-decided on the x-ray toggle, not only
+  when the material is built.
+
 ## 2026-07-22 — solidsight 0.11.4: close the window, free the port
 
 A viewer whose window is gone is a process holding a port for nothing —

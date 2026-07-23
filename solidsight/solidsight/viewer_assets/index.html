@@ -147,6 +147,7 @@ let helpers = { bbox: [], com: [], find: [], grid: null, triad: null };
 let opts = { wire: false, xray: false, norm: false, bbox: false, com: false,
              find: true, grid: true };
 let explode = 0;
+let sceneSpan = 100;             // largest scene dimension, drives near/far
 let clipPlane = null, clipAxis = '';
 let isolated = null;             // part name or null
 let version = '';
@@ -161,6 +162,13 @@ function applyCamera() {
     target.y + sph.r * sp * Math.sin(sph.theta),
     target.z + sph.r * cp);
   camera.lookAt(target);
+  // depth precision: a fixed 0.1 -> 100000 frustum spends almost all of the
+  // depth buffer on empty space, so two faces a few microns apart get the
+  // same depth value and shimmer. Keep the range tight around what is on
+  // screen — near/far follow the orbit distance and the model size.
+  camera.near = Math.max(sph.r * 0.02, sceneSpan * 1e-5, 1e-4);
+  camera.far = sph.r + sceneSpan * 4 + 1;
+  camera.updateProjectionMatrix();
 }
 let drag = null;
 renderer.domElement.addEventListener('contextmenu', e => e.preventDefault());
@@ -217,6 +225,7 @@ function rebuild(payload) {
     (c.min[0] + c.max[0]) / 2, (c.min[1] + c.max[1]) / 2,
     (c.min[2] + c.max[2]) / 2);
   const diag = Math.max(...payload.scene.size);
+  sceneSpan = diag || 100;
 
   for (const p of payload.parts) {
     const g = new THREE.BufferGeometry();
@@ -239,6 +248,7 @@ function rebuild(payload) {
       side: THREE.DoubleSide,
       transparent: p.ghost || op < 1, opacity: op });
     mat.userData.declaredOpacity = op;   // what emit(material=) asked for
+    biasDepth(mat, op < 1, meshes.size);
     const mesh = new THREE.Mesh(g, mat);
     mesh.name = p.name;
     sceneGL.add(mesh);
@@ -290,9 +300,9 @@ function rebuild(payload) {
   if (!rebuild.framed) {           // keep the camera between hot reloads
     target.copy(center);
     sph.r = diag * 2.1;
-    applyCamera();
     rebuild.framed = true;
   }
+  applyCamera();                   // also refits near/far to the new size
   buildPanel(payload);
   applyOptions();
 }
@@ -373,6 +383,18 @@ function flyTo(at) {
 }
 
 // ---- options ----------------------------------------------------------------
+// Two parts that touch share a face, and a shared face rasterises to the SAME
+// depth on both — so which one owns each pixel is decided by float noise and
+// the seam shimmers while you orbit. Break the tie in a fixed direction: pull
+// see-through parts a hair toward the camera (they are what you want to look
+// through anyway), each on its own slice so two panes of glass sitting flush
+// do not fight each other either.
+function biasDepth(mat, transparent, rank) {
+  mat.polygonOffset = transparent;
+  mat.polygonOffsetFactor = transparent ? -1 : 0;
+  mat.polygonOffsetUnits = transparent ? -(2 + rank) : 0;
+}
+
 function applyOptions() {
   for (const [name, mesh] of meshes) {
     const part = data.parts.find(q => q.name === name);
@@ -386,6 +408,7 @@ function applyOptions() {
     } else mesh.material = mat;
     const hidden = isolated && name !== isolated;
     mesh.visible = !hidden;
+    const rank = data.parts.indexOf(part);
     if (!part.ghost) {
       // x-ray is a temporary override; when it is off, go back to the
       // opacity the model DECLARED (glass, tinted lenses...), not to 1 —
@@ -396,6 +419,10 @@ function applyOptions() {
       mat.opacity = o;
       mat.depthWrite = !(o < 1);
     }
+    // x-ray can turn an opaque part see-through, so the bias is re-decided
+    // here and not only when the material was made
+    biasDepth(mat, mat.opacity < 1, rank);
+    if (mesh.userData.nm) biasDepth(mesh.userData.nm, false, rank);
     const off = offsets.get(name);
     mesh.position.set(off.x * explode, off.y * explode,
       off.z * explode + explode * 0.06 * Math.max(...data.scene.size) *

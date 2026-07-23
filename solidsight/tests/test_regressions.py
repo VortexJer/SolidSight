@@ -1306,3 +1306,22 @@ def test_closing_the_window_frees_the_port(tmp_path):
         probe.bind(("127.0.0.1", port))        # the port is really free
     finally:
         probe.close()
+
+
+def test_touching_transparent_parts_do_not_z_fight():
+    """A glass part sitting flush against a solid one shares its face, and a
+    shared face rasterises to the same depth on both -> the seam flickered
+    while orbiting. Two guards: the depth range now follows the model instead
+    of a fixed 0.1 -> 100000 frustum, and see-through parts carry a polygon
+    offset so the tie is always broken the same way.
+    User: 'a veces parpadea si 2 piezas estan pegadas y una es transparente'."""
+    from pathlib import Path
+    html = (Path(__file__).parents[1] / "solidsight" / "viewer_assets"
+            / "index.html").read_text(encoding="utf-8")
+    assert "biasDepth" in html
+    assert "polygonOffset" in html
+    # the frustum is computed, not hard-coded wide open
+    assert "camera.near = Math.max(" in html
+    assert "camera.far = sph.r" in html
+    # and the bias is re-decided on the x-ray toggle, not only at build time
+    assert "biasDepth(mat, mat.opacity < 1, rank)" in html
