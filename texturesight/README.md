@@ -34,7 +34,7 @@ Findings carry `where` and a `try:`. Everything is deterministic.
 ## Quickstart
 
 ```bash
-pip install "git+https://github.com/VortexJer/AISight#subdirectory=texturesight"
+pip install texturesight
 
 texturesight inspect --mesh model.obj --texture-px 2048
 # -> out/report.json
@@ -44,6 +44,15 @@ texturesight inspect --mesh model.obj --texture-px 2048
 texturesight inspect --texture rock_normal.png       # kind guessed from the name
 texturesight inspect --texture rough.png --kind roughness
 ```
+
+Or as a Claude Code plugin:
+
+```
+/plugin marketplace add VortexJer/AISight
+/plugin install texturesight@aisight
+```
+
+(the plugin carries the skill; the CLI it drives still comes from pip)
 
 Exit codes: 0 ok, 1 bad input, 2 a FAIL-level finding.
 
@@ -199,6 +208,11 @@ judge whether a texture is beautiful, only whether it is correct.
 
 Siblings, same philosophy: [solidsight](../solidsight/README.md) (3D geometry),
 [animationsight](../animationsight/README.md) (motion clips).
+
+Leaving: `texturesight uninstall` removes this tool's skill and package.
+`pip install aisight && aisight uninstall` removes the whole family —
+every skill, every package and the plugin marketplace. See
+[aisight](../aisight/README.md).
 
 ## License
 

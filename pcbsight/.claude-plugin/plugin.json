@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "pcbsight",
+  "displayName": "PCBSight",
+  "version": "0.5.1",
+  "description": "PCB layouts (.kicad_pcb): open nets, clearance violations, trace current capacity, differential pair skew, impedance.",
+  "author": {
+    "name": "AISight contributors"
+  },
+  "homepage": "https://github.com/VortexJer/AISight/tree/main/pcbsight",
+  "repository": "https://github.com/VortexJer/AISight",
+  "license": "MIT",
+  "keywords": [
+    "pcb",
+    "kicad",
+    "electronics"
+  ]
+}

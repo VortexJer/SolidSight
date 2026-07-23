@@ -19,7 +19,7 @@ texturesight, shadersight, pcbsight — with one shared contract:
 
 ## Setup
 
-Each tool folder is self-contained (`pyproject.toml`, package, `skill/`,
+Each tool folder is self-contained (`pyproject.toml`, package, `skills/<tool>/`,
 `examples/`, `tests/`). Install only what you are touching:
 
 ```bash
@@ -36,7 +36,7 @@ root, the outer folders shadow the installed packages and imports break.
 1. Bug fixes come with a regression test in that tool's `tests/` that
    fails before the fix.
 2. New checks, catalog parts or metrics need: a docstring with the
-   conventions, an entry in the tool's `skill/references/`, and at least
+   conventions, an entry in the tool's `skills/<tool>/references/`, and at least
    one test asserting the right answer on known ground truth.
 3. If a change affects reports, renders or evidence images, regenerate
    the affected `examples/*/` outputs with a clean install and commit
@@ -45,8 +45,8 @@ root, the outer folders shadow the installed packages and imports break.
    solidsight CLI smoke test on Linux, macOS and Windows, Python 3.10
    and 3.13; everything must pass.
 5. The skills ship inside the pip packages (`skill_data/`); a drift
-   test keeps them identical to the repo's `skill/` copies. Edit the
-   `skill/` copy and sync, or the test fails.
+   test keeps them identical to the repo's `skills/<tool>/` copies. Edit the
+   `skills/<tool>/` copy and sync, or the test fails.
 
 ## Filing issues
 

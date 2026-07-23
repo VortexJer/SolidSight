@@ -11,7 +11,7 @@ IPC-2221 arithmetic at the net's narrowest point, and differential-pair
 skew is a subtraction. None of it needs eyes.
 
 ```bash
-pip install "git+https://github.com/VortexJer/AISight#subdirectory=pcbsight"
+pip install pcbsight
 
 pcbsight inspect board.kicad_pcb --clearance 0.15
 # -> [FAIL] net 'GND' is 2 separate island(s) - unconnected pad(s): J1.2
@@ -23,6 +23,15 @@ pcbsight inspect board.kicad_pcb --clearance 0.15
 
 pcbsight impedance 0.3 0.2      # ~51 ohm microstrip (IPC-2141 estimate)
 ```
+
+Or as a Claude Code plugin:
+
+```
+/plugin marketplace add VortexJer/AISight
+/plugin install pcbsight@aisight
+```
+
+(the plugin carries the skill; the CLI it drives still comes from pip)
 
 Exit codes: 0 ok, 1 bad input, 2 a FAIL-level finding. Deterministic.
 
@@ -130,6 +139,11 @@ the board outline there to check the enclosure fit),
 [animationsight](../animationsight/README.md),
 [texturesight](../texturesight/README.md),
 [shadersight](../shadersight/README.md).
+
+Leaving: `pcbsight uninstall` removes this tool's skill and package.
+`pip install aisight && aisight uninstall` removes the whole family —
+every skill, every package and the plugin marketplace. See
+[aisight](../aisight/README.md).
 
 ## License
 

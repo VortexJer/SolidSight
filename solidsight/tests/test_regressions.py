@@ -363,7 +363,8 @@ def test_packaged_skill_matches_repo_copy():
     # this guards against the two drifting apart
     from pathlib import Path
     base = Path(__file__).parents[1]          # tests -> solidsight/
-    skill, pkg = base / "skill", base / "solidsight" / "skill_data"
+    skill = base / "skills" / "solidsight"
+    pkg = base / "solidsight" / "skill_data"
     if not (skill / "SKILL.md").exists():
         pytest.skip("repo layout not present (installed package only)")
     rels = ["SKILL.md"]

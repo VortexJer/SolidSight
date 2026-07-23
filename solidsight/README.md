@@ -15,8 +15,8 @@ write code  ->  solidsight build  ->  renders + report.json  ->  inspect  ->  ad
 ```
 
 <p align="center">
-  <img src="skill/examples/07-engine-block/out/renders/02_iso_back.png" width="45%">
-  <img src="skill/examples/03-gear-train/out/renders/01_iso.png" width="45%">
+  <img src="skills/solidsight/examples/07-engine-block/out/renders/02_iso_back.png" width="45%">
+  <img src="skills/solidsight/examples/03-gear-train/out/renders/01_iso.png" width="45%">
 </p>
 
 ## Same prompt, with and without the tool
@@ -34,15 +34,15 @@ with **0 crossings**.
 
 <p align="center">
   <img src="../docs/comparison/blind/out/renders/02_iso_back.png" width="49%">
-  <img src="skill/examples/07-engine-block/out/renders/02_iso_back.png" width="49%">
+  <img src="skills/solidsight/examples/07-engine-block/out/renders/02_iso_back.png" width="49%">
 </p>
 <p align="center"><em>left: blind one-shot · right: same prompt through the loop — full protocol, audit evidence and honest caveats in <a href="docs/comparison/README.md">docs/comparison</a></em></p>
 
 ## Quickstart (30 seconds)
 
 ```bash
-pip install "git+https://github.com/VortexJer/AISight#subdirectory=solidsight"
-# or from a checkout:  pip install ./solidsight
+pip install solidsight
+# unreleased main:  pip install "git+https://github.com/VortexJer/AISight#subdirectory=solidsight"
 
 cat > model.py <<'EOF'
 from solidsight import *
@@ -58,6 +58,15 @@ solidsight build model.py --print-safe --stl
 # -> out/report.json                          (volume, walls, overhangs, checks)
 # -> out/stl/plate.stl
 ```
+
+Or as a Claude Code plugin:
+
+```
+/plugin marketplace add VortexJer/AISight
+/plugin install solidsight@aisight
+```
+
+(the plugin carries the skill; the CLI it drives still comes from pip)
 
 The build summary ends with the tool's whole philosophy in one line:
 `NEXT: open the renders and LOOK at them, then read report.json checks.`
@@ -87,12 +96,12 @@ The build summary ends with the tool's whole philosophy in one line:
 
 ## Before / after: one turn of the loop
 
-Real, committed output from [`05-assembly`](skill/examples/05-assembly): a
+Real, committed output from [`05-assembly`](skills/solidsight/examples/05-assembly): a
 divider tray was designed 8 mm too tall and pokes through the closed lid.
 
 <p align="center">
-  <img src="skill/examples/05-assembly/out_collision/renders/01_iso.png" width="45%">
-  <img src="skill/examples/05-assembly/out/renders/01_iso.png" width="45%">
+  <img src="skills/solidsight/examples/05-assembly/out_collision/renders/01_iso.png" width="45%">
+  <img src="skills/solidsight/examples/05-assembly/out/renders/01_iso.png" width="45%">
 </p>
 <p align="center"><em>before: the tray (green) pierces the lid &nbsp;·&nbsp; after: seated under the lip with declared clearance</em></p>
 
@@ -208,8 +217,8 @@ stack cannot do:
 
 Rule of thumb: **if the acceptance test is a caliper, use solidsight; if
 it is an eye, don't.** For styled exteriors expect a recognisable
-massing at best — [`04-vase`](skill/examples/04-vase) and
-[`09-coupe-body`](skill/examples/09-coupe-body) are that honest ceiling,
+massing at best — [`04-vase`](skills/solidsight/examples/04-vase) and
+[`09-coupe-body`](skills/solidsight/examples/09-coupe-body) are that honest ceiling,
 not a finished product — and take the real surfacing to a sub-D /
 NURBS modeller.
 
@@ -221,7 +230,7 @@ real size declared by the agent — pixels carry no millimetres), and
 `image_heightfield()` turns brightness into a watertight relief solid
 (lithophanes, terrain). Building with `--ref photo.png` adds a
 reference-vs-render comparison sheet to every build, so the loop closes
-against the source image. Example: [`08-from-image`](skill/examples/08-from-image).
+against the source image. Example: [`08-from-image`](skills/solidsight/examples/08-from-image).
 
 `image_outline` is for *flat* art. Pointed at a photograph it used to
 trace the texture — 19,194 contours from one car photo, 42 s just to
@@ -232,13 +241,13 @@ photographed silhouettes).
 
 ## The Claude Code skill
 
-[`skill/SKILL.md`](skill/SKILL.md) teaches an agent the full workflow — bill
+[`skills/solidsight/SKILL.md`](skills/solidsight/SKILL.md) teaches an agent the full workflow — bill
 of parts before code, catalog before derivation, build-and-look after every
 change, exact queries when eyes are not enough, the assembly
 collision/clearance loop, detail mode for faithful technical models, and a
 definition-of-done checklist.
 
-Beneath it, [`skill/domains/`](skill/domains) carries **12 deep domain
+Beneath it, [`skills/solidsight/domains/`](skills/solidsight/domains) carries **12 deep domain
 playbooks** — enclosures, mechanisms, product design, furniture,
 architecture, vehicles, organic, terrain, jewelry/miniatures, game-ready
 assets, toys, scientific — each with the numbers a domain expert would
@@ -258,6 +267,7 @@ design request in Claude Code routes through it. Manual control:
 ```bash
 solidsight install-skill        # (re)install explicitly
 solidsight uninstall            # remove the skill AND the package
+# the whole family:  pip install aisight && aisight uninstall
 ```
 
 ## Parametric parts catalog
@@ -280,15 +290,15 @@ metric. Each real bug is pinned by a regression test in `tool/tests/`
 
 | example | shows |
 |---|---|
-| [`01-mounting-bracket`](skill/examples/01-mounting-bracket) | primitives, patterns, print-safe |
-| [`02-snap-box`](skill/examples/02-snap-box) | booleans, snap-fit clip/slot pairing |
-| [`03-gear-train`](skill/examples/03-gear-train) | catalog gears; pair clearance proves the mesh (0.19 mm backlash) |
-| [`04-vase`](skill/examples/04-vase) | organic twisted form in `--free` mode |
-| [`05-assembly`](skill/examples/05-assembly) | multi-part assembly; intentional collision caught with exact bbox/volume, then fixed with measured clearances |
-| [`06-hidden-cavity`](skill/examples/06-hidden-cavity) | a sealed cavity invisible in renders, caught by the report and provable via `query ray`/`voxels` |
-| [`07-engine-block`](skill/examples/07-engine-block) | **detail mode**: a faithful inline-4 block (bores, liner steps, head-bolt matrix, water jacket, cam tunnel, oil galleries, pan rail, gussets, filter pad, inclined mounts) built region-by-region from a feature specification |
-| [`08-from-image`](skill/examples/08-from-image) | **from an image**: a user's emblem traced with `image_outline` and engraved, built with the `--ref` comparison sheet |
-| [`09-coupe-body`](skill/examples/09-coupe-body) | **styled bodywork — and the tool's ceiling**: a 2024-coupe-proportioned one-piece body by station lofting (`loft_sections`, concave shoulder sections, carved arches). Correct proportions and a clean single shell; *not* a class-A exterior — see [Scope](#scope-parts-and-machines--not-styling) |
+| [`01-mounting-bracket`](skills/solidsight/examples/01-mounting-bracket) | primitives, patterns, print-safe |
+| [`02-snap-box`](skills/solidsight/examples/02-snap-box) | booleans, snap-fit clip/slot pairing |
+| [`03-gear-train`](skills/solidsight/examples/03-gear-train) | catalog gears; pair clearance proves the mesh (0.19 mm backlash) |
+| [`04-vase`](skills/solidsight/examples/04-vase) | organic twisted form in `--free` mode |
+| [`05-assembly`](skills/solidsight/examples/05-assembly) | multi-part assembly; intentional collision caught with exact bbox/volume, then fixed with measured clearances |
+| [`06-hidden-cavity`](skills/solidsight/examples/06-hidden-cavity) | a sealed cavity invisible in renders, caught by the report and provable via `query ray`/`voxels` |
+| [`07-engine-block`](skills/solidsight/examples/07-engine-block) | **detail mode**: a faithful inline-4 block (bores, liner steps, head-bolt matrix, water jacket, cam tunnel, oil galleries, pan rail, gussets, filter pad, inclined mounts) built region-by-region from a feature specification |
+| [`08-from-image`](skills/solidsight/examples/08-from-image) | **from an image**: a user's emblem traced with `image_outline` and engraved, built with the `--ref` comparison sheet |
+| [`09-coupe-body`](skills/solidsight/examples/09-coupe-body) | **styled bodywork — and the tool's ceiling**: a 2024-coupe-proportioned one-piece body by station lofting (`loft_sections`, concave shoulder sections, carved arches). Correct proportions and a clean single shell; *not* a class-A exterior — see [Scope](#scope-parts-and-machines--not-styling) |
 
 ## Stack and why
 
@@ -315,6 +325,11 @@ hits the sweet spot: robust, light, deterministic.
    their mental model; CI can diff artifacts.
 4. Errors are for LLMs — specific, located, actionable.
 5. Don't reinvent the kernel — reinvent the feedback loop.
+
+Leaving: `solidsight uninstall` removes this tool's skill and package.
+`pip install aisight && aisight uninstall` removes the whole family —
+every skill, every package and the plugin marketplace. See
+[aisight](../aisight/README.md).
 
 ## License
 

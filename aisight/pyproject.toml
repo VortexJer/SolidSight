@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aisight"
+version = "0.1.0"
+description = "The AISight family command: what is installed, and one clean uninstall for all five tools."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+authors = [{ name = "AISight contributors" }]
+keywords = ["aisight", "solidsight", "uninstall", "ai-agent"]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/VortexJer/AISight/tree/main/aisight"
+Source = "https://github.com/VortexJer/AISight"
+Changelog = "https://github.com/VortexJer/AISight/blob/main/CHANGELOG.md"
+
+[project.scripts]
+aisight = "aisight.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["aisight*"]

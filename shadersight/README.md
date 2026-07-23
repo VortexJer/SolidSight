@@ -17,7 +17,7 @@ them. And a node graph's problems are graph theory: cycles, dead nodes,
 per-pixel cost.
 
 ```bash
-pip install "git+https://github.com/VortexJer/AISight#subdirectory=shadersight"
+pip install shadersight
 
 shadersight material --base-color 0.7,0.4,0.15 --roughness 0.35 --metallic 1
 # -> energy: max albedo 0.72 at 85 deg -> CONSERVES (grid 64x128, 12 views)
@@ -30,6 +30,15 @@ shadersight graph shader_graph.json
 # -> [WARN] 2 node(s) do not reach the output
 # -> cost: ~340 ALU-equiv/pixel, 3 texture fetch(es)
 ```
+
+Or as a Claude Code plugin:
+
+```
+/plugin marketplace add VortexJer/AISight
+/plugin install shadersight@aisight
+```
+
+(the plugin carries the skill; the CLI it drives still comes from pip)
 
 Everything is deterministic (fixed-seed sampling; the resolution is in
 the report, because a physics claim without its resolution is not a
@@ -168,6 +177,11 @@ That defect ships in real engines. Now there is a number for it.
 Siblings, same philosophy: [solidsight](../solidsight/README.md) (geometry),
 [animationsight](../animationsight/README.md) (motion),
 [texturesight](../texturesight/README.md) (UVs/textures).
+
+Leaving: `shadersight uninstall` removes this tool's skill and package.
+`pip install aisight && aisight uninstall` removes the whole family —
+every skill, every package and the plugin marketplace. See
+[aisight](../aisight/README.md).
 
 ## License
 

@@ -34,7 +34,7 @@ Everything is deterministic: same clip, byte-identical report.
 ## Quickstart
 
 ```bash
-pip install "git+https://github.com/VortexJer/AISight#subdirectory=animationsight"
+pip install animationsight
 
 animationsight inspect walk.bvh --unit cm --up y
 # -> out/report.json
@@ -44,6 +44,15 @@ animationsight inspect walk.bvh --unit cm --up y
 animationsight diff before.bvh after.bvh    # prove the fix
 animationsight track walk.bvh LeftFoot      # one joint, every frame
 ```
+
+Or as a Claude Code plugin:
+
+```
+/plugin marketplace add VortexJer/AISight
+/plugin install animationsight@aisight
+```
+
+(the plugin carries the skill; the CLI it drives still comes from pip)
 
 Exit codes: 0 ok, 1 bad clip, 2 a FAIL-level finding.
 
@@ -162,9 +171,13 @@ philosophy with.
 
 ## The Claude Code skill
 
-`skill/SKILL.md` ships inside the pip package and installs itself into
-`~/.claude/skills/animationsight` on the first run. `animationsight
-uninstall` removes the skill and the package.
+`skills/animationsight/SKILL.md` ships inside the pip package and installs itself into
+`~/.claude/skills/animationsight` on the first run.
+
+Leaving: `animationsight uninstall` removes this tool's skill and package.
+`pip install aisight && aisight uninstall` removes the whole family —
+every skill, every package and the plugin marketplace. See
+[aisight](../aisight/README.md).
 
 ## License
 

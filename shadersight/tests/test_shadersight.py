@@ -241,7 +241,7 @@ def test_skill_installs(tmp_path):
 
 def test_packaged_skill_matches_repo_copy():
     repo = Path(__file__).parents[1]
-    src = repo / "skill" / "SKILL.md"
+    src = repo / "skills" / "shadersight" / "SKILL.md"
     pkg = repo / "shadersight" / "skill_data" / "SKILL.md"
     if not src.exists():
         pytest.skip("repo layout not present")

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "aisight",
+  "owner": {
+    "name": "VortexJer",
+    "url": "https://github.com/VortexJer/AISight"
+  },
+  "plugins": [
+    {
+      "name": "solidsight",
+      "source": "./solidsight",
+      "description": "3D design, CAD and 3D printing: parametric Python in, deterministic geometry, renders and a machine-readable validation report out."
+    },
+    {
+      "name": "animationsight",
+      "source": "./animationsight",
+      "description": "Animation clips and mocap (.bvh): foot sliding, pops, ground penetration, balance, loop seams \u2014 measured, with renders of the exact frames that are wrong."
+    },
+    {
+      "name": "texturesight",
+      "source": "./texturesight",
+      "description": "UVs and texture maps: texel density, stretch, seams, islands, packing, tiling, normal maps \u2014 measured, with evidence renders."
+    },
+    {
+      "name": "shadersight",
+      "source": "./shadersight",
+      "description": "Materials, BRDFs and shader node graphs: energy conservation, reciprocity, negative lobes, cycles, dead nodes, per-pixel cost."
+    },
+    {
+      "name": "pcbsight",
+      "source": "./pcbsight",
+      "description": "PCB layouts (.kicad_pcb): open nets, clearance violations, trace current capacity, differential pair skew, impedance."
+    }
+  ]
+}

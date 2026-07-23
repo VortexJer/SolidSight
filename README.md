@@ -22,32 +22,67 @@ finding, and renders only as evidence for what the numbers found.
 Each tool is its own pip package: install **one**, **some**, or **all**.
 They share a philosophy, not a dependency — none requires another.
 
-**One tool** (its folder name is its subdirectory):
+**One tool**, from PyPI:
 
 ```bash
-pip install "git+https://github.com/VortexJer/AISight#subdirectory=solidsight"
-pip install "git+https://github.com/VortexJer/AISight#subdirectory=animationsight"
-pip install "git+https://github.com/VortexJer/AISight#subdirectory=texturesight"
-pip install "git+https://github.com/VortexJer/AISight#subdirectory=shadersight"
-pip install "git+https://github.com/VortexJer/AISight#subdirectory=pcbsight"
+pip install solidsight
+pip install animationsight
+pip install texturesight
+pip install shadersight
+pip install pcbsight
 ```
 
 **All five** in one line:
 
 ```bash
-for t in solidsight animationsight texturesight shadersight pcbsight; do pip install "git+https://github.com/VortexJer/AISight#subdirectory=$t"; done
+pip install solidsight animationsight texturesight shadersight pcbsight
 ```
 
-or from a checkout:
+**The unreleased `main`**, or a checkout you are editing:
 
 ```bash
-git clone https://github.com/VortexJer/AISight
-pip install ./AISight/solidsight ./AISight/animationsight ./AISight/texturesight ./AISight/shadersight ./AISight/pcbsight
+pip install "git+https://github.com/VortexJer/AISight#subdirectory=solidsight"
+# or
+git clone https://github.com/VortexJer/AISight && pip install ./AISight/solidsight
 ```
 
 Requirements: Python >= 3.10, pip, git. solidsight carries the heavy
 dependencies (manifold3d, trimesh, scipy, matplotlib — all wheels); the
 other four need only numpy and pillow.
+
+### As a Claude Code plugin
+
+The same five tools are also a plugin marketplace. In Claude Code:
+
+```
+/plugin marketplace add VortexJer/AISight
+/plugin install solidsight@aisight
+```
+
+The plugin carries the skill; the skill still needs the CLI it drives,
+so `pip install solidsight` as well. Installing the pip package alone is
+enough — it self-installs its skill (see below); the plugin route exists
+for people who manage their agent's capabilities through `/plugin`.
+
+## Uninstalling
+
+```bash
+pip install aisight     # the family command
+aisight status          # what is installed on this machine
+aisight uninstall       # every skill, every package, the marketplace
+```
+
+It removes the five skills from `~/.claude/skills/`, pip-uninstalls the
+packages, drops the `aisight` marketplace from
+`~/.claude/plugins/marketplaces/` and its registry entry — and then
+itself, last. `--only <tool>` limits it to one tool, `--dry-run` prints
+the list without touching anything, `--keep-packages` keeps pip.
+
+A git checkout is yours, not ours, so it is never guessed:
+`--repo PATH` deletes one, and only after checking the directory really
+is an AISight working copy. Each tool also keeps its own
+`<tool> uninstall` (that tool's skill + package). Details:
+[aisight/README.md](aisight/README.md).
 
 ## What installing gives an AI agent
 
@@ -60,8 +95,9 @@ solidsight, "review this .bvh" -> animationsight, "check my board" ->
 pcbsight). No Claude Code? The CLIs work standalone for humans and
 scripts; nothing else is touched.
 
-`<tool> uninstall` removes the skill AND the pip package. No telemetry,
-no services, no accounts.
+`<tool> uninstall` removes that tool's skill and package; `aisight
+uninstall` removes all of it at once (above). No telemetry, no services,
+no accounts.
 
 ## The showcase: one robot through all five tools
 
@@ -114,7 +150,7 @@ competence — the only variable is being able to measure.
 
 <p align="center">
   <img src="docs/comparison/blind/out/renders/02_iso_back.png" width="49%">
-  <img src="solidsight/skill/examples/07-engine-block/out/renders/02_iso_back.png" width="49%">
+  <img src="solidsight/skills/solidsight/examples/07-engine-block/out/renders/02_iso_back.png" width="49%">
 </p>
 <p align="center"><em>the inline-4 engine — blind: watertight, single shell, shipped convinced of success; the audit then found <b>eight sealed water-jacket pockets</b> no coolant can ever reach, cap-bolt drillings 1.9 mm from the crank tunnel, and the 2 mm sliver the author itself predicted it might leave · through the loop: the author made the same kinds of mistakes — the loop caught all four</em></p>
 
@@ -170,17 +206,19 @@ reference, which is the recurring proof of the whole idea:
 ## Repository layout
 
 ```
-solidsight/      3D design: engine + CLI, skill/ (+ domains/), examples, benchmarks
+solidsight/      3D design: engine + CLI, skills/ (+ domains/), examples, benchmarks
 animationsight/  motion clips as measurement
 texturesight/    UVs + texture maps
 shadersight/     materials + node graphs
 pcbsight/        board layouts
+aisight/         the family command: status + one clean uninstall
 showcase/        Vigia: one robot through all five tools (the flagship demo)
 docs/            the blind-vs-loop comparison study, plugins, family roadmap
 ```
 
 Each tool folder is self-contained: `pyproject.toml`, the package, its
-`skill/`, `examples/` with committed real outputs, and `tests/`.
+`skills/<tool>/`, `examples/` with committed real outputs, and
+`tests/`.
 
 ## License
 

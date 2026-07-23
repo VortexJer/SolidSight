@@ -5,7 +5,7 @@
 # - build/ and egg-info are packaging debris.
 extend-exclude = [
     "showcase/robot",
-    "solidsight/skill/examples",
+    "solidsight/skills/solidsight/examples",
     "solidsight/benchmarks",
     "docs/plugins",
     "**/build",

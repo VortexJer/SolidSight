@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "texturesight",
+  "displayName": "TextureSight",
+  "version": "0.5.1",
+  "description": "UVs and texture maps: texel density, stretch, seams, islands, packing, tiling, normal maps \u2014 measured, with evidence renders.",
+  "author": {
+    "name": "AISight contributors"
+  },
+  "homepage": "https://github.com/VortexJer/AISight/tree/main/texturesight",
+  "repository": "https://github.com/VortexJer/AISight",
+  "license": "MIT",
+  "keywords": [
+    "uv",
+    "texture",
+    "pbr"
+  ]
+}
