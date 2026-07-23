@@ -8,6 +8,9 @@ name: release
 # GitHub environment. PyPI refuses two publishers with the same
 # repo+workflow+environment, so each package publishes from its own
 # environment: pypi-solidsight, pypi-animationsight, ...
+# NOTE: push tags in batches of three or fewer. GitHub Actions silently
+# creates no events at all for a push carrying more than three tags, so a
+# `git push origin a b c d e` looks like it worked and releases nothing.
 on:
   push:
     tags: ['*-v*']
