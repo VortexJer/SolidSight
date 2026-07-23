@@ -29,7 +29,7 @@ def build_model(model_path: Path, out_dir: Path, mode: str = "free",
                 allow_multiple_shells: bool = False,
                 exploded: bool = False,
                 focus: tuple | None = None,
-                gif: bool = False,
+                gif: bool = False, gif_ms: int = 150,
                 scene: Scene | None = None,
                 unchanged_parts: set[str] | None = None,
                 skip_pairs: bool = False, light: bool = False) -> dict:
@@ -126,10 +126,12 @@ def build_model(model_path: Path, out_dir: Path, mode: str = "free",
             if gif and tframes:
                 # the turntable as one animated GIF: a form is a 360-deg
                 # claim, and a strip of stills does not spin
+                # turntable_views already covers a full 360 deg, so the
+                # frames loop on their own: appending the reverse made it
+                # spin one way and then rewind, at double the file size
                 tframes[0].save(renders_dir / "turntable.gif",
-                                save_all=True,
-                                append_images=tframes[1:] + tframes[::-1],
-                                duration=90, loop=0, optimize=True)
+                                save_all=True, append_images=tframes[1:],
+                                duration=gif_ms, loop=0, optimize=True)
                 render_files.append("renders/turntable.gif")
                 st.tick("turntable.gif")
 

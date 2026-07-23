@@ -1496,3 +1496,40 @@ def test_parts_can_be_ghosted_one_by_one_in_the_viewer():
     assert "e.stopPropagation()" in html            # the row still isolates
     # and it must not clobber the opacity the model declared for glass
     assert "declaredOpacity" in html
+
+
+def test_the_turntable_gif_spins_once_and_frames_tight(tmp_path):
+    """Two bugs in the spin: turntable_views already covers a full 360, so
+    appending the reverse made it rotate one way and rewind (and doubled
+    the file); and the frame was sized on the bounding box's 3D DIAGONAL,
+    a length no single view ever shows, so a wide-and-low shape sat too
+    far away. User: 'el giro es muy rapido y desde demasiado lejos'."""
+    import numpy as np
+    from PIL import Image
+
+    from solidsight import box
+    from solidsight.render import _Camera, turntable_views
+    from solidsight.report import build_model
+    from solidsight.scene import Scene, activate, deactivate
+
+    sc = Scene(); activate(sc)
+    sc.emit(box(960, 490, 660), name="wide")   # engine-shaped: wide and low
+    deactivate()
+    build_model(tmp_path / "m.py", tmp_path / "out", scene=sc, views=[],
+                turntable=8, gif=True, gif_ms=150, size=300, skip_pairs=True,
+                light=True)
+    gif = Image.open(tmp_path / "out" / "renders" / "turntable.gif")
+    assert gif.n_frames == 8, "8 frames in, 8 out — no rewind tail"
+    assert gif.info["duration"] == 150
+
+    # framing: the fit is the projected extent, not the 3D diagonal, so the
+    # shape is not left small in the middle of the frame
+    pts = np.asarray(sc.parts[0].solid.to_trimesh().vertices)
+    c = (pts.min(0) + pts.max(0)) / 2
+    d, u = turntable_views(8)[1]
+    cam = _Camera(d, u, c, 1.0, 300)
+    rel = pts - c
+    proj = max(float(np.abs(rel @ cam.right).max()),
+               float(np.abs(rel @ cam.up).max()))
+    diag = float(np.linalg.norm(pts.max(0) - pts.min(0))) / 2
+    assert proj < diag * 0.95, "projected extent must be tighter than the diagonal"

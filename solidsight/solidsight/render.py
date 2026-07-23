@@ -117,6 +117,17 @@ def render_view(scene: Scene, view: str | tuple, size: int = 900,
         view_name = "turntable"
 
     cam = _Camera(direction, up, center, radius, size)
+    if focus is None:
+        # The frame was sized on the bounding box's 3D DIAGONAL — a length
+        # only ever visible looking straight down one corner, so every
+        # other view sat needlessly far away (worst on a turntable, where
+        # nothing is ever seen from that corner). Measure what this camera
+        # actually projects and fit that instead. Nothing can clip: the
+        # extent is taken from the same points that get drawn.
+        rel = all_pts - center
+        radius = max(float(np.abs(rel @ cam.right).max()),
+                     float(np.abs(rel @ cam.up).max())) or 1.0
+        cam = _Camera(direction, up, center, radius, size)
 
     color = np.tile(np.array(BG, float), (size, size, 1))
     zbuf = np.full((size, size), np.inf)
