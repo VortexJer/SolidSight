@@ -1407,3 +1407,31 @@ def test_a_build_that_changed_nothing_says_so(tmp_path):
                      "emit(box(12, 10, 10), name='b')\n", encoding="utf-8")
     third = build_model(model, out, views=[], light=True, skip_pairs=True)
     assert third["model_unchanged"] is False
+
+
+def test_the_fast_raster_path_draws_the_same_pixels():
+    """The renderer batches triangles through a vectorised path instead of
+    the per-triangle loop, and culls back faces. Both are only allowed
+    because they are exactly equivalent: a strict `<` z-test means the
+    winner of a pixel is the nearest fragment, earlier draw breaking a
+    tie, which does not depend on the order fragments are computed in —
+    and on a closed mesh the nearest fragment is never a back face.
+    If either stops being true, this test sees it as changed pixels."""
+    import numpy as np
+
+    from solidsight import cylinder, parts
+    from solidsight import render as R
+    from solidsight.scene import Scene
+
+    sc = Scene()
+    sc.emit(parts.spur_gear(teeth=14, module=2, thickness=6), name="gear")
+    sc.emit(cylinder(h=20, d=8).translate(14, 0, 0), name="pin")
+
+    fast = np.asarray(R.render_view(sc, "iso", size=320), dtype=np.int16)
+    bands, R.BANDS = R.BANDS, ()          # force every triangle to the loop
+    try:
+        loop = np.asarray(R.render_view(sc, "iso", size=320), dtype=np.int16)
+    finally:
+        R.BANDS = bands
+    assert np.array_equal(fast, loop), (
+        f"{int((fast != loop).any(axis=2).sum())} pixels differ")

@@ -120,11 +120,17 @@ def render_view(scene: Scene, view: str | tuple, size: int = 900,
 
     color = np.tile(np.array(BG, float), (size, size, 1))
     zbuf = np.full((size, size), np.inf)
+    # who wrote each pixel, in draw order. A z-buffer with a strict `<`
+    # test means "nearest wins, and on an exact tie the earlier draw wins";
+    # keeping the writer's index lets the fast path below honour that
+    # second half without having to draw in order.
+    zidx = np.full((size, size), -1, dtype=np.int64)
 
     _draw_grid(color, zbuf, cam, lo, hi)
+    base = 0
     for name, tm, rgb, ghost in meshes:
         if not ghost:
-            _rasterize(color, zbuf, cam, tm, rgb)
+            base = _rasterize(color, zbuf, cam, tm, rgb, zidx, base)
     for name, tm, rgb, ghost in meshes:
         # ghosts: X-ray outline only — edges drawn without occlusion so the
         # reference volume reads through the solid parts
@@ -137,8 +143,17 @@ def render_view(scene: Scene, view: str | tuple, size: int = 900,
 
 # --------------------------------------------------------------------------
 
+# Triangles go through the vectorised path in bands: each one lands in the
+# smallest window it fits in, so a 3x3 triangle is not padded out to 32x32.
+# Anything bigger than the last band keeps the per-triangle loop — on a real
+# mesh that is a couple of percent of them.
+BANDS = (2, 4, 8, 16, 32)
+BAND_CELLS = 2_000_000      # candidate pixels per batch — bounds memory
+
+
 def _rasterize(color: np.ndarray, zbuf: np.ndarray, cam: _Camera, tm,
-               rgb: np.ndarray) -> None:
+               rgb: np.ndarray, zidx: np.ndarray | None = None,
+               base: int = 0) -> int:
     size = cam.size
     # Gouraud shading with creases: split vertices at sharp edges so curved
     # surfaces shade smoothly while flat faces and box edges stay crisp
@@ -172,9 +187,36 @@ def _rasterize(color: np.ndarray, zbuf: np.ndarray, cam: _Camera, tm,
     drawable = ((bx0 <= bx1) & (by0 <= by1) & (np.abs(den) >= 1e-12)
                 & np.isfinite(px).all(axis=1) & np.isfinite(py).all(axis=1))
 
+    # Back faces cannot win a pixel. Every mesh here comes out of manifold3d,
+    # so it is closed: along any ray the nearest surface is the one you enter
+    # through, which is front-facing. Drawing the far half of every solid and
+    # then letting the z-test throw it away is half the work of a render.
+    tv = verts[faces]
+    fn = np.cross(tv[:, 1] - tv[:, 0], tv[:, 2] - tv[:, 0])
+    drawable &= (fn @ cam.dir) > 0
+
     # draw far-to-near so equal-depth overwrites are deterministic
     order = np.argsort(-tri_z.mean(axis=1), kind="stable")
-    for ti in order[drawable[order]]:
+    order = order[drawable[order]]
+    if zidx is None:                     # standalone use: no fast path
+        zidx = np.full_like(zbuf, -1, dtype=np.int64)
+
+    # rank in draw order, per triangle — the tie-breaker the fast path needs
+    rank = np.empty(len(tri_z), dtype=np.int64)
+    rank[order] = base + np.arange(len(order))
+
+    # A triangle covering one or two pixels per axis costs the same trip
+    # through this loop as one covering half the frame, and on a real mesh
+    # almost all of them are the former. Those go through _small_batch,
+    # which does the identical arithmetic for a quarter-million triangles
+    # at a time. Everything else keeps the loop.
+    side = np.maximum(bx1 - bx0, by1 - by0) + 1
+    band_of = np.full(len(side), -1, dtype=np.int64)
+    for bi, k in enumerate(BANDS):
+        band_of[(band_of < 0) & (side <= k)] = bi
+    big_order = order[band_of[order] < 0]
+
+    for ti in big_order:
         p = tri_pix[ti]
         z = tri_z[ti]
         s = tri_s[ti]
@@ -197,8 +239,82 @@ def _rasterize(color: np.ndarray, zbuf: np.ndarray, cam: _Camera, tm,
         if not upd.any():
             continue
         sub_z[upd] = zi[upd]
+        zidx[ymin:ymax + 1, xmin:xmax + 1][upd] = rank[ti]
         si = (w0 * s[0] + w1 * s[1] + w2 * s[2])[upd]
         color[ymin:ymax + 1, xmin:xmax + 1][upd] = rgb[None, :] * si[:, None]
+
+    for bi, k in enumerate(BANDS):
+        sel = order[band_of[order] == bi]
+        step = max(1, BAND_CELLS // (k * k))
+        for i in range(0, len(sel), step):
+            _small_batch(color, zbuf, zidx, rgb, sel[i:i + step], tri_pix,
+                         tri_z, tri_s, den, bx0, bx1, by0, by1, rank, size, k)
+    return base + len(order)
+
+
+def _small_batch(color, zbuf, zidx, rgb, idx, tri_pix, tri_z, tri_s, den,
+                 bx0, bx1, by0, by1, rank, size, k) -> None:
+    """The loop body above, done for a whole batch of triangles at once.
+
+    Identical arithmetic in the identical order, so the pixels are the
+    same. What replaces the sequential z-test is its definition: a strict
+    `<` against a running minimum means the winner of a pixel is the
+    nearest fragment, and on an exact tie the one drawn earlier — which is
+    a lexicographic minimum of (depth, draw index), and that does not care
+    what order the fragments are computed in.
+    """
+    if not len(idx):
+        return
+    p = tri_pix[idx]                              # (n,3,2)
+    x0, y0 = p[:, 0, 0], p[:, 0, 1]
+    x1, y1 = p[:, 1, 0], p[:, 1, 1]
+    x2, y2 = p[:, 2, 0], p[:, 2, 1]
+    d = den[idx]
+
+    # up to k^2 candidate pixels each, masked back to the real box
+    off = np.arange(k)
+    cx = bx0[idx][:, None, None] + off[None, None, :]
+    cy = by0[idx][:, None, None] + off[None, :, None]
+    valid = (cx <= bx1[idx][:, None, None]) & (cy <= by1[idx][:, None, None])
+    gx = cx + 0.5
+    gy = cy + 0.5
+
+    a = (y1 - y2)[:, None, None]
+    b = (x2 - x1)[:, None, None]
+    c = (y2 - y0)[:, None, None]
+    e = (x0 - x2)[:, None, None]
+    w0 = (a * (gx - x2[:, None, None]) + b * (gy - y2[:, None, None])) \
+        / d[:, None, None]
+    w1 = (c * (gx - x2[:, None, None]) + e * (gy - y2[:, None, None])) \
+        / d[:, None, None]
+    w2 = 1.0 - w0 - w1
+    inside = (w0 >= 0) & (w1 >= 0) & (w2 >= 0) & valid
+    if not inside.any():
+        return
+
+    z = tri_z[idx]
+    s = tri_s[idx]
+    zi = (w0 * z[:, 0, None, None] + w1 * z[:, 1, None, None]
+          + w2 * z[:, 2, None, None])[inside]
+    si = (w0 * s[:, 0, None, None] + w1 * s[:, 1, None, None]
+          + w2 * s[:, 2, None, None])[inside]
+    flat = (cy * size + cx)[inside]
+    gid = np.broadcast_to(rank[idx][:, None, None], inside.shape)[inside]
+
+    # one winner per pixel: nearest, earlier draw breaks a tie
+    keep = np.lexsort((gid, zi, flat))
+    flat, zi, si, gid = flat[keep], zi[keep], si[keep], gid[keep]
+    first = np.ones(len(flat), dtype=bool)
+    first[1:] = flat[1:] != flat[:-1]
+    flat, zi, si, gid = flat[first], zi[first], si[first], gid[first]
+
+    zb = zbuf.reshape(-1)[flat]
+    zx = zidx.reshape(-1)[flat]
+    win = (zi < zb) | ((zi == zb) & (gid < zx))
+    flat, zi, si = flat[win], zi[win], si[win]
+    zbuf.reshape(-1)[flat] = zi
+    zidx.reshape(-1)[flat] = gid[win]
+    color.reshape(-1, 3)[flat] = rgb[None, :] * si[:, None]
 
 
 def _sound_faces(tm, min_altitude: float = 5e-3) -> np.ndarray:
