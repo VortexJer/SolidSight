@@ -1,29 +1,9 @@
 # Detail mode — modeling real technical objects faithfully
 
-## When this applies, and the ONE question to ask
-
-Detail mode is **opt-in**. It is never the default, because it costs
-real time (research, per-region builds) the user may not want to pay.
-
-When the user asks for a model of a real technical object (an engine block,
-a gearbox housing, a camera body, a pump...) and did not say how faithful it
-must be, ask ONE question before modeling:
-
-> Representative model (recognizable shape, main features only) or detailed
-> functional model (every functional feature: bolt patterns, ports,
-> galleries, ribs, bosses)? The detailed one takes notably longer.
-
-The gate, precisely:
-
-- Enter this mode only on an explicit yes, or when the user's own words
-  already chose it ("detailed", "functional", "faithful", "replica").
-- Silence, ambiguity, or no answer = REPRESENTATIVE. Say which mode you
-  are building in when you start.
-- Do not ask at all for decorative/simple requests, or when the user
-  already said "quick", "rough", "iconic" — build representative.
-
-**Detailed mode means: every feature a domain expert would name must exist
-in the geometry.** Not textures, not branding — functional geometry.
+You are here because detailed mode was chosen (the opt-in gate is in
+SKILL.md Step 1). **It means: every feature a domain expert would name
+must exist in the geometry** — not textures, not branding, functional
+geometry.
 
 ## Research before the spec (when the user gives no specifications)
 
@@ -32,6 +12,13 @@ feature list, DO NOT fill the gap with guesses — research the object first
 with your web tools (WebSearch / WebFetch), then write the spec from what
 you found:
 
+0. **Commit to ONE exact variant before searching — always, even with no
+   human to ask.** "A B58" is not researchable; "the B58B30M0 block, G20
+   M340i / A90 Supra, closed-deck aluminium" is. If nobody is in the loop
+   to choose, pick the most representative production variant yourself,
+   say which one, and research that. Averaging the family is what makes a
+   part come out as a vague box — the whole accuracy comes from studying
+   ONE real thing.
 1. Search for the object's anatomy, not just pictures:
    `"<object> cross section"`, `"<object> engineering drawing"`,
    `"<object> dimensions site:manufacturer"`, `"<object> teardown"`,
@@ -65,6 +52,34 @@ you found:
    family). Otherwise proceed.
 6. No web access available? Proceed from domain knowledge, mark everything
    `[assumed]`, and say so explicitly.
+
+## First: what does this part HOUSE, MATE, and RESIST?
+
+A part's outer form is not free — it is derived from its job. A part
+modelled in isolation, with no thought to what it works with, comes out as
+an abstract prism with holes. The SAME part imagined in its assembly comes
+out as a real casting — because every feature exists to serve a neighbour
+or a load. So before listing features, write the functional context as
+comments, even when you are only building this one part. You do NOT model
+the neighbours — you reason about them:
+
+- **HOUSES** — what moves or sits inside, and the space it demands. A
+  crankcase houses a crank of stroke S, so its skirt must clear the swing
+  radius (S/2 + rod big-end) and drop BELOW the crank axis — that clearance
+  is *why* the deep skirt exists. Bearings, gears, pistons all carve out the
+  interior form.
+- **MATES** — what bolts or seals to each face, and the pattern that
+  implies. The deck mates a head → head-bolt matrix + coolant transfer
+  holes; the rail mates a pan → bolt ring + gasket land; the ends mate
+  timing cover / bell-housing → their flanges and dowels.
+- **RESISTS** — the loads it carries, and the ribs/bosses/webs that answer
+  them. Combustion + main-bearing loads → bulkheads, side-rib lattice,
+  reinforcement frames, mount bosses. On many real castings this webbing is
+  the single most recognizable feature; skip it and the part reads as a box.
+
+Then let the geometry FOLLOW: every feature you add should trace back to a
+line above. This one reframing — "the crankcase that holds THIS engine",
+not "a block" — is the difference between a prism with holes and a casting.
 
 ## The method: Feature Specification before code
 
@@ -117,6 +132,14 @@ model is 5-8 small verified passes, never one giant unverified dump.
 Definition of done (in addition to the standard checklist): walk the spec
 line by line against the renders/slices — every feature present, every
 count right, report dimensions match the datum constants.
+
+**Know when to stop — do not over-change.** Once the spec is met and the
+part reads right, stop. A SMALL imperfection is not worth another build:
+a sub-mm misalignment, a rib a hair off, a slightly uneven gap — ignore
+it and move on. Only a REAL defect earns another pass: a missing feature
+(a boolean that did nothing), a collision, a thin wall, a wrong count.
+More edits is not more quality — chasing tiny cosmetics burns effort and
+often makes a good part worse.
 
 ## Feature -> solidsight toolbox
 

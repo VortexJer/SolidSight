@@ -96,6 +96,7 @@ def main(argv: list[str] | None = None) -> int:
     coh.add_argument("id")
     coh.add_argument("--json", action="store_true")
 
+
     df = sub.add_parser("diff",
                         help="compare two build reports: what did my change "
                              "actually change?")
@@ -729,6 +730,13 @@ def _print_summary(report: dict) -> None:
                        f"{pr.get('expected')}]")
             _say(f"  pair '{pr['a']}' <-> '{pr['b']}': {pr['status']}, "
                  f"clearance {pr['min_clearance_mm']} mm{exp}")
+        else:
+            c = pr.get("overlap_centroid")
+            at = f" at ({c[0]}, {c[1]}, {c[2]})" if c else ""
+            _say(f"  pair '{pr['a']}' <-> '{pr['b']}': COLLISION — "
+                 f"{pr['overlap_volume_mm3']} mm3 over "
+                 f"{pr.get('overlap_area_mm2', '?')} mm2{at} "
+                 f"(suggestion below)")
     fails = [c for c in report["checks"] if c["level"] == "fail"]
     warns = [c for c in report["checks"] if c["level"] == "warn"]
     for chk in fails + warns:
@@ -742,6 +750,25 @@ def _print_summary(report: dict) -> None:
         _say(f"  render:  {r}")
     for r in report["files"].get("exports", []):
         _say(f"  export:  {r}")
+
+    # A no-op operation is NOT a cosmetic warning: an intended cut/feature
+    # produced no geometry, so a hole you think you drilled is missing. It
+    # must not be waved away by the "warnings are informational" line below.
+    noop = [c for c in warns if c["id"] in ("noop-difference", "noop-union",
+                                            "noop-intersection")]
+    if noop:
+        _say("\n  MISSING FEATURE — an operation did NOTHING.\n"
+             f"        {len(noop)} boolean(s) produced no geometry: a cut or "
+             "feature you wrote is\n"
+             "        NOT in the model (wrong offset, cutter outside the "
+             "body, operands reversed).\n"
+             "        This is a real defect, not an informational warning — "
+             "the part is missing\n"
+             "        what you intended. Fix these before you call it done:")
+        for c in noop:
+            _say(f"          - {c['message']}")
+            if c.get("suggestion"):
+                _say(f"            try: {c['suggestion']}")
 
     stuck = report.get("not_converging") or []
     if stuck:
@@ -759,7 +786,7 @@ def _print_summary(report: dict) -> None:
              "        and say why, change the approach, or ask the user. In "
              "--free mode a `warn`\n"
              "        is informational; it does not have to reach zero.")
-    elif not fails:
+    elif not fails and not noop:
         _say("\n  DONE-CHECK: 0 fails. In --free mode warnings are "
              "informational — if the\n"
              "        dimensions match your spec and the renders look right, "

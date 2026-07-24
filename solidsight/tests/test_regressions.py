@@ -153,6 +153,25 @@ def test_self_intersecting_polygon_warns():
 
 # --- collision report: oversized part -> patches + shrink suggestion ------
 
+def test_collision_reports_area_and_exact_point():
+    """A collision now reports not just the overlap volume and bbox but the
+    contact AREA (mm2) and the exact centroid coordinate to aim a section
+    or a caliper at. User: 'que diga en cuanta area y en que coordenadas'."""
+    from solidsight.assembly import pair_analysis, place
+    sc = make_scene()
+    place(box(40, 40, 20), name="base")
+    place(box(20, 20, 30).translate(10, 10, 10), name="post")
+    pairs, _checks = pair_analysis(sc, mode="free")
+    col = [p for p in pairs if p["status"] == "collision"][0]
+    assert col["overlap_volume_mm3"] == pytest.approx(4000, rel=0.02)
+    assert col["overlap_area_mm2"] > 0
+    cx, cy, cz = col["overlap_centroid"]
+    # the overlap is the 20x20x10 corner lens centred at (10,10,15)
+    assert cx == pytest.approx(10, abs=0.5)
+    assert cy == pytest.approx(10, abs=0.5)
+    assert cz == pytest.approx(15, abs=0.5)
+
+
 def test_multi_patch_collision_reports_oversized():
     from solidsight.assembly import pair_analysis
     sc = make_scene()

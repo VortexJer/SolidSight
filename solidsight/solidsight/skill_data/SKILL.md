@@ -102,17 +102,21 @@ first pin down the exact variant (which model / year / trim), then
 research it and tag every spec `[researched]`/`[standard]`/`[assumed]`
 — never silently substitute your invented average of the category.
 
-**Detail mode is OPT-IN — always ask first, never assume.** If the
-request is a real technical object (engine, gearbox, housing, pump...)
-and the user did not already say how faithful it must be, ask ONE
-question before modeling: *representative model, or detailed functional
-model (every bolt pattern, port, gallery, rib — takes notably longer)?*
-Enter detailed mode ONLY on an explicit yes (or words like "detailed",
-"functional", "faithful", "replica"). Silence, an ambiguous answer or no
-reply = **representative**; spending that time uninvited is a bug, not
-diligence. On a yes, load `references/detail-mode.md` and follow it: it
-carries the Feature Specification method, the research-and-tag rules and
-the feature -> toolbox map.
+**COMMIT TO ONE EXACT VARIANT — always, even with nobody to ask.** "a B58"
+comes out a vague box; "the B58B30M0, closed-deck aluminium" comes out a
+real part — the accuracy is entirely in researching ONE specific thing.
+Ask the user which variant if you can; if you cannot (autonomous run, or
+"your call"), pick the most representative one, say which, and research
+THAT — never average the family. Full method: `references/detail-mode.md`.
+
+**Detail mode is OPT-IN — always ask first, never assume.** For a real
+technical object (engine, gearbox, housing, pump...) with no stated
+faithfulness, ask ONE question first: *representative, or detailed
+functional model (every bolt pattern, port, gallery, rib — takes notably
+longer)?* Enter detailed ONLY on an explicit yes (or "detailed" /
+"functional" / "faithful" / "replica"); silence or ambiguity =
+**representative**. On a yes, load `references/detail-mode.md` and follow
+it (Feature Spec method, research-and-tag, feature -> toolbox).
 
 **If the object is a STYLED BODY — a car, boat hull, fuselage, appliance
 shell, helmet — load `references/car-bodies.md` BEFORE any geometry**,

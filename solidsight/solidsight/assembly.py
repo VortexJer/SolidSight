@@ -228,6 +228,13 @@ def pair_analysis(scene, mode: str = "free",
             vol = float(inter.volume())
             if vol > 1e-3:
                 bb = inter.bounding_box()
+                # the overlap region as a mesh: its surface area is how big
+                # the interference is (mm2), its centroid the exact point to
+                # aim a section or a caliper at
+                _im = Solid(inter).to_trimesh()
+                overlap_area = float(_im.area)
+                overlap_centroid = [round(float(v), 3)
+                                    for v in _im.centroid]
                 pieces = [p for p in inter.decompose() if p.volume() > 1e-3]
                 patch_boxes = [p.bounding_box() for p in pieces[:4]]
                 if len(pieces) > 1:
@@ -281,6 +288,8 @@ def pair_analysis(scene, mode: str = "free",
                 entry = {
                     "a": a.name, "b": b.name, "status": "collision",
                     "overlap_volume_mm3": round(vol, 3),
+                    "overlap_area_mm2": round(overlap_area, 3),
+                    "overlap_centroid": overlap_centroid,
                     "overlap_bbox": {
                         "min": [round(float(v), 3) for v in bb[:3]],
                         "max": [round(float(v), 3) for v in bb[3:]]},

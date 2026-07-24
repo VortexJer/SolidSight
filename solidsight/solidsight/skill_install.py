@@ -18,7 +18,7 @@ from pathlib import Path
 from . import __version__
 
 MARKER = ".installed-version"
-SUBDIRS = ("references", "domains")
+SUBDIRS = ("references", "domains", "examples")
 
 # A skill on disk is not enough: an agent only routes a request to it if the
 # global instructions say so. That block is written here and removed on
