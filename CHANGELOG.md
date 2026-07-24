@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-07-24 — solidsight 0.11.11: research the real variant, catch the missing cut
+
+A day of dogfooding the B58 block: why a detailed part comes out a vague
+box instead of a real casting, plus two report gaps.
+
+- **Commit to ONE exact variant, always** — even autonomously, with nobody
+  to ask (pick the representative one, say which, research THAT). "a B58"
+  averages to a box; "the B58B30M0" researches to a casting.
+- **A "what does this part HOUSE, MATE, RESIST?" step**: derive the outer
+  form from function (deep skirt because it houses the crank; rib lattice
+  because it carries the loads) without modelling the neighbours — fixes a
+  block modelled in isolation coming out boxy.
+- **A restraint rule**: know when to stop; ignore a sub-mm misalignment,
+  only a real defect earns another build.
+- The example model.py files now ship, so `examples/07-engine-block` etc.
+  actually exist in the installed skill (referenced but never packaged).
+- A collision now reports contact **area (mm2)** and the exact overlap
+  **centroid**, not just volume + bbox.
+- A no-op boolean (a cut that removed nothing — a MISSING feature) now
+  shouts, separate from cosmetic warnings, and DONE-CHECK will not call a
+  build finished while one stands.
+
 ## 2026-07-23 — solidsight 0.11.10: ghost any part by hand
 
 Seeing through the valve cover while the rest of the engine stays solid
